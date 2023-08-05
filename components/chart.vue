@@ -260,7 +260,9 @@ onMounted(async () => {
   chartBBUpperSeries.setData(data.BBUpper);
 
   //set last bar tracker
-  lastBarTime = data.candles[data.candles.length - 1].time;
+  if (data.candles.length) {
+    lastBarTime = data.candles[data.candles.length - 1].time;
+  }
 
   //fit chart to page
   chartInstance.timeScale().fitContent();

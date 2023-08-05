@@ -1,5 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-
+// @ts-ignore
 export default defineNuxtConfig({
   // ssr:false,
   modules: [
@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     enabled: true
   },
 
-  // @ts-ignore
+
   // build: {
   //   target: 'esnext'
   // },

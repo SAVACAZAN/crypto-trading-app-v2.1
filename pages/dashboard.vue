@@ -32,14 +32,13 @@ import { Pie } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
-import { useAppStore } from '~/stores/app.store';
+let userID = useCookie('userID');
 
-const app = useAppStore()
 let loaded = true;
 //get user exchanges
 const dbExchanges = await $fetch('/api/v1/fetchUserExchanges', {
   query:{
-    userID:app.userID,
+    userID:userID.value,
   }
 });
 
@@ -52,7 +51,7 @@ if (dbExchanges.data.length) {
 
     const response = await $fetch('/api/v1/fetchUserDbBalance', {
         query:{
-            userID:app.userID,
+            userID:userID.value,
             exchange:currentExchange,
         }
     });

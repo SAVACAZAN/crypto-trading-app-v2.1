@@ -6,8 +6,6 @@ export default defineEventHandler(async (event) => {
 
     // console.log(response);
 
-    return {
-        data: response.data
-    }
+    return response
 
 })

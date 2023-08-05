@@ -434,38 +434,32 @@ class CCXTW {
         }
 
         if(this.users.get(userID).get(exchange).has['createOrder']) {
+
             try {
-                if (type === 'oco') {
-                    data = await this.users.get(userID).get(exchange).privatePostOrderOco({
-                        'symbol': symbol.split('/').join(''),
-                        'quantity': this.users.get(userID).get(exchange).amountToPrecision(symbol, amount),
-                        'side': side,
-                        'price': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.tpPrice),
-                        'stopPrice': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.stopLossPrice),
-                        'stopLimitPrice': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.stopLimitPrice),
-                        'stopLimitTimeInForce': 'GTC',
-                    });
+                if(exchange === 'binance') {
+                    if (type === 'oco') {
+                        data = await this.users.get(userID).get(exchange).privatePostOrderOco({
+                            'symbol': symbol.split('/').join(''),
+                            'quantity': this.users.get(userID).get(exchange).amountToPrecision(symbol, amount),
+                            'side': side,
+                            'price': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.tpPrice),
+                            'stopPrice': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.stopLossPrice),
+                            'stopLimitPrice': this.users.get(userID).get(exchange).priceToPrecision(symbol, params.stopLimitPrice),
+                            'stopLimitTimeInForce': 'GTC',
+                        });
+                    }
+
+                    if (type === 'limit' || type === 'take_profit_limit' || type === 'take_profit') {
+                        data = await this.users.get(userID).get(exchange).createOrder(symbol, type, side, amount, price, params);
+                    }
+
+                    if (type === 'market') {
+                        data = await this.users.get(userID).get(exchange).createOrder(symbol, type, side, amount);
+                    }
+                } else {
+                    data = await this.users.get(userID).get(exchange).createOrder(symbol, type, side, amount, price);
                 }
 
-                if (type === 'limit' || type === 'take_profit_limit' || type === 'take_profit') {
-                    data = await this.users.get(userID).get(exchange).createOrder(
-                        symbol,
-                        type,
-                        side,
-                        this.users.get(userID).get(exchange).amountToPrecision(symbol, amount),
-                        this.users.get(userID).get(exchange).priceToPrecision(symbol, price),
-                        params
-                    );
-                }
-
-                if (type === 'market') {
-                    data = await this.users.get(userID).get(exchange).createOrder(
-                        symbol,
-                        type,
-                        side,
-                        this.users.get(userID).get(exchange).amountToPrecision(symbol, amount),
-                    );
-                }
                 success = true;
             } catch (e) {
                 data = null;
@@ -573,6 +567,46 @@ class CCXTW {
     };
 
     //fetchOrders
+    async fetchOrders(userID, exchange, symbol){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        if (!this.users.has(userID)) {
+            this.users.set(userID, new Map());
+        }
+
+        if (!this.users.get(userID).has(exchange)) {
+            await this.loadInstance(userID, exchange);
+        }
+
+        if(this.users.get(userID).get(exchange).has['fetchOrders']) {
+            try {
+                data = await this.users.get(userID).get(exchange).fetchOrders(symbol);
+                success = true;
+            } catch (e) {
+                data = null;
+                success = false;
+                if (e instanceof ccxt.NetworkError) {
+                    log =`Failed due to a network error: ${e.message}`;
+                } else if (e instanceof ccxt.ExchangeError) {
+                    log =`Failed due to a exchange error: ${e.message}`;
+                } else {
+                    log =`Failed with: ${e.message}`;
+                }
+            }
+        } else {
+            log = `Exchange ${exchange} does not support fetchOrders`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
     async fetchOpenOrders(userID, exchange, symbol){
         let log = null;
         let data = null;

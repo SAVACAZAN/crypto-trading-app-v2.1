@@ -86,11 +86,19 @@ async function createOrder(side, type){
     body: data
   } );
 
-  notification['info']({
-    content: "Order created!",
-    meta: `Submitted ${data.exchange} limit ${data.side} order for ${data.amount} ${base} by using ${quote} at price ${data.price}`,
-    duration: 2500,
-  });
+  if (response.success) {
+    notification['info']({
+      content: "Order created!",
+      meta: `Submitted ${data.exchange} limit ${data.side} order for ${data.amount} ${base} by using ${quote} at price ${data.price}`,
+      duration: 2500,
+    });
+  } else {
+    notification['error']({
+      content: "Erorr creating order!",
+      meta: response.log,
+      duration: 2500,
+    });
+  }
 
 }
 
