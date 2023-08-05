@@ -1,0 +1,37 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@bg-dev/nuxt-naiveui": "^1.2.1",
+    "@nuxt/devtools": "^0.6.7",
+    "@pinia-plugin-persistedstate/nuxt": "^1.1.1",
+    "@types/node": "^18",
+    "nuxt": "^3.6.1"
+  },
+  "dependencies": {
+    "@css-render/vue3-ssr": "^0.15.12",
+    "@pinia/nuxt": "^0.4.11",
+    "@vicons/ionicons5": "^0.12.0",
+    "bcrypt": "^5.1.0",
+    "ccxt": "^4.0.30",
+    "chart.js": "^4.3.0",
+    "jsonwebtoken": "^9.0.1",
+    "lightweight-charts": "3.8.0",
+    "lodash": "^4.17.21",
+    "mathjs": "^11.8.2",
+    "moment": "^2.29.4",
+    "nuxt-mongoose": "^0.0.9",
+    "pinia": "^2.1.4",
+    "sass": "^1.64.2",
+    "set-interval-async": "^3.0.3",
+    "technicalindicators": "^3.1.0",
+    "vue-chartjs": "^5.2.0"
+  }
+}
