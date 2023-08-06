@@ -1,5 +1,5 @@
 <script setup>
-// import { MACD } from 'technicalindicators';
+import { CrossUp, CrossDown } from "technicalindicators";
 import { SMA, RSI, MACD, BollingerBands } from '@debut/indicators';
 import { useAppStore } from '~/stores/app.store';
 const app = useAppStore()
@@ -258,6 +258,10 @@ onMounted(async () => {
   chartBBLowerSeries.setData(data.BBLower);
   chartBBMiddleSeries.setData(data.BBMiddle);
   chartBBUpperSeries.setData(data.BBUpper);
+
+  let markers = checkForCrossOvers(data);
+  chartCandlesSeries.setMarkers(markers);
+
 
   //set last bar tracker
   if (data.candles.length) {
@@ -630,6 +634,68 @@ function formatCandlesData(data, live = false) {
 
 
   return returnData;
+}
+
+function checkForCrossOvers(data) {
+
+  console.log(data);
+
+  let maOffset = data.MA12.length - data.MA21.length;
+  let markers = [];
+  let MA12 = [];
+  for (let i = maOffset; i < data.MA12.length; i++) {
+    MA12.push(data.MA12[i].value);
+  }
+
+  let MA21 = [];
+  for (let i = 0; i < data.MA21.length; i++) {
+    MA21.push(data.MA21[i].value);
+  }
+
+  let crossLines = {
+    lineA: MA12,
+    lineB: MA21,
+  };
+
+  let crossUp = new CrossUp(crossLines);
+  let crossDown = new CrossDown(crossLines);
+  let crossUpValues = crossUp.getResult();
+  let crossDownValues = crossDown.getResult();
+
+  let offset = data.candles.length - crossUpValues.length;
+
+  // console.log(maOffset, crossLines);
+
+  for (let i = 0; i < crossUpValues.length; i++) {
+    if (crossUpValues[i] === true) {
+      markers.push({ time: data.candles[i+offset].time, position: 'belowBar', color: '#2196F3', shape: 'arrowUp', text: 'BUY' });
+    }
+
+    if (crossDownValues[i] === true) {
+      markers.push({ time: data.candles[i+offset].time, position: 'aboveBar', color: '#e91e63', shape: 'arrowDown', text: 'SELL' });
+    }
+  }
+
+  let RSIOffset = data.candles.length - data.RSI.length;
+  let overboughtCondition = false;
+  let oversoldCondition = false;
+
+  for (let i = 0; i < data.RSI.length; i++) {
+    if (data.RSI[i].value > 80 && !overboughtCondition) {
+      markers.push({ time: data.candles[i + RSIOffset].time, position: 'aboveBar', color: '#e91e63', shape: 'circle', text: 'OB' });
+      overboughtCondition = true;
+    } else {
+      overboughtCondition = false;
+    }
+    if (data.RSI[i].value < 20 && !oversoldCondition) {
+      markers.push({ time: data.candles[i + RSIOffset].time, position: 'belowBar', color: '#2196F3', shape: 'circle', text: 'OS' });
+      oversoldCondition = true;
+    } else {
+      oversoldCondition = false;
+    }
+  }
+
+  return markers;
 }
 </script>
 

@@ -1,5 +1,5 @@
 import { defineMongooseModel } from '#nuxt/mongoose'
-export const DcaBotSchema = defineMongooseModel({
+export const dcaBotSchema = defineMongooseModel({
     name: 'DCABots',
     schema: {
         userID: {

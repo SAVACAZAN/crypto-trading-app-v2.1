@@ -126,6 +126,34 @@ const sidebarOptions = [
         key: 'dca-bots',
         icon: renderIcon(GitCompareOutline),
     },
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                  to: {
+                    name: 'back-testing',
+                  }
+                },
+                { default: () => 'Back testing' }
+            ),
+        key: 'back-testing',
+        icon: renderIcon(GitCompareOutline),
+    },
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                  to: {
+                    name: 'dev-tools',
+                  }
+                },
+                { default: () => 'Dev Tools' }
+            ),
+        key: 'dev-tools',
+        icon: renderIcon(GitCompareOutline),
+    },
 ];
 
 const dropdownOptions = [

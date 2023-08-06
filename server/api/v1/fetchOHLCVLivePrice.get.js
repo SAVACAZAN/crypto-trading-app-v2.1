@@ -9,22 +9,24 @@ export default defineEventHandler(async (event) => {
 
     const candles = await nitroApp.ccxtw.fetchOHLCV(query.userID, query.exchange, query.symbol, query.timeframe, undefined, 1);
 
-    // console.log(candles);
-
-    let result = candles.data;
-    // console.log(result);
-
     //candles data
     let candlesData = [];
-    for (let i = 0; i < result.length; i++) {
-        candlesData.push({
-            time:(result[i][0] / 1000),
-            open:result[i][1],
-            high:result[i][2],
-            low:result[i][3],
-            close:result[i][4],
-            volume:result[i][5]
-        });
+
+    // console.log(candles);
+    if (candles.data) {
+        let result = candles.data;
+        // console.log(result);
+
+        for (let i = 0; i < result.length; i++) {
+            candlesData.push({
+                time:(result[i][0] / 1000),
+                open:result[i][1],
+                high:result[i][2],
+                low:result[i][3],
+                close:result[i][4],
+                volume:result[i][5]
+            });
+        }
     }
 
     return candlesData
