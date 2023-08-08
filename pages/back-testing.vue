@@ -28,7 +28,7 @@
     </n-checkbox-group>
 
 
-    <div id="chart" style="height:600px"></div>
+    <div id="chart" style="height:400px"></div>
     <div id="rsi" style="height:100px"></div>
     <div id="macd" style="height:100px"></div>
     <div id="equity" style="height:100px"></div>
@@ -43,7 +43,10 @@
         size="small"
     />
 
-    <p>Final Balance: {{ finalBalance }}</p>
+    Statistics:
+    <p v-for="(key, val) in statistics">
+      {{ val }}: {{ key }}
+    </p>
   </n-card>
 
 </template>
@@ -52,8 +55,7 @@
 definePageMeta({
     middleware: 'auth'
 })
-import {clearIntervalAsync, setIntervalAsync} from "set-interval-async";
-import { CrossUp, CrossDown } from "technicalindicators";
+import { dcaBotStrategy } from '~/strategies/dcaBotStrategy';
 import { SMA, RSI, MACD, BollingerBands } from '@debut/indicators';
 import { useAppStore } from '~/stores/app.store';
 const app = useAppStore()
@@ -69,8 +71,7 @@ let currentSymbol = ref(app.getUserSelectedMarket);
 
 let chartInstance = {
   candleSeries:'',
-  CandlesSeries: '',
-  VolumeSeries: '',
+  volumeSeries: '',
   MA12Series: '',
   MA21Series: '',
   MA50Series: '',
@@ -96,7 +97,7 @@ let equityChartInstance = {
 };
 
 let chartIndicators = ['volume', 'MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'RSI', 'MACD', 'BB', 'equity'];
-let selectedIndicators = ref(['volume', 'MA12', 'MA21', 'MA50', 'RSI', 'MACD', 'equity']);
+let selectedIndicators = ref(['volume', 'MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'MA50', 'RSI', 'MACD', 'equity']);
 
 let chartTimeframes = app.getAvailableTimeframes;
 
@@ -109,13 +110,17 @@ let lastBarTime = null;
 
 const currentTimestamp = Date.now();
 
-// Calculate the timestamp of 7 days ago (in milliseconds)
-const sevenDaysAgoTimestamp = currentTimestamp - 7 * 24 * 60 * 60 * 1000;
+let days = 31;
+const previousTimestamp = currentTimestamp - days * 24 * 60 * 60 * 1000;
 
-let dateRange = ref([sevenDaysAgoTimestamp, currentTimestamp]);
+let dateRange = ref([previousTimestamp, currentTimestamp]);
 
 const closedOrdersTablePagination = false;
 const closedOrdersTableColumns = [
+  {
+    title: "Time",
+    key: "time"
+  },
   {
     title: "Symbol",
     key: "symbol"
@@ -137,8 +142,16 @@ const closedOrdersTableColumns = [
     key: "cost"
   },
   {
+    title: "Fees",
+    key: "fees"
+  },
+  {
     title: "Profit",
     key: "profit"
+  },
+  {
+    title: "Balance",
+    key: "balance"
   },
   {
     title: "Type",
@@ -148,7 +161,7 @@ const closedOrdersTableColumns = [
 
 const closedOrdersTableData = ref([]);
 
-const finalBalance = ref('');
+const statistics = ref('');
 
 let SMA12Indicator = new SMA(12);
 let SMA21Indicator = new SMA(21);
@@ -164,6 +177,7 @@ onMounted(async () => {
 
   //init chart lib
   chartInstance = $lightweightCharts.createChart('chart', {
+    crosshairMode: 0,
     autoSize: true,
     timeScale: {
       timeVisible: true,
@@ -260,7 +274,6 @@ onMounted(async () => {
     rightPriceScale: {
       visible: false,
     },
-    visible:false
   });
 
   //add MA200 series
@@ -272,7 +285,6 @@ onMounted(async () => {
     rightPriceScale: {
       visible: false,
     },
-    visible:false
   });
 
   //add BB series
@@ -656,82 +668,82 @@ function formatCandlesAndCalcIndicators(data, live = false) {
       BBRes     = BBIndicator.nextValue(price);
     }
 
-    if(SMA12Res) {
+    // if(SMA12Res) {
       returnData.MA12.push({
         time:data[i].time,
-        value:SMA12Res,
+        value:(SMA12Res) ? SMA12Res : 0,
       });
-    }
+    // }
 
-    if(SMA21Res) {
+    // if(SMA21Res) {
       returnData.MA21.push({
         time:data[i].time,
-        value:SMA21Res,
+        value:(SMA21Res) ? SMA21Res : 0,
       });
-    }
+    // }
 
-    if(SMA50Res) {
+    // if(SMA50Res) {
       returnData.MA50.push({
         time:data[i].time,
-        value:SMA50Res,
+        value:(SMA50Res) ? SMA50Res : 0,
       });
-    }
+    // }
 
-    if(SMA100Res) {
+    // if(SMA100Res) {
       returnData.MA100.push({
         time:data[i].time,
-        value:SMA100Res,
+        value:(SMA100Res) ? SMA100Res : 0,
       });
-    }
+    // }
 
-    if(SMA200Res) {
+    // if(SMA200Res) {
       returnData.MA200.push({
         time:data[i].time,
-        value:SMA200Res,
+        value:(SMA200Res) ? SMA200Res : 0,
       });
-    }
+    // }
 
-    if(RSIRes) {
+    // if(RSIRes) {
       returnData.RSI.push({
         time:data[i].time,
-        value:RSIRes,
+        value:(RSIRes) ? RSIRes : 0,
       });
-    }
+    // }
 
-    if(MACDRes) {
+    // if(MACDRes) {
       returnData.MACD.push({
         time:data[i].time,
-        value:MACDRes.macd,
+        value:(MACDRes) ? MACDRes.macd : 0,
       });
 
       returnData.MACDSignal.push({
         time:data[i].time,
-        value:MACDRes.signal,
+        value:(MACDRes) ? MACDRes.signal : 0,
       });
 
       returnData.MACDHistogram.push({
         time:data[i].time,
-        value:MACDRes.histogram,
-        color:(MACDRes.histogram > 0) ? 'rgb(38,166,154)' : 'rgb(239,83,80)'
+        value:(MACDRes) ? MACDRes.histogram : 0,
+        color:(MACDRes) ? (MACDRes.histogram > 0) ? 'rgb(38,166,154)' : 'rgb(239,83,80)' : ''
       });
-    }
+    // }
 
-    if(BBRes) {
+    // if(BBRes) {
       returnData.BBLower.push({
         time:data[i].time,
-        value:BBRes.lower,
+        value:(BBRes) ? BBRes.lower : 0,
       });
 
       returnData.BBMiddle.push({
         time:data[i].time,
-        value:BBRes.middle,
+        value:(BBRes) ? BBRes.middle : 0,
       });
 
       returnData.BBUpper.push({
         time:data[i].time,
-        value:BBRes.upper,
+        value:(BBRes) ? BBRes.upper : 0,
       });
-    }
+    // }
 
     i++;
   });
@@ -769,102 +781,10 @@ async function submitBacktest() {
   const backTest = new CryptoBacktest(data);
 
   // Execute a specific strategy
-  const strategy = (data) => {
 
-    let signals = [];
-
-    let maOffset = data.MA12.length - data.MA21.length;
-    let MA12 = [];
-    for (let i = maOffset; i < data.MA12.length; i++) {
-      MA12.push(data.MA12[i].value);
-    }
-
-    let MA21 = [];
-    for (let i = 0; i < data.MA21.length; i++) {
-      MA21.push(data.MA21[i].value);
-    }
-
-    let crossLines = {
-      lineA: MA12,
-      lineB: MA21,
-    };
-
-    let crossUp = new CrossUp(crossLines);
-    let crossDown = new CrossDown(crossLines);
-    let crossUpValues = crossUp.getResult();
-    let crossDownValues = crossDown.getResult();
-
-    let offset = data.candles.length - crossUpValues.length;
-
-    for (let i = 0; i < crossUpValues.length; i++) {
-      if (crossUpValues[i] === true) {
-        signals.push({
-          symbol:data.symbol,
-          time: data.candles[i + offset].time,
-          side: 'BUY',
-          price: data.candles[i + offset].close,
-          type:'CU'
-        })
-      }
-
-      if (crossDownValues[i] === true) {
-        signals.push({
-          symbol:data.symbol,
-          time: data.candles[i + offset].time,
-          side: 'SELL',
-          price: data.candles[i + offset].close,
-          type:'CD'
-        })
-      }
-    }
-
-    let RSIOffset = data.candles.length - data.RSI.length;
-    let overboughtCondition = false;
-    let oversoldCondition = false;
-
-    for (let i = 0; i < data.RSI.length; i++) {
-
-      if (data.RSI[i].value > 80 && !overboughtCondition) {
-
-        signals.push({
-          symbol:data.symbol,
-          time: data.candles[i + RSIOffset].time,
-          side: 'SELL',
-          price: data.candles[i + RSIOffset].close,
-          type:'OB'
-        })
-
-      } else {
-        // overboughtCondition = false;
-      }
-
-      if (data.RSI[i].value < 20 && !oversoldCondition) {
-
-        if (data.RSI[i].value > 80 && !overboughtCondition) {
-
-          signals.push({
-            symbol:data.symbol,
-            time: data.candles[i + RSIOffset].time,
-            side: 'BUY',
-            price: data.candles[i + RSIOffset].close,
-            type:'OS'
-          })
-
-        } else {
-          // oversoldCondition = false;
-        }
-
-      }
-
-    }
-
-    // console.log(signals[0].time)
-
-    return signals;
-  }
 
   //run the actual strategy
-  const result = backTest.executeStrategy(strategy);
+  const result = backTest.executeStrategy(dcaBotStrategy);
 
 
   console.log(result);
@@ -872,9 +792,11 @@ async function submitBacktest() {
   //set data to table
   closedOrdersTableData.value = result.orders;
 
-  finalBalance.value = result.balance;
+  //update statistics
+  statistics.value = result.statistics;
+
   message.info(
-      `Final balance: ${result.balance}`,
+      `Final balance: ${result.statistics.finalBalance}`,
       {
         keepAliveOnHover: true
       }
@@ -917,123 +839,53 @@ async function submitBacktest() {
 }
 
 class CryptoBacktest {
-  constructor(data, initialBalance = 1000) {
+  constructor(data) {
     this.data = data;
-    this.initialBalance = initialBalance;
-    this.balance = initialBalance;
-    this.position = 0; // 0 for no position, 1 for long, -1 for short
     this.orders = [];
-    this.positionSize = this.balance;
-    this.equity = [];
     this.markers = [];
   }
 
   // Add a method to execute a specific trading strategy
   executeStrategy(strategyFunction) {
 
-    const signals = strategyFunction(this.data);
+    const data = strategyFunction(this.data);
 
-    signals.forEach(signal => {
-      if (this.position === 0) {
-        if (signal.side === 'BUY') {
-          this.enterPosition(signal);
-        }
-      }
-
-      if (this.position === 1) {
-        if (signal.side === 'SELL') {
-          this.exitPosition(signal);
-        }
-      }
-
-      //TODO shorting
+    data.signals.forEach(signal => {
+      this.enterPosition(signal);
     });
-
-    //calc balance
-    this.balance = this.initialBalance;
-    let entryCost = 0;
-    let exitCost = 0;
-    let profit = 0;
-    let orders = [];
-
-    for (let i = 0; i < this.data.candles.length; i++) {
-
-      for (let j = 0; j < this.orders.length; j++) {
-
-        if (this.data.candles[i].time === this.orders[j].time) {
-          let order = this.orders[j];
-
-          if (order.side === 'BUY') {
-            entryCost = order.quantity * order.price;
-
-            orders.push({
-              // time:order.time,
-              side: order.side,
-              price:order.price.toFixed(2),
-              quantity:order.quantity.toFixed(2),
-              cost:entryCost.toFixed(2),
-              profit:0,
-              balance: this.balance.toFixed(2),
-            });
-          }
-
-          if (order.side === 'SELL') {
-            exitCost = order.quantity * order.price;
-            profit = exitCost - entryCost;
-            this.balance = this.balance + profit;
-
-            orders.push({
-              // time:order.time,
-              side: order.side,
-              price:order.price.toFixed(2),
-              quantity:order.quantity.toFixed(2),
-              cost:exitCost.toFixed(2),
-              profit:profit.toFixed(2),
-              balance: this.balance.toFixed(2),
-            });
-          }
-        }
-      }
-
-      this.equity.push({
-        time: this.data.candles[i].time,
-        value:this.balance,
-      })
-    }
 
 
     return {
-      balance: this.balance,
-      orders: orders,
-      markers: this.markers,
-      equity: this.equity
+      orders: this.orders,//for table
+      markers: this.markers,//for chart
+      equity: data.equity,
+      statistics: data.statistics,//for myself ceplm
     };
   }
 
   enterPosition(signal) {
+
+    this.orders.push(signal);
+
     if (signal.side === 'BUY') {
-      this.position = 1;
-      const quantity = this.positionSize / signal.price;
-      this.orders.push({ time: signal.time, side: 'BUY', price: signal.price, quantity: quantity });
-      this.markers.push({ time: signal.time, position: 'belowBar', color: '#2196F3', shape: 'arrowUp', text: `BUY ${signal.type}` });
+      this.markers.push({
+        time: signal.time,
+        position: 'belowBar',
+        color: '#2196F3',
+        shape: 'arrowUp',
+        text: `${signal.type} - ${signal.price}`
+      });
     }
 
     if (signal.side === 'SELL') {
-      this.position = -1;
-      const quantity = this.positionSize / signal.price;
-      this.orders.push({ time: signal.time, side: 'SELL', price: signal.price, quantity: quantity });
-      this.markers.push({ time: signal.time, position: 'aboveBar', color: '#e91e63', shape: 'arrowDown', text: `SELL ${signal.type}` });
+      this.markers.push({
+        time: signal.time,
+        position: 'aboveBar',
+        color: '#e91e63',
+        shape: 'arrowDown',
+        text: `${signal.type} - ${signal.price}`
+      });
     }
-  }
-
-  exitPosition(signal) {
-    this.position = 0;
-
-    let lastOrder = this.orders[this.orders.length -1];
-    let quantity = lastOrder.quantity;
-
-    this.orders.push({ time: signal.time, side: signal.side, price: signal.price, quantity: quantity });
-    this.markers.push({ time: signal.time, position: 'aboveBar', color: '#e91e63', shape: 'arrowDown', text: `SELL ${signal.type}` });
   }
 }
 

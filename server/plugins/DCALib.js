@@ -1,7 +1,7 @@
 import {SMA, RSI, CrossUp, CrossDown} from 'technicalindicators';
 import moment from 'moment';
 import { create, all } from 'mathjs';
-import {DcaBotSchema} from "~/server/models/dcaBot.schema";
+import {dcaBotSchema} from "~/server/models/dcaBot.schema";
 const config = {
     number: 'BigNumber',
     precision: 20
@@ -433,26 +433,26 @@ export default defineNitroPlugin((nitroApp) => {
 
             data.logs = [];
 
-            await new DcaBotSchema(data).save()
+            await new dcaBotSchema(data).save()
         },
         startBot: async function(id) {
-            await DcaBotSchema.updateOne({ _id:id }, { status:true });
+            await dcaBotSchema.updateOne({ _id:id }, { status:true });
         },
         stopBot: async function(id) {
-            await DcaBotSchema.updateOne({ _id:id }, { status:false });
+            await dcaBotSchema.updateOne({ _id:id }, { status:false });
         },
         deleteBot: async function(id) {
-            await DcaBotSchema.findByIdAndDelete(id);
+            await dcaBotSchema.findByIdAndDelete(id);
         },
         getBots: async function(){
-            let bots = await DcaBotSchema.find({});
+            let bots = await dcaBotSchema.find({});
             let formattedBots = [];
 
             for (let i = 0; i < bots.length; i++) {
                 let bot = bots[i].toObject();
 
                 let profit = 0;
-                let bots = await DcaBotSchema.find({id:bot._id});
+                let bots = await dcaBotSchema.find({id:bot._id});
                 for (let i = 0; i < bots.length; i++) {
                     profit = profit + bots[i].profit;
                 }

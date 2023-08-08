@@ -9,7 +9,7 @@ function startScheduler(nitroApp) {
     setIntervalAsync(async () => {
 
         // get running bots
-        let runningBots = await DcaBotSchema.find({isRunning: true});
+        let runningBots = await dcaBotSchema.find({isRunning: true});
         for (let bot of runningBots) {
 
             // console.log(bot.activeDeal.status);
@@ -67,7 +67,7 @@ function startScheduler(nitroApp) {
                 }
             }
 
-            await DcaBotSchema.updateOne({_id: bot._id}, bot);
+            await dcaBotSchema.updateOne({_id: bot._id}, bot);
         }
 
 
