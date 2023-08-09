@@ -55,7 +55,7 @@
 definePageMeta({
     middleware: 'auth'
 })
-import { dcaBotStrategy } from '~/strategies/dcaBotStrategy';
+import { dcaBotStrategy } from '~/strategies/customStrategy';
 import { SMA, RSI, MACD, BollingerBands } from '@debut/indicators';
 import { useAppStore } from '~/stores/app.store';
 const app = useAppStore()
@@ -110,7 +110,7 @@ let lastBarTime = null;
 
 const currentTimestamp = Date.now();
 
-let days = 31;
+let days = 5;
 const previousTimestamp = currentTimestamp - days * 24 * 60 * 60 * 1000;
 
 let dateRange = ref([previousTimestamp, currentTimestamp]);
@@ -134,20 +134,20 @@ const closedOrdersTableColumns = [
     key: "price"
   },
   {
-    title: "Quantity",
-    key: "quantity"
+    title: "Amount",
+    key: "amount"
   },
   {
     title: "Cost",
     key: "cost"
   },
   {
-    title: "Fees",
-    key: "fees"
-  },
-  {
     title: "Profit",
     key: "profit"
+  },
+  {
+    title: "Fees",
+    key: "fees"
   },
   {
     title: "Balance",
@@ -775,28 +775,21 @@ async function submitBacktest() {
 
   //format data
   let data = formatCandlesAndCalcIndicators(candlesData, false);
-  data['symbol'] = currentSymbol;
-
-  //init backTest
-  const backTest = new CryptoBacktest(data);
-
-  // Execute a specific strategy
+  data['symbol'] = currentSymbol.value;
 
 
-  //run the actual strategy
-  const result = backTest.executeStrategy(dcaBotStrategy);
+  let backtester = new CryptoBacktest(data);
+  let strategyResult = backtester.executeStrategy(dcaBotStrategy);
 
-
-  console.log(result);
 
   //set data to table
-  closedOrdersTableData.value = result.orders;
+  closedOrdersTableData.value = strategyResult.orders;
 
   //update statistics
-  statistics.value = result.statistics;
+  statistics.value = strategyResult.statistics;
 
   message.info(
-      `Final balance: ${result.statistics.finalBalance}`,
+      `Final balance: ${strategyResult.statistics.finalBalance}`,
       {
         keepAliveOnHover: true
       }
@@ -813,18 +806,18 @@ async function submitBacktest() {
   chartInstance.BBLowerSeries.setData(data.BBLower);
   chartInstance.BBMiddleSeries.setData(data.BBMiddle);
   chartInstance.BBUpperSeries.setData(data.BBUpper);
-  chartInstance.candlesSeries.setMarkers(result.markers);//markers
+  chartInstance.candlesSeries.setMarkers(strategyResult.markers);//markers
 
   rsiChartInstance.RSISeries.setData(data.RSI);
-  rsiChartInstance.RSISeries.setMarkers(result.markers);//markers
+  rsiChartInstance.RSISeries.setMarkers(strategyResult.markers);//markers
 
   macdChartInstance.MACDSeries.setData(data.MACD);
   macdChartInstance.MACDSignalSeries.setData(data.MACDSignal);
   macdChartInstance.MACDHistogramSeries.setData(data.MACDHistogram);
-  macdChartInstance.MACDSeries.setMarkers(result.markers);//markers
+  macdChartInstance.MACDSeries.setMarkers(strategyResult.markers);//markers
 
-  equityChartInstance.equityLineSeries.setData(result.equity);
-  equityChartInstance.equityLineSeries.setMarkers(result.markers);//markers
+  equityChartInstance.equityLineSeries.setData(strategyResult.equity);
+  equityChartInstance.equityLineSeries.setMarkers(strategyResult.markers);//markers
 
 
 
@@ -873,7 +866,7 @@ class CryptoBacktest {
         position: 'belowBar',
         color: '#2196F3',
         shape: 'arrowUp',
-        text: `${signal.type} - ${signal.price}`
+        text: `${signal.type}`
       });
     }
 
@@ -883,7 +876,7 @@ class CryptoBacktest {
         position: 'aboveBar',
         color: '#e91e63',
         shape: 'arrowDown',
-        text: `${signal.type} - ${signal.price}`
+        text: `${signal.type}`
       });
     }
   }
