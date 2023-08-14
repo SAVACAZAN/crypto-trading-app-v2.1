@@ -29,9 +29,12 @@
 
 
     <div id="chart" style="height:400px"></div>
-    <div id="rsi" style="height:100px"></div>
-    <div id="macd" style="height:100px"></div>
-    <div id="equity" style="height:100px"></div>
+    <div id="supertrend" style="height:400px"></div>
+    <div id="atr" style="height:400px"></div>
+    <div id="rsi" style="height:400px"></div>
+    <div id="adx" style="height:400px"></div>
+    <div id="macd" style="height:400px"></div>
+    <div id="equity" style="height:400px"></div>
   </n-card>
 
   <n-card>
@@ -55,8 +58,8 @@
 definePageMeta({
     middleware: 'auth'
 })
-import { dcaBotStrategy } from '~/strategies/customStrategy';
-import { SMA, RSI, MACD, BollingerBands } from '@debut/indicators';
+import { suportResistanceStrategy } from '~/strategies/suportResistanceStrategy';
+import { SMA, RSI, ADX, MACD, BollingerBands, SuperTrend, ATR } from '@debut/indicators';
 import { useAppStore } from '~/stores/app.store';
 const app = useAppStore()
 let userID = useCookie('userID');
@@ -80,10 +83,25 @@ let chartInstance = {
   BBLowerSeries: '',
   BBMiddleSeries: '',
   BBUpperSeries: '',
+  SuperTrendUpperSeries:'',
+  SuperTrendLowerSeries:'',
+  SuperTrendSuperTrendSeries:'',
+  SuperTrendDirectionSeries:'',
+};
+
+let superTrendChartInstance = {
+  SuperTrendUpperSeries:'',
+  SuperTrendLowerSeries:'',
+  SuperTrendSuperTrendSeries:'',
+  SuperTrendDirectionSeries:'',
 };
 
 let rsiChartInstance = {
   RSISeries: ''
+};
+
+let adxChartInstance = {
+  ADXSeries: ''
 };
 
 let macdChartInstance = {
@@ -96,12 +114,16 @@ let equityChartInstance = {
   equityLineSeries: ''
 };
 
-let chartIndicators = ['volume', 'MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'RSI', 'MACD', 'BB', 'equity'];
-let selectedIndicators = ref(['volume', 'MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'MA50', 'RSI', 'MACD', 'equity']);
+let atrChartInstance = {
+  ATRSeries: ''
+};
+
+let chartIndicators = ['volume', 'MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'RSI', 'ADX', 'MACD', 'BB', 'supertrend', 'ATR', 'equity'];
+let selectedIndicators = ref(['MA12', 'MA21', 'MA50', 'MA100', 'MA200', 'ADX']);
 
 let chartTimeframes = app.getAvailableTimeframes;
 
-let selectedTimeframe = ref(['1m']);
+let selectedTimeframe = ref(['1h']);
 
 let timeframeData = null;
 
@@ -110,7 +132,7 @@ let lastBarTime = null;
 
 const currentTimestamp = Date.now();
 
-let days = 5;
+let days = 1800;
 const previousTimestamp = currentTimestamp - days * 24 * 60 * 60 * 1000;
 
 let dateRange = ref([previousTimestamp, currentTimestamp]);
@@ -169,15 +191,18 @@ let SMA50Indicator = new SMA(50);
 let SMA100Indicator = new SMA(100);
 let SMA200Indicator = new SMA(200);
 let RSIIndicator = new RSI(14);
+let ADXIndicator = new ADX();
 let MACDIndicator = new MACD(12, 26, 9);
 let BBIndicator = new BollingerBands(20, 2);
+let SuperTrendIndicator = new SuperTrend();
+let ATRIndicator = new ATR(30);
 
 onMounted(async () => {
   const { $lightweightCharts } = useNuxtApp()
 
   //init chart lib
   chartInstance = $lightweightCharts.createChart('chart', {
-    crosshairMode: 0,
+    mode: 'Normal',
     autoSize: true,
     timeScale: {
       timeVisible: true,
@@ -230,6 +255,7 @@ onMounted(async () => {
       top: 0.8,
       bottom: 0,
     },
+    visible:false
   });
 
   //add MA12 series
@@ -369,6 +395,51 @@ onMounted(async () => {
     lineWidth:1
   });
 
+  //adx chart
+  adxChartInstance = $lightweightCharts.createChart('adx', {
+    autoSize: true,
+    timeScale: {
+      timeVisible: true,
+    },
+    rightPriceScale: {
+      scaleMargins: {
+        top: 0.3,
+        bottom: 0.25,
+      },
+    },
+    layout: {
+      backgroundColor: '#18181c',
+      lineColor: '#2B2B43',
+      textColor: '#D9D9D9',
+    },
+    watermark: {
+      color: 'rgba(0, 0, 0, 0)',
+    },
+    crossHair: {
+      color: '#758696',
+    },
+    grid: {
+      vertLines: {
+        color: '#2B2B43',
+      },
+      horzLines: {
+        color: '#363C4E',
+      },
+    },
+  });
+
+  //add ADX series
+  adxChartInstance.ADXSeries = adxChartInstance.addLineSeries({
+    // priceScaleId: 'rsi',
+    // priceLineVisible: false,
+    // lastValueVisible: false,
+    // scaleMargins: {
+    //   top: 0.8,
+    //   bottom: 0,
+    // },
+    lineWidth:1
+  });
+
   //macd chart
   macdChartInstance = $lightweightCharts.createChart('macd', {
     autoSize: true,
@@ -476,28 +547,186 @@ onMounted(async () => {
     lineWidth:1
   });
 
+
+  atrChartInstance = $lightweightCharts.createChart('atr', {
+    autoSize: true,
+    timeScale: {
+      timeVisible: true,
+    },
+    rightPriceScale: {
+      scaleMargins: {
+        top: 0.3,
+        bottom: 0.25,
+      },
+    },
+    layout: {
+      backgroundColor: '#18181c',
+      lineColor: '#2B2B43',
+      textColor: '#D9D9D9',
+    },
+    watermark: {
+      color: 'rgba(0, 0, 0, 0)',
+    },
+    crossHair: {
+      color: '#758696',
+    },
+    grid: {
+      vertLines: {
+        color: '#2B2B43',
+      },
+      horzLines: {
+        color: '#363C4E',
+      },
+    },
+  });
+
+  atrChartInstance.ATRSeries = atrChartInstance.addLineSeries({
+    color:'#ffffff',
+    lineWidth:1,
+    // priceLineVisible: false,
+    // lastValueVisible: false,
+    // rightPriceScale: {
+    //   visible: false,
+    // },
+  });
+
+
+
+  superTrendChartInstance = $lightweightCharts.createChart('supertrend', {
+    autoSize: true,
+    timeScale: {
+      timeVisible: true,
+    },
+    rightPriceScale: {
+      scaleMargins: {
+        top: 0.3,
+        bottom: 0.25,
+      },
+    },
+    layout: {
+      backgroundColor: '#18181c',
+      lineColor: '#2B2B43',
+      textColor: '#D9D9D9',
+    },
+    watermark: {
+      color: 'rgba(0, 0, 0, 0)',
+    },
+    crossHair: {
+      color: '#758696',
+    },
+    grid: {
+      vertLines: {
+        color: '#2B2B43',
+      },
+      horzLines: {
+        color: '#363C4E',
+      },
+    },
+  });
+
+  superTrendChartInstance.SuperTrendUpperSeries = superTrendChartInstance.addLineSeries({
+    // priceScaleId: 'bb',
+    color:'#ccb6b6',
+    lineWidth:1,
+    // priceLineVisible: false,
+    // lastValueVisible: false,
+    // rightPriceScale: {
+    //   visible: false,
+    // },
+  });
+  superTrendChartInstance.SuperTrendLowerSeries = superTrendChartInstance.addLineSeries({
+    // priceScaleId: 'bb',
+    color:'#aeaedc',
+    lineWidth:1,
+    // priceLineVisible: false,
+    // lastValueVisible: false,
+    // rightPriceScale: {
+    //   visible: false,
+    // },
+  });
+  superTrendChartInstance.SuperTrendSuperTrendSeries = superTrendChartInstance.addLineSeries({
+    // priceScaleId: 'bb',
+    color:'#bbf800',
+    lineWidth:1,
+    // priceLineVisible: false,
+    // lastValueVisible: false,
+    // rightPriceScale: {
+    //   visible: false,
+    // },
+  });
+  superTrendChartInstance.SuperTrendDirectionSeries = superTrendChartInstance.addHistogramSeries({
+    priceFormat: {
+      type: 'volume',
+    },
+    priceScaleId: 'volume',
+    priceLineVisible: false,
+    scaleMargins: {
+      top: 0.8,
+      bottom: 0,
+    },
+  });
+
   chartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
     rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
     macdChartInstance.timeScale().setVisibleLogicalRange(range);
     equityChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
+  });
+
+  atrChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    chartInstance.timeScale().setVisibleLogicalRange(range);
+    rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
+    macdChartInstance.timeScale().setVisibleLogicalRange(range);
+    equityChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
   });
 
   rsiChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
     chartInstance.timeScale().setVisibleLogicalRange(range);
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
     macdChartInstance.timeScale().setVisibleLogicalRange(range);
     equityChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
+  });
+
+  adxChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    chartInstance.timeScale().setVisibleLogicalRange(range);
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
+    rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    macdChartInstance.timeScale().setVisibleLogicalRange(range);
+    equityChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
   });
 
   macdChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
     chartInstance.timeScale().setVisibleLogicalRange(range);
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
     rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
     equityChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
   });
 
   equityChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
     chartInstance.timeScale().setVisibleLogicalRange(range);
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
     rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
     macdChartInstance.timeScale().setVisibleLogicalRange(range);
+    superTrendChartInstance.timeScale().setVisibleLogicalRange(range);
+  });
+
+  superTrendChartInstance.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    chartInstance.timeScale().setVisibleLogicalRange(range);
+    atrChartInstance.timeScale().setVisibleLogicalRange(range);
+    rsiChartInstance.timeScale().setVisibleLogicalRange(range);
+    adxChartInstance.timeScale().setVisibleLogicalRange(range);
+    macdChartInstance.timeScale().setVisibleLogicalRange(range);
+    equityChartInstance.timeScale().setVisibleLogicalRange(range);
   });
 
 })
@@ -549,12 +778,19 @@ async function updateAvailableIndicators(indicator) {
     });
   }
 
+  /*RSI*/
   if (indicator === 'RSI') {
     rsiChartInstance.RSISeries.applyOptions({
       visible: selectedIndicators.value.includes(indicator)
     });
   }
 
+  /*ADX*/
+  if (indicator === 'ADX') {
+    rsiChartInstance.ADXSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+  }
 
   /*MACD*/
   if (indicator === 'MACD') {
@@ -583,6 +819,30 @@ async function updateAvailableIndicators(indicator) {
     });
   }
 
+  /*SuperTrend*/
+  if (indicator === 'supertrend') {
+    superTrendChartInstance.SuperTrendLowerSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+    superTrendChartInstance.SuperTrendUpperSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+    superTrendChartInstance.SuperTrendSuperTrendSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+    superTrendChartInstance.SuperTrendDirectionSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+
+  }
+
+  /*ATR*/
+  if (indicator === 'ATR') {
+    atrChartInstance.ATRSeries.applyOptions({
+      visible: selectedIndicators.value.includes(indicator)
+    });
+  }
+
   /*Equity*/
   if (indicator === 'equity') {
     equityChartInstance.equityLineSeries.applyOptions({
@@ -602,12 +862,18 @@ function formatCandlesAndCalcIndicators(data, live = false) {
     MA100:[],
     MA200:[],
     RSI:[],
+    ADX:[],
     MACD:[],
     MACDSignal:[],
     MACDHistogram:[],
     BBLower:[],
     BBMiddle:[],
     BBUpper:[],
+    SuperTrendUpper:[],
+    SuperTrendLower:[],
+    SuperTrendSuperTrend:[],
+    SuperTrendDirection:[],
+    ATR:[],
     close:[]
   }
 
@@ -632,7 +898,7 @@ function formatCandlesAndCalcIndicators(data, live = false) {
   // console.log(prices);
 
   let i = 0;
-  returnData.close.forEach(price => {
+  returnData.candles.forEach(candle => {
 
     // console.log('prices??: ', price);
 
@@ -642,108 +908,143 @@ function formatCandlesAndCalcIndicators(data, live = false) {
     let SMA100Res = 0;
     let SMA200Res = 0;
     let RSIRes = 0
+    let ADXRes = 0
     let MACDRes = 0;
     let BBRes = 0;
+    let SuperTrendRes = 0;
+    let ATRRes = 0;
 
     if (live) {
 
-      SMA12Res  = SMA12Indicator.momentValue(price);
-      SMA21Res  = SMA21Indicator.momentValue(price);
-      SMA50Res  = SMA50Indicator.momentValue(price);
-      SMA100Res = SMA100Indicator.momentValue(price);
-      SMA200Res = SMA200Indicator.momentValue(price);
-      RSIRes    = RSIIndicator.momentValue(price);
-      MACDRes   = MACDIndicator.momentValue(price);
-      BBRes     = BBIndicator.momentValue(price);
+      SMA12Res  = SMA12Indicator.momentValue(candle.close);
+      SMA21Res  = SMA21Indicator.momentValue(candle.close);
+      SMA50Res  = SMA50Indicator.momentValue(candle.close);
+      SMA100Res = SMA100Indicator.momentValue(candle.close);
+      SMA200Res = SMA200Indicator.momentValue(candle.close);
+      RSIRes    = RSIIndicator.momentValue(candle.close);
+      ADXRes    = ADXIndicator.momentValue(candle.high, candle.low, candle.close);
+      MACDRes   = MACDIndicator.momentValue(candle.close);
+      BBRes     = BBIndicator.momentValue(candle.close);
+      SuperTrendRes = SuperTrendIndicator.momentValue(candle.high, candle.low, candle.close);
+      ATRRes = ATRIndicator.momentValue(candle.high, candle.low);
 
     } else {
 
-      SMA12Res  = SMA12Indicator.nextValue(price);
-      SMA21Res  = SMA21Indicator.nextValue(price);
-      SMA50Res  = SMA50Indicator.nextValue(price);
-      SMA100Res = SMA100Indicator.nextValue(price);
-      SMA200Res = SMA200Indicator.nextValue(price);
-      RSIRes    = RSIIndicator.nextValue(price);
-      MACDRes   = MACDIndicator.nextValue(price);
-      BBRes     = BBIndicator.nextValue(price);
+      SMA12Res  = SMA12Indicator.nextValue(candle.close);
+      SMA21Res  = SMA21Indicator.nextValue(candle.close);
+      SMA50Res  = SMA50Indicator.nextValue(candle.close);
+      SMA100Res = SMA100Indicator.nextValue(candle.close);
+      SMA200Res = SMA200Indicator.nextValue(candle.close);
+      RSIRes    = RSIIndicator.nextValue(candle.close);
+      ADXRes    = ADXIndicator.nextValue(candle.high, candle.low, candle.close);
+      MACDRes   = MACDIndicator.nextValue(candle.close);
+      BBRes     = BBIndicator.nextValue(candle.close);
+      SuperTrendRes = SuperTrendIndicator.nextValue(candle.high, candle.low, candle.close);
+      ATRRes = ATRIndicator.nextValue(candle.high, candle.low, candle.close);
     }
 
-    // if(SMA12Res) {
-      returnData.MA12.push({
-        time:data[i].time,
-        value:(SMA12Res) ? SMA12Res : 0,
-      });
-    // }
+    //(SMA12Res)
+    returnData.MA12.push({
+      time:data[i].time,
+      value:(SMA12Res) ? SMA12Res : null,
+    });
 
-    // if(SMA21Res) {
-      returnData.MA21.push({
-        time:data[i].time,
-        value:(SMA21Res) ? SMA21Res : 0,
-      });
-    // }
+    //(SMA21Res)
+    returnData.MA21.push({
+      time:data[i].time,
+      value:(SMA21Res) ? SMA21Res : null,
+    });
 
-    // if(SMA50Res) {
-      returnData.MA50.push({
-        time:data[i].time,
-        value:(SMA50Res) ? SMA50Res : 0,
-      });
-    // }
+    //(SMA50Res)
+    returnData.MA50.push({
+      time:data[i].time,
+      value:(SMA50Res) ? SMA50Res : null,
+    });
 
-    // if(SMA100Res) {
-      returnData.MA100.push({
-        time:data[i].time,
-        value:(SMA100Res) ? SMA100Res : 0,
-      });
-    // }
+    //(SMA100Res)
+    returnData.MA100.push({
+      time:data[i].time,
+      value:(SMA100Res) ? SMA100Res : null,
+    });
 
-    // if(SMA200Res) {
-      returnData.MA200.push({
-        time:data[i].time,
-        value:(SMA200Res) ? SMA200Res : 0,
-      });
-    // }
 
-    // if(RSIRes) {
-      returnData.RSI.push({
-        time:data[i].time,
-        value:(RSIRes) ? RSIRes : 0,
-      });
-    // }
+    //(SMA200Res)
+    returnData.MA200.push({
+      time:data[i].time,
+      value:(SMA200Res) ? SMA200Res : null,
+    });
 
-    // if(MACDRes) {
-      returnData.MACD.push({
-        time:data[i].time,
-        value:(MACDRes) ? MACDRes.macd : 0,
-      });
+    //(RSIRes)
+    returnData.RSI.push({
+      time:data[i].time,
+      value:(RSIRes) ? RSIRes : null,
+    });
 
-      returnData.MACDSignal.push({
-        time:data[i].time,
-        value:(MACDRes) ? MACDRes.signal : 0,
-      });
 
-      returnData.MACDHistogram.push({
-        time:data[i].time,
-        value:(MACDRes) ? MACDRes.histogram : 0,
-        color:(MACDRes) ? (MACDRes.histogram > 0) ? 'rgb(38,166,154)' : 'rgb(239,83,80)' : ''
-      });
-    // }
+    //(ADXRes)
+    returnData.ADX.push({
+      time:data[i].time,
+      value:(ADXRes) ? ADXRes.adx : null,
+    });
 
-    // if(BBRes) {
-      returnData.BBLower.push({
-        time:data[i].time,
-        value:(BBRes) ? BBRes.lower : 0,
-      });
+    //(MACDRes)
+    returnData.MACD.push({
+      time:data[i].time,
+      value:(MACDRes) ? MACDRes.macd : null,
+    });
 
-      returnData.BBMiddle.push({
-        time:data[i].time,
-        value:(BBRes) ? BBRes.middle : 0,
-      });
+    returnData.MACDSignal.push({
+      time:data[i].time,
+      value:(MACDRes) ? MACDRes.signal : null,
+    });
 
-      returnData.BBUpper.push({
-        time:data[i].time,
-        value:(BBRes) ? BBRes.upper : 0,
-      });
-    // }
+    returnData.MACDHistogram.push({
+      time:data[i].time,
+      value:(MACDRes) ? MACDRes.histogram : null,
+      color:(MACDRes) ? (MACDRes.histogram > 0) ? 'rgb(38,166,154)' : 'rgb(239,83,80)' : ''
+    });
+
+
+    //(BBRes)
+    returnData.BBLower.push({
+      time:data[i].time,
+      value:(BBRes) ? BBRes.lower : null,
+    });
+
+    returnData.BBMiddle.push({
+      time:data[i].time,
+      value:(BBRes) ? BBRes.middle : null,
+    });
+
+    returnData.BBUpper.push({
+      time:data[i].time,
+      value:(BBRes) ? BBRes.upper : null,
+    });
+
+
+    //(SuperTrendRes)
+    returnData.SuperTrendUpper.push({
+      time:data[i].time,
+      value:(SuperTrendRes) ? SuperTrendRes.upper : null,
+    });
+    returnData.SuperTrendLower.push({
+      time:data[i].time,
+      value:(SuperTrendRes) ? SuperTrendRes.lower : null,
+    });
+    returnData.SuperTrendSuperTrend.push({
+      time:data[i].time,
+      value:(SuperTrendRes) ? SuperTrendRes.superTrend : null,
+    });
+    returnData.SuperTrendDirection.push({
+      time:data[i].time,
+      value:(SuperTrendRes) ? SuperTrendRes.direction : null,
+    });
+
+    //(ATRREs)
+    returnData.ATR.push({
+      time:data[i].time,
+      value:(ATRRes) ? ATRRes : null,
+    });
 
     i++;
   });
@@ -779,7 +1080,7 @@ async function submitBacktest() {
 
 
   let backtester = new CryptoBacktest(data);
-  let strategyResult = backtester.executeStrategy(dcaBotStrategy);
+  let strategyResult = await backtester.executeStrategy(suportResistanceStrategy);
 
 
   //set data to table
@@ -788,12 +1089,14 @@ async function submitBacktest() {
   //update statistics
   statistics.value = strategyResult.statistics;
 
-  message.info(
-      `Final balance: ${strategyResult.statistics.finalBalance}`,
-      {
-        keepAliveOnHover: true
-      }
-  )
+  // message.info(
+  //     `Final balance: ${strategyResult.statistics.finalBalance}`,
+  //     {
+  //       keepAliveOnHover: true
+  //     }
+  // )
+
+  console.log(data);
 
   //set data to chart
   chartInstance.candlesSeries.setData(data.candles);
@@ -811,6 +1114,9 @@ async function submitBacktest() {
   rsiChartInstance.RSISeries.setData(data.RSI);
   rsiChartInstance.RSISeries.setMarkers(strategyResult.markers);//markers
 
+  adxChartInstance.ADXSeries.setData(data.ADX);
+  adxChartInstance.ADXSeries.setMarkers(strategyResult.markers);//markers
+
   macdChartInstance.MACDSeries.setData(data.MACD);
   macdChartInstance.MACDSignalSeries.setData(data.MACDSignal);
   macdChartInstance.MACDHistogramSeries.setData(data.MACDHistogram);
@@ -819,7 +1125,14 @@ async function submitBacktest() {
   equityChartInstance.equityLineSeries.setData(strategyResult.equity);
   equityChartInstance.equityLineSeries.setMarkers(strategyResult.markers);//markers
 
+  atrChartInstance.ATRSeries.setData(data.ATR);
+  atrChartInstance.ATRSeries.setMarkers(strategyResult.markers);//markers
 
+  superTrendChartInstance.SuperTrendLowerSeries.setData(data.SuperTrendLower);
+  superTrendChartInstance.SuperTrendUpperSeries.setData(data.SuperTrendUpper);
+  superTrendChartInstance.SuperTrendSuperTrendSeries.setData(data.SuperTrendSuperTrend);
+  superTrendChartInstance.SuperTrendDirectionSeries.setData(data.SuperTrendDirection);
+  superTrendChartInstance.SuperTrendSuperTrendSeries.setMarkers(strategyResult.markers);//markers
 
 
   //set last bar tracker
@@ -839,46 +1152,16 @@ class CryptoBacktest {
   }
 
   // Add a method to execute a specific trading strategy
-  executeStrategy(strategyFunction) {
+  async executeStrategy(strategyFunction) {
 
-    const data = strategyFunction(this.data);
-
-    data.signals.forEach(signal => {
-      this.enterPosition(signal);
-    });
-
+    const data = await strategyFunction(this.data);
 
     return {
-      orders: this.orders,//for table
-      markers: this.markers,//for chart
+      orders: data.orders,//for table
+      markers: data.markers,//for chart
       equity: data.equity,
       statistics: data.statistics,//for myself ceplm
     };
-  }
-
-  enterPosition(signal) {
-
-    this.orders.push(signal);
-
-    if (signal.side === 'BUY') {
-      this.markers.push({
-        time: signal.time,
-        position: 'belowBar',
-        color: '#2196F3',
-        shape: 'arrowUp',
-        text: `${signal.type}`
-      });
-    }
-
-    if (signal.side === 'SELL') {
-      this.markers.push({
-        time: signal.time,
-        position: 'aboveBar',
-        color: '#e91e63',
-        shape: 'arrowDown',
-        text: `${signal.type}`
-      });
-    }
   }
 }
 
