@@ -41,7 +41,18 @@ const openOrdersTableColumns = [
     key: "remaining"
   },
   {
-    title: "Actions",
+    title: function(row){
+      return h(
+          NButton,
+          {
+            strong: true,
+            tertiary: true,
+            size: "small",
+            onClick: () => cancelAllOrders(row)
+          },
+          { default: () => "Cancel all" }
+      );
+    },
     key: "actions",
     render(row) {
       return h(
@@ -126,6 +137,14 @@ async function cancelOrder(row) {
     meta: `Cancelled ${data.exchange} limit ${row.side} order for ${row.amount} ${base} by using ${quote} at price ${row.price}`,
     duration: 2500,
   });
+}
+
+async function cancelAllOrders(row) {
+  let orders = openOrdersTableData.value;
+
+  for (const order of orders) {
+    await cancelOrder(order);
+  }
 }
 
 async function fetchOrdersPooling() {
