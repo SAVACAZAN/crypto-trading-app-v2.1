@@ -9,25 +9,8 @@ let currentExchange = ref(app.getUserSelectedExchange);
 let currentSymbol = ref(app.getUserSelectedMarket);
 
 
-const orderBookTablePagination = false;
-const orderBookTableColumns = [
-  {
-    title: "Price",
-    key: "price"
-  },
-  {
-    title: "Quantity",
-    key: "quantity"
-  },
-  {
-    title: "Total",
-    key: "total"
-  },
-];
-
-const bidsTableData = ref([]);
-const asksTableData = ref([]);
-
+const bidsData = ref([]);
+const asksData = ref([]);
 
 let orderBookInterval = null;
 
@@ -59,7 +42,7 @@ async function fetchOrderBookPooling() {
         total: (orderBook.data.bids[i][1] * orderBook.data.bids[i][0]).toFixed(2),
       })
     }
-    bidsTableData.value = bids;
+    bidsData.value = bids;
 
     for (let i = 0; i < orderBook.data.asks.length; i++) {
       asks.push({
@@ -68,7 +51,7 @@ async function fetchOrderBookPooling() {
         total: (orderBook.data.asks[i][1] * orderBook.data.asks[i][0]).toFixed(2),
       })
     }
-    asksTableData.value = asks;
+    asksData.value = asks;
   }
 }
 
@@ -76,24 +59,68 @@ async function fetchOrderBookPooling() {
 </script>
 
 <template>
-  <n-card style="margin-bottom: 10px;">
-    <n-data-table
-        :columns="orderBookTableColumns"
-        :data="bidsTableData"
-        :pagination="orderBookTablePagination"
-        :max-height="150"
-        size="small"
-    />
-    <n-data-table
-        :columns="orderBookTableColumns"
-        :data="asksTableData"
-        :pagination="orderBookTablePagination"
-        :max-height="150"
-        size="small"
-    />
+  <n-card>
+    <n-space vertical :size="12">
+      <div class="asks box">
+        <div class="row" v-for="row in asksData">
+          <div class="col">
+            {{row.price}}
+          </div>
+          <div class="col">
+            {{row.quantity}}
+          </div>
+          <div class="col">
+            {{row.total}}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col labels">Price</div>
+        <div class="col labels">Quantity</div>
+        <div class="col labels">Total</div>
+      </div>
+      <div class="bids box">
+        <div v-for="row in bidsData" class="row">
+          <div class="col">
+            {{row.price}}
+          </div>
+          <div class="col">
+            {{row.quantity}}
+          </div>
+          <div class="col">
+            {{row.total}}
+          </div>
+        </div>
+      </div>
+    </n-space>
   </n-card>
 </template>
 
 <style scoped>
+.box {
+  max-height:150px;
+  overflow-y: scroll;
+}
 
+.asks {
+  flex-direction: column-reverse;
+  display: flex;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.col {
+  font-size:12px;
+  width:33.333%;
+}
+
+.labels {
+  font-size:16px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
 </style>
