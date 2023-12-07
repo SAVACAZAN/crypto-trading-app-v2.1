@@ -52,8 +52,15 @@ class CCXTW {
         return ccxt.exchanges;
     }
 
-    async fetchExchangeInstance(exchange) {
-        let instance = new ccxt[exchange];
+    async fetchExchangeInstance(exchange, keys) {
+
+        let exKeys = [];
+
+        for (let i = 0; i < keys.length; i++) {
+            exKeys[keys[i].key] = keys[i].value;
+        }
+
+        let instance = new ccxt[exchange] (exKeys);
         await instance.loadMarkets();
         return instance;
     }

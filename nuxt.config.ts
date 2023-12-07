@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   ],
 
   mongoose: {
-    uri: 'mongodb://127.0.0.1:27017/crypto-app',
+    uri: 'mongodb://127.0.0.1:27017/crypto-app-github',
     options: {},
     modelsDir: 'models',
   },

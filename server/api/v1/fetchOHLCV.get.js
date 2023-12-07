@@ -39,6 +39,8 @@ export default defineEventHandler(async (event) => {
             })
             .exec();
 
+            console.log('1?: ', candles);
+
             if(candles.length) {
                 console.log('in candles', candles.length);
 
@@ -62,11 +64,11 @@ export default defineEventHandler(async (event) => {
 
             } else {
                 const candles = await nitroApp.ccxtw.fetchOHLCV(query.userID, query.exchange, query.symbol, query.timeframe, since, query.limit);
-                console.log('out candles', candles.data.length);
+                console.log('out candles', candles.data);
 
                 // const message =  '[' + query.symbol + '] Fetched ' + candles.data.length + ' ' + query.timeframe + ' candles since ' + await nitroApp.ccxtw.iso8601(query.userID, query.exchange, since);
 
-                if (candles.data.length) {
+                if (candles.data) {
 
                     const first = candles.data[0];
                     const last = candles.data[candles.data.length - 1];

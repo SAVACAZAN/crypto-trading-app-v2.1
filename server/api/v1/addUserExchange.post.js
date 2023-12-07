@@ -1,4 +1,5 @@
 import {userExchangesSchema} from "~/server/models/userExchanges.schema";
+import {dcaBotSchema} from "~/server/models/dcaBot.schema";
 
 export default defineEventHandler(async (event) => {
     const nitroApp = useNitroApp()
@@ -8,7 +9,21 @@ export default defineEventHandler(async (event) => {
     await userExchangesSchema.updateMany({userID:data.userID}, {isSelectedExchange:false});
 
     //get exchange instance
-    let exchangeInstance = await nitroApp.ccxtw.fetchExchangeInstance(data.exchange);
+    let exchangeInstance = await nitroApp.ccxtw.fetchExchangeInstance(data.exchange, data.apiKeys);
+
+    //create new
+    let newUserExchange = {
+        userID: data.userID,
+        exchange: data.exchange,
+        timeframes:exchangeInstance.timeframes,
+        isSelectedExchange:true,
+        markets:[],
+        selectedMarket:'',
+        apiKeys:data.apiKeys,
+    };
+
+    //push data to db
+    let newUserResp = await new userExchangesSchema(newUserExchange).save()
 
     //get exchange markets
     const marketsRaw = await $fetch('/api/v1/fetchMarkets', {
@@ -40,22 +55,19 @@ export default defineEventHandler(async (event) => {
         }
     }
 
-    let userExchange = {
-        userID: data.userID,
-        exchange: data.exchange,
-        timeframes:exchangeInstance.timeframes,
-        isSelectedExchange:true,
+
+    //update user data to db
+    await userExchangesSchema.updateOne({ userID:data.userID }, {
         markets:markets,
         selectedMarket:markets[0],
-        apiKeys:data.apiKeys,
-    };
-
-
-    //push data to db
-    let resp = await new userExchangesSchema(userExchange).save()
+    });
 
     return {
-        data: resp
+        data: {
+            id: data.userID,
+            exchange: data.exchange,
+            apiKeys: data.apiKeys,
+        }
     }
 })
 
