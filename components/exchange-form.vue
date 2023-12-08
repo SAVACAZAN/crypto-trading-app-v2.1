@@ -103,11 +103,11 @@ async function createOrder(side, type){
 }
 
 function updateBuyPrice(val) {
-  console.log('changing updateBuyPrice ', val);
+  // console.log('changing updateBuyPrice ', val);
 }
 
 function updateBuySize(val) {
-  console.log('changing updateBuySize ', val);
+  // console.log('changing updateBuySize ', val);
   if (buyPrice.value) {
     buyTotal.value = buySize.value * buyPrice.value;
   }
@@ -126,7 +126,7 @@ watch(buyTotalPercent, (newVal, oldVal) => {
 });
 
 function updateBuyTotal(val) {
-  console.log('changing updateBuyTotal ', val);
+  // console.log('changing updateBuyTotal ', val);
   if (buyPrice.value) {
     buySize.value = buyTotal.value / buyPrice.value;
   }
@@ -139,11 +139,11 @@ function updateBuyTotal(val) {
 
 
 function updateSellPrice(val) {
-  console.log('changing updateSellPrice ', val);
+  // console.log('changing updateSellPrice ', val);
 }
 
 function updateSellSize(val) {
-  console.log('changing updateSellSize ', val);
+  // console.log('changing updateSellSize ', val);
   if (sellPrice.value) {
     sellTotal.value = sellSize.value * sellPrice.value;
   }
@@ -162,7 +162,7 @@ watch(sellTotalPercent, (newVal, oldVal) => {
 });
 
 function updateSellTotal(val) {
-  console.log('changing updateBuyTotal ', val);
+  // console.log('changing updateBuyTotal ', val);
   if (sellPrice.value) {
     sellSize.value = sellTotal.value / sellPrice.value;
   }

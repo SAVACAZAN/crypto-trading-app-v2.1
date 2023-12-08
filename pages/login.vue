@@ -95,7 +95,7 @@ function handleValidateButtonClick(e) {
                 meta: `Check console for error code and message!`,
                 duration: 2500,
               });
-              console.log(resp);
+              // console.log(resp);
             }
 
 
@@ -105,12 +105,12 @@ function handleValidateButtonClick(e) {
               meta: `Check console for error code and message!`,
               duration: 2500,
             });
-            console.log(e);
+            // console.log(e);
           }
 
 
         } else {
-          console.log(errors);
+          // console.log(errors);
           // message.error("Invalid");
         }
       }

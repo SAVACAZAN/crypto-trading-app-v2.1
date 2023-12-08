@@ -3,7 +3,7 @@ import {gridBotSchema} from "~/server/models/gridBot.schema";
 
 export default defineNitroPlugin((nitroApp) => {
     startScheduler(nitroApp)
-    console.log('GriD Bot Engine Loaded...')
+    // console.log('GriD Bot Engine Loaded...')
 })
 
 function startScheduler(nitroApp) {
@@ -31,7 +31,7 @@ function startScheduler(nitroApp) {
                     }
                 }
             } else {
-                console.log(exchangeOrders.log);
+                // console.log(exchangeOrders.log);
             }
         }
     }, 1000);

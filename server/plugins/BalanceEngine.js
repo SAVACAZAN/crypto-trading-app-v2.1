@@ -10,7 +10,7 @@ const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
     startScheduler(nitroApp)
-    console.log('Balance Engine Loaded...')
+    // console.log('Balance Engine Loaded...')
 })
 
 function startScheduler(nitroApp) {

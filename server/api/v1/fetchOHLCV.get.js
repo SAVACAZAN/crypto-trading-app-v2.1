@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     // get the duration of one timeframe period in milliseconds
     const duration = await nitroApp.ccxtw.parseTimeframe(query.userID, query.exchange, query.timeframe) * 1000;
-    console.log ('Fetching', query.symbol, query.timeframe, 'candles', 'from', await nitroApp.ccxtw.iso8601(query.userID, query.exchange, fromTimestamp), 'to', await nitroApp.ccxtw.iso8601(query.userID, query.exchange, tillTimestamp), '...');
+    // console.log ('Fetching', query.symbol, query.timeframe, 'candles', 'from', await nitroApp.ccxtw.iso8601(query.userID, query.exchange, fromTimestamp), 'to', await nitroApp.ccxtw.iso8601(query.userID, query.exchange, tillTimestamp), '...');
 
     // console.log('fromTimestamp??', fromTimestamp, query.dateFrom);
     let lastBar = null;
@@ -39,10 +39,10 @@ export default defineEventHandler(async (event) => {
             })
             .exec();
 
-            console.log('1?: ', candles);
+            // console.log('1?: ', candles);
 
             if(candles.length) {
-                console.log('in candles', candles.length);
+                // console.log('in candles', candles.length);
 
                 for (let i = 0; i < candles.length; i++) {
                     //add db data to result
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
             } else {
                 const candles = await nitroApp.ccxtw.fetchOHLCV(query.userID, query.exchange, query.symbol, query.timeframe, since, query.limit);
-                console.log('out candles', candles.data);
+                // console.log('out candles', candles.data);
 
                 // const message =  '[' + query.symbol + '] Fetched ' + candles.data.length + ' ' + query.timeframe + ' candles since ' + await nitroApp.ccxtw.iso8601(query.userID, query.exchange, since);
 
@@ -115,7 +115,7 @@ export default defineEventHandler(async (event) => {
 
         } catch (e) {
 
-            console.log (query.symbol, e.constructor.name, e.message, ' Taking small pause...');
+            // console.log (query.symbol, e.constructor.name, e.message, ' Taking small pause...');
             await nitroApp.ccxtw.sleep(query.userID, query.exchange, 2000);
             // retry on next iteration
         }
@@ -132,7 +132,7 @@ export default defineEventHandler(async (event) => {
         })
     }
 
-    console.log (query.symbol + ' completed !');
+    // console.log (query.symbol + ' completed !');
 
 
 

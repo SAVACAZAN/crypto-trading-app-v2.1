@@ -7,7 +7,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('BackTest Engine Loaded...')
+    // console.log('BackTest Engine Loaded...')
 
     nitroApp.backtestEngine = {
         //defaults

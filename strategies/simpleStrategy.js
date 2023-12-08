@@ -1,6 +1,6 @@
 import {CrossDown, CrossUp} from "technicalindicators";
 import { create, all } from 'mathjs';
-import {fill} from "lodash";
+// import {fill} from "lodash";
 const config = {
     number: 'BigNumber',
     precision: 20

@@ -314,7 +314,7 @@ async function fetchOHLCVRecentData(timeframe) {
 }
 async function fetchOHLCVLivePricePooling() {
 
-  console.log(`pooling ${selectedTimeframe.value[0]}`)
+  // console.log(`pooling ${selectedTimeframe.value[0]}`)
 
   let candlesData = await $fetch('/api/v1/fetchOHLCVLivePrice', {
     query:{
@@ -638,7 +638,7 @@ function formatCandlesData(data, live = false) {
 
 function checkForCrossOvers(data) {
 
-  console.log(data);
+  // console.log(data);
 
   let maOffset = data.MA12.length - data.MA21.length;
   let markers = [];

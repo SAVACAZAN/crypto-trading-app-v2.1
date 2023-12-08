@@ -90,10 +90,10 @@ const sidebarOptions = [
                 NuxtLink,
                 {
                     to: {
-                        name: 'smart-trades',
+                        name: 'frontrunning-bots',
                     }
                 },
-                { default: () => 'Smart Trades' }
+                { default: () => 'Frontrunning Bots' }
             ),
         key: 'smart-trades',
         icon: renderIcon(Analytics),

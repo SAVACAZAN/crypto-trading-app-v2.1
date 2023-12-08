@@ -1,5 +1,5 @@
 <template>
-    <h2>smart trades</h2>
+    <h2>Frontrunning Bots</h2>
 </template>
 
 <script setup>

@@ -1,8 +1,7 @@
 <script setup>
-import { useAppStore } from '~/stores/app.store';
 import {ref} from "vue";
+import {useAppStore} from "~/stores/app.store";
 const app = useAppStore()
-
 let userID = useCookie('userID');
 
 let currentExchange = ref(app.getUserSelectedExchange);
@@ -49,28 +48,28 @@ const dealStartConditionOptions = [
 async function submit(){
   console.log('clicked')
 
-  // let data = {
-  //   userID:userID.value,
-  //   isRunning:true,
-  //   exchange: exchange.value,
-  //   symbol:symbol.value,
-  //   direction:direction.value,
-  //   baseOrderAmount:baseOrderAmount.value,
-  //   baseOrderType:baseOrderType.value,
-  //   takeProfitOrderPercent:takeProfitOrderPercent.value,
-  //   safetyOrderAmount:safetyOrderAmount.value,
-  //   safetyOrderPercent:safetyOrderPercent.value,
-  //   maxSafetyOrdersCount:maxSafetyOrdersCount.value,
-  //   stopLossOrderPercent:stopLossOrderPercent.value,
-  //   leverage:leverage.value,
-  //   marketType: marketType.value,
-  //   dealStartCondition: dealStartCondition.value,
-  // }
-  //
-  // await $fetch( '/api/v1/createDCABot', {
-  //   method: 'POST',
-  //   body: data
-  // } );
+  let data = {
+    userID:userID.value,
+    isRunning:true,
+    exchange: currentExchange.value,
+    symbol:currentSymbol.value,
+    direction:direction.value,
+    baseOrderAmount:baseOrderAmount.value,
+    baseOrderType:baseOrderType.value,
+    takeProfitOrderPercent:takeProfitOrderPercent.value,
+    safetyOrderAmount:safetyOrderAmount.value,
+    safetyOrderPercent:safetyOrderPercent.value,
+    maxSafetyOrdersCount:maxSafetyOrdersCount.value,
+    stopLossOrderPercent:stopLossOrderPercent.value,
+    leverage:leverage.value,
+    marketType: baseOrderType.value,
+    dealStartCondition: dealStartCondition.value,
+  }
+
+  await $fetch( '/api/v1/createDCABot', {
+    method: 'POST',
+    body: data
+  } );
 }
 
 

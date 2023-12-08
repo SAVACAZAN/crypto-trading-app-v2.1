@@ -27,7 +27,7 @@ class CCXTW {
         // Now you can set the exchange data for the user using the exchange name as the key
         this.users.get(userID).set(exchange, instance);
 
-        console.log('loading instance: ', userID, exchange);
+        // console.log('loading instance: ', userID, exchange);
     }
 
     async getApiKeys(userID, exchange) {
@@ -734,7 +734,7 @@ class CCXTW {
 }
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('CCXT Wrapper Loaded...')
+    // console.log('CCXT Wrapper Loaded...')
     nitroApp.ccxtw = new CCXTW();
 
 })

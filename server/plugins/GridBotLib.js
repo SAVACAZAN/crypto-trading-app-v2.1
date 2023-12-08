@@ -14,7 +14,7 @@ export default defineNitroPlugin((nitroApp) => {
     nitroApp.GridBotsLib = {
         createBot: async function(data){
 
-            console.log('this hit?');
+            // console.log('this hit?');
 
             let prices = [];
             let gridWidth = math.evaluate(`((${data.upperPrice} - ${data.lowerPrice}) / ${data.nrOfGrids})`);

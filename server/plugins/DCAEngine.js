@@ -2,7 +2,7 @@ import { setIntervalAsync } from "set-interval-async"
 
 export default defineNitroPlugin((nitroApp) => {
     startScheduler(nitroApp)
-    console.log('DCA Engine Loaded...')
+    // console.log('DCA Engine Loaded...')
 })
 
 function startScheduler(nitroApp) {

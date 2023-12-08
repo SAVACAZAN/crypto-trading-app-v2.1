@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const strategy = new MovingAverageCrossoverStrategy(historicalData, shortMAperiod, longMAperiod, riskPercentage);
     strategy.strategy();
     const result = strategy.backtest(initialCapital);
-    console.log(result);
+    // console.log(result);
 
     return {
         data: 'OK'

@@ -1096,7 +1096,7 @@ async function submitBacktest() {
   //     }
   // )
 
-  console.log(data);
+  // console.log(data);
 
   //set data to chart
   chartInstance.candlesSeries.setData(data.candles);

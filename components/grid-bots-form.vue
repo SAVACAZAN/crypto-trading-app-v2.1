@@ -77,7 +77,7 @@ async function createGridBot(){
     priceGroupSell:priceGroupSell.value,
   };
 
-  console.log(data);
+  // console.log(data);
 
   let response = await $fetch( '/api/v1/createGridBot', {
     method: 'POST',

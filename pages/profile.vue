@@ -110,7 +110,7 @@ async function addExchange() {
         apiKeys:apiKeys.value,
     }
 
-    console.log(data);
+    // console.log(data);
 
     let resp = await $fetch( '/api/v1/addUserExchange', {
         method: 'POST',

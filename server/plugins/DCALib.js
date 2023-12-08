@@ -9,7 +9,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('DCA Library Loaded...')
+    // console.log('DCA Library Loaded...')
 
     nitroApp.DCALib = {
 

@@ -108,7 +108,7 @@ function formatBalance(balance) {
     data.datasets[0].backgroundColor.push(stringToHex(balance[i].coin));
   }
 
-  console.log(data);
+  // console.log(data);
 
   return data;
 }
