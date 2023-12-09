@@ -16,14 +16,9 @@ export default defineNuxtConfig({
     modelsDir: 'models',
   },
 
-  naiveui: {
-    colorModePreference: "light",
-    iconSize: 18,
-    themeConfig: {},
-  },
 
   devtools: {
-    enabled: true
+    enabled: false
   },
 
 

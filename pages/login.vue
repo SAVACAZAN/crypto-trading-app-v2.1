@@ -14,7 +14,13 @@
       </n-form-item>
       <n-row :gutter="[0, 24]">
         <n-col :span="24">
-          <div style="display: flex; justify-content: flex-end">
+          <div style="display: flex; justify-content: space-between">
+            <NuxtLink to="/register" custom v-slot="{ navigate }">
+              <n-button @click="navigate">
+                Register
+              </n-button>
+            </NuxtLink>
+
             <n-button
                 :disabled="modelRef.username === null"
                 type="primary"

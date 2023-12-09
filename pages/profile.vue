@@ -21,7 +21,7 @@
             value-placeholder="Please input the value"
         />
 
-        <n-button @click="addExchange">Add exchange</n-button>
+        <n-button @click="addExchange" :disabled="addBtn.disabled">{{addBtn.text}}</n-button>
     </n-space>
 </template>
 
@@ -35,6 +35,11 @@ let userID = userIDCookie.value;
 
 
 const notification = useNotification();
+
+const addBtn = ref({
+  'text':'Add exchange',
+  'disabled':false,
+});
 
 //show data
 const tablePagination = false;
@@ -110,7 +115,10 @@ async function addExchange() {
         apiKeys:apiKeys.value,
     }
 
-    // console.log(data);
+    //disable add exchange btn
+    //change exchange btn text
+    addBtn.value.text = 'Please wait...';
+    addBtn.value.disabled = true;
 
     let resp = await $fetch( '/api/v1/addUserExchange', {
         method: 'POST',
@@ -128,6 +136,23 @@ async function addExchange() {
         content: "Exchange added",
         meta: `The exchange ${data.exchange} has been successfully added to the database!`,
     });
+
+    //remove exchange/apikey/secret
+    selectedExchange.value = null;
+    apiKeys.value = [
+      {
+        key: "apiKey",
+        value: ""
+      },
+      {
+        key: "secret",
+        value: ""
+      }
+    ];
+
+    //reset add exchange btn
+    addBtn.value.text = 'Add exchange';
+    addBtn.value.disabled = false;
 }
 
 async function deleteKeys(row) {

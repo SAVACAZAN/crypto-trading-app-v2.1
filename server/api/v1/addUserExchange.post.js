@@ -57,7 +57,7 @@ export default defineEventHandler(async (event) => {
 
 
     //update user data to db
-    await userExchangesSchema.updateOne({ userID:data.userID }, {
+    await userExchangesSchema.updateOne({ userID:data.userID, exchange:data.exchange }, {
         markets:markets,
         selectedMarket:markets[0],
     });

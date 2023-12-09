@@ -27,7 +27,14 @@
       </n-form-item>
       <n-row :gutter="[0, 24]">
         <n-col :span="24">
-          <div style="display: flex; justify-content: flex-end">
+          <div style="display: flex; justify-content: space-between">
+
+            <NuxtLink to="/login" custom v-slot="{ navigate }">
+              <n-button @click="navigate">
+                Login
+              </n-button>
+            </NuxtLink>
+
             <n-button
                 :disabled="modelRef.username === null"
                 type="primary"
@@ -48,6 +55,7 @@ definePageMeta({
   layout: "no-sidebar",
 });
 import {ref} from "vue";
+const notification = useNotification();
 
 const formRef = ref(null);
 const rPasswordFormItemRef = ref(null);
@@ -86,7 +94,15 @@ function handleValidateButtonClick(e) {
             body: data
           } );
 
-          await navigateTo('/login')
+          notification['info']({
+            content: "Registered User!",
+            meta: `The user ${modelRef.value.username} has been successfully registered. Please log in!`,
+            duration: 2500,
+          });
+
+          setTimeout(async () => {
+            await navigateTo('/login')
+          }, 1000)
 
         } else {
           console.log(errors);

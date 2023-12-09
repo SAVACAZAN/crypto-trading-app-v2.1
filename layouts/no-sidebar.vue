@@ -3,16 +3,7 @@
     <n-layout>
       <n-layout-header bordered class="header">
         <n-space justify="space-between" align="center" class="inner">
-          <n-text><b>Crypto App</b></n-text>
-
-          <n-space>
-            <nuxt-link to="/login">
-              <n-button>Login</n-button>
-            </nuxt-link>
-            <nuxt-link to="/register">
-              <n-button>Register</n-button>
-            </nuxt-link>
-          </n-space>
+          <nuxt-link to="/"><n-text><b>Crypto App</b></n-text></nuxt-link>
         </n-space>
       </n-layout-header>
       <n-layout class="container">

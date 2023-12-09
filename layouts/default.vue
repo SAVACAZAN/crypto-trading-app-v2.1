@@ -3,7 +3,8 @@
         <n-layout>
             <n-layout-header bordered class="header">
                 <n-space justify="space-between" align="center" class="inner">
-                    <n-text><b>Crypto App</b></n-text>
+                    <nuxt-link to="/dashboard"><n-text><b>Crypto App</b></n-text></nuxt-link>
+                    <n-text>userID: {{userID}}</n-text>
                     <n-dropdown :options="dropdownOptions">
                         <n-button>User profile</n-button>
                     </n-dropdown>
@@ -50,6 +51,8 @@ import {
     PersonCircleOutline as UserIcon,
     LogOutOutline as LogoutIcon
 } from "@vicons/ionicons5";
+let userIDCookie = useCookie('userID');
+let userID = userIDCookie.value;
 
 function renderIcon(icon) {
     return () => h(NIcon, null, { default: () => h(icon) });
@@ -84,20 +87,21 @@ const sidebarOptions = [
         key: 'trade',
         icon: renderIcon(BarChart),
     },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'frontrunning-bots',
-                    }
-                },
-                { default: () => 'Frontrunning Bots' }
-            ),
-        key: 'smart-trades',
-        icon: renderIcon(Analytics),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'frontrunning-bots',
+    //                 },
+    //                 disabled: true
+    //             },
+    //             { default: () => 'Frontrunning Bots' }
+    //         ),
+    //     key: 'frontrunning-bots',
+    //     icon: renderIcon(Analytics),
+    // },
     {
         label: () =>
             h(
@@ -112,34 +116,34 @@ const sidebarOptions = [
         key: 'grid-bots',
         icon: renderIcon(MenuOutline),
     },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'dca-bots',
-                    }
-                },
-                { default: () => 'DCA Bots' }
-            ),
-        key: 'dca-bots',
-        icon: renderIcon(GitCompareOutline),
-    },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                  to: {
-                    name: 'back-testing',
-                  }
-                },
-                { default: () => 'Back testing' }
-            ),
-        key: 'back-testing',
-        icon: renderIcon(GitCompareOutline),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'dca-bots',
+    //                 }
+    //             },
+    //             { default: () => 'DCA Bots' }
+    //         ),
+    //     key: 'dca-bots',
+    //     icon: renderIcon(GitCompareOutline),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'back-testing',
+    //               }
+    //             },
+    //             { default: () => 'Back testing' }
+    //         ),
+    //     key: 'back-testing',
+    //     icon: renderIcon(GitCompareOutline),
+    // },
     {
         label: () =>
             h(
@@ -172,11 +176,22 @@ const dropdownOptions = [
         icon: renderIcon(UserIcon)
     },
     {
-        label: 'Logout',
+      label: () =>
+          h(
+              NuxtLink,
+              {
+                to: {
+                  name: 'logout',
+                }
+              },
+              { default: () => 'Logout' }
+          ),
         key: 'logout',
         icon: renderIcon(LogoutIcon)
     }
 ];
+
+
 
 </script>
 
