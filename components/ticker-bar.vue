@@ -66,7 +66,7 @@ async function updateSelectedMarket(market) {
   <div class="top-bar">
     <n-card  style="margin-bottom: 10px">
       <n-grid x-gap="12" :cols="12">
-        <n-gi span="2">
+        <n-gi span="4 800:2">
           <n-select v-model:value="selectedExchange"
                     :options="userExchanges"
                     placeholder="Select exchange"
@@ -74,7 +74,7 @@ async function updateSelectedMarket(market) {
                     @update:value="updateSelectedExchange($event)"
           />
         </n-gi>
-        <n-gi span="2">
+        <n-gi span="4 800:2">
           <n-select v-model:value="selectedMarket"
                     :options="userExchangeMarkets"
                     placeholder="Select exchange"
@@ -82,7 +82,7 @@ async function updateSelectedMarket(market) {
                     @update:value="updateSelectedMarket($event)"
           />
         </n-gi>
-        <n-gi span="8">
+        <n-gi span="4 800:8">
           Last Price {{ticker.last}}
         </n-gi>
       </n-grid>

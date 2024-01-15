@@ -2,6 +2,7 @@ import {SMA, RSI, CrossUp, CrossDown} from 'technicalindicators';
 import moment from 'moment';
 import { create, all } from 'mathjs';
 import {gridBotSchema} from "~/server/models/gridBot.schema";
+import {dcaBotSchema} from "~/server/models/dcaBot.schema";
 const config = {
     number: 'BigNumber',
     precision: 20
@@ -250,7 +251,33 @@ export default defineNitroPlugin((nitroApp) => {
 
         getCurrentTime() {
             return moment(new Date()).format('lll');
+        },
+
+        async fetchGridBots(userID, exchange, symbol) {
+            let bots = await gridBotSchema.find({userID: userID});
+            return bots;
         }
+
+        // getBots: async function(){
+        //     let bots = await dcaBotSchema.find({});
+        //     let formattedBots = [];
+        //
+        //     for (let i = 0; i < bots.length; i++) {
+        //         let bot = bots[i].toObject();
+        //
+        //         let profit = 0;
+        //         let bots = await dcaBotSchema.find({id:bot._id});
+        //         for (let i = 0; i < bots.length; i++) {
+        //             profit = profit + bots[i].profit;
+        //         }
+        //
+        //         bot.bots = bots;
+        //         bot.profit = profit;
+        //
+        //         formattedBots.push(bot);
+        //     }
+        //     return formattedBots;
+        // },
     };
 
 })
