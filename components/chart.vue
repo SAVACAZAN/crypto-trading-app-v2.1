@@ -268,13 +268,26 @@ onMounted(async () => {
     lastBarTime = data.candles[data.candles.length - 1].time;
   }
 
+  const chartDiv = document.getElementById('chart');
+
   //fit chart to page
-  chartInstance.timeScale().fitContent();
+  chartInstance.applyOptions({
+    width: chartDiv.offsetWidth,
+    height: chartDiv.offsetHeight
+  });
+
+  window.onresize = function() {
+    chartInstance.applyOptions({
+      width: chartDiv.offsetWidth,
+      height: chartDiv.offsetHeight
+    });
+  }
 
   //load OHLCV pooling
   ohlcvInterval = setIntervalAsync(fetchOHLCVLivePricePooling, 500);
-
 })
+
+
 
 onUnmounted(() => {
   clearIntervalAsync(ohlcvInterval);

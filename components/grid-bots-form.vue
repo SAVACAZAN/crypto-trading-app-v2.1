@@ -13,7 +13,7 @@ let quote = currentSymbol.value.split('/')[1];
 
 let name = ref(`gridBot_${generateRandomString(5)}`);
 let strategyPicker = ref();
-let strategyPickerOptions = [];
+let strategyPickerOptions = ref([]);
 let lowerPrice = ref('');
 let upperPrice = ref('');
 let amountType = ref('quantityPerGrid');
@@ -52,6 +52,167 @@ function generateRandomString(length = 20) {
   return randomString;
 }
 
+async function selectStrategy() {
+  console.log('selecting');
+
+  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+
+  for (let i = 0; i < strategiesStore.length; i++) {
+    if (strategiesStore[i].name === strategyPicker.value) {
+      console.log('strategy selected: ', strategiesStore[i]);
+
+      name.value = strategiesStore[i].name;
+      // currentExchange.value = strategiesStore[i].currentExchange;
+      // currentSymbol.value = strategiesStore[i].currentSymbol;
+      lowerPrice.value = strategiesStore[i].lowerPrice;
+      upperPrice.value = strategiesStore[i].upperPrice;
+      amountType.value = strategiesStore[i].amountType;
+      amount.value = strategiesStore[i].amount;
+      nrOfGrids.value = strategiesStore[i].nrOfGrids;
+      ordersSide.value = strategiesStore[i].ordersSide;
+      incrementalPercentAmountBuy.value = strategiesStore[i].incrementalPercentAmountBuy;
+      incrementalPercentAmountSell.value = strategiesStore[i].incrementalPercentAmountSell;
+      deviationPriceBuy.value = strategiesStore[i].deviationPriceBuy;
+      deviationPriceSell.value = strategiesStore[i].deviationPriceSell;
+      deviationAmountBuy.value = strategiesStore[i].deviationAmountBuy;
+      deviationAmountSell.value = strategiesStore[i].deviationAmountSell;
+      usePriceGroup.value = strategiesStore[i].usePriceGroup;
+      priceGroupBuy.value = strategiesStore[i].priceGroupBuy;
+      priceGroupSell.value = strategiesStore[i].priceGroupSell;
+
+
+    }
+  }
+}
+
+async function addStrategy() {
+  console.log('adding');
+
+  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+
+  let newStrategy = {
+    name: name.value,
+    exchange: currentExchange.value,
+    symbol: currentSymbol.value,
+    lowerPrice: lowerPrice.value,
+    upperPrice: upperPrice.value,
+    amountType: amountType.value,
+    amount: amount.value,
+    nrOfGrids: nrOfGrids.value,
+    ordersSide: ordersSide.value,
+    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+    deviationPriceBuy: deviationPriceBuy.value,
+    deviationPriceSell: deviationPriceSell.value,
+    deviationAmountBuy: deviationAmountBuy.value,
+    deviationAmountSell: deviationAmountSell.value,
+    usePriceGroup: usePriceGroup.value,
+    priceGroupBuy: priceGroupBuy.value,
+    priceGroupSell: priceGroupSell.value,
+  };
+
+  //push in store
+  if (strategiesStore !== null) {
+    if (strategiesStore.length > 0) {
+      for (let i = 0; i < strategiesStore.length ; i++) {
+        console.log('?????: ', strategiesStore[i].name,  newStrategy.name);
+        if (strategiesStore[i].name !== newStrategy.name) {
+          strategiesStore.push(newStrategy);
+        }
+      }
+    } else {
+      strategiesStore.push(newStrategy);
+    }
+  } else {
+    strategiesStore = [newStrategy];
+  }
+
+  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
+
+  //push in options list
+  strategyPickerOptions.value.push({
+    value: newStrategy.name,
+    label: newStrategy.name
+  });
+
+  //set in select
+  strategyPicker.value = newStrategy.name;
+}
+
+async function editStrategy() {
+  console.log('editing');
+
+  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+
+  if (strategiesStore !== null) {
+    for (let i = 0; i < strategiesStore.length ; i++) {
+      if (strategiesStore[i].name === strategyPicker.value) {
+        strategiesStore[i].lowerPrice = lowerPrice.value;
+        strategiesStore[i].upperPrice = upperPrice.value;
+        strategiesStore[i].amountType = amountType.value;
+        strategiesStore[i].amount = amount.value;
+        strategiesStore[i].nrOfGrids = nrOfGrids.value;
+        strategiesStore[i].ordersSide = ordersSide.value;
+        strategiesStore[i].incrementalPercentAmountBuy = incrementalPercentAmountBuy.value;
+        strategiesStore[i].incrementalPercentAmountSell = incrementalPercentAmountSell.value;
+        strategiesStore[i].deviationPriceBuy = deviationPriceBuy.value;
+        strategiesStore[i].deviationPriceSell = deviationPriceSell.value;
+        strategiesStore[i].deviationAmountBuy = deviationAmountBuy.value;
+        strategiesStore[i].deviationAmountSell = deviationAmountSell.value;
+        strategiesStore[i].usePriceGroup = usePriceGroup.value;
+        strategiesStore[i].priceGroupBuy = priceGroupBuy.value;
+        strategiesStore[i].priceGroupSell = priceGroupSell.value;
+      }
+    }
+  }
+
+  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
+}
+
+async function deleteStrategy() {
+  console.log('deleting');
+
+
+  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+
+  //deleting from store
+  if (strategiesStore !== null) {
+    for (let i = 0; i < strategiesStore.length ; i++) {
+      if (strategiesStore[i].name === strategyPicker.value) {
+        strategiesStore.splice(i, 1);
+      }
+    }
+  }
+
+  //deleting from strategy picker options
+  for (let i = 0; i < strategyPickerOptions.value.length ; i++) {
+    if (strategyPickerOptions.value[i].label === strategyPicker.value) {
+      strategyPickerOptions.value.splice(i, 1);
+    }
+  }
+
+  //deleting from strategy picker
+  strategyPicker.value = '';
+
+  //reset form??
+  lowerPrice.value = '';
+  upperPrice.value = '';
+  amountType.value = 'quantityPerGrid';
+  amount.value = '';
+  nrOfGrids.value = '';
+  ordersSide.value = 'buyOrSell';
+  incrementalPercentAmountBuy.value = '';
+  incrementalPercentAmountSell.value = '';
+  deviationPriceBuy.value = '';
+  deviationPriceSell.value = '';
+  deviationAmountBuy.value = '';
+  deviationAmountSell.value = '';
+  usePriceGroup.value = '';
+  priceGroupBuy.value = '';
+  priceGroupSell.value = '';
+
+  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
+}
 
 async function createGridBot(){
 
@@ -86,12 +247,27 @@ async function createGridBot(){
 
 }
 
+onMounted(() => {
+  // localStorage.setItem('test', '123');
+
+  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+
+  if (strategiesStore !== null) {
+    for (let i = 0; i < strategiesStore.length; i++) {
+      strategyPickerOptions.value.push({
+        value:strategiesStore[i].name,
+        label:strategiesStore[i].name
+      })
+    }
+  }
+})
+
 
 </script>
 
 <template>
   <n-card>
-      <n-grid x-gap="12" :cols="2">
+      <n-grid x-gap="12" :cols="2" item-responsive>
         <n-gi>
           <n-space vertical>
             <n-input v-model:value="name" type="text" placeholder="Bot name" />
@@ -117,7 +293,27 @@ async function createGridBot(){
         </n-gi>
         <n-gi>
           <n-space vertical>
-            <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" placeholder="Select strategy"/>
+
+            <n-grid x-gap="4" :cols="2">
+              <n-gi>
+                <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
+              </n-gi>
+              <n-gi>
+                <n-grid x-gap="4" :cols="3">
+                  <n-gi>
+                    <n-button @click="addStrategy">A</n-button>
+                  </n-gi>
+                  <n-gi>
+                    <n-button @click="editStrategy">E</n-button>
+                  </n-gi>
+                  <n-gi>
+                    <n-button @click="deleteStrategy">D</n-button>
+                  </n-gi>
+                </n-grid>
+              </n-gi>
+            </n-grid>
+
+
             <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
               <template #suffix> {{quote}} </template>
             </n-input>

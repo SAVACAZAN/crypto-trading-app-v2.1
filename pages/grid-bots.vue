@@ -1,11 +1,11 @@
 <template>
-  <n-grid x-gap="12" :cols="12">
-    <n-gi span="8">
+  <n-grid x-gap="12" :cols="12" item-responsive>
+    <n-gi span="12 800:8">
       <TickerBar/>
       <Chart/>
-      <OrderList/>
+      <GridBotsList/>
     </n-gi>
-    <n-gi span="4">
+    <n-gi span="12 800:4">
       <OrderBook/>
       <GridBotsForm/>
     </n-gi>
