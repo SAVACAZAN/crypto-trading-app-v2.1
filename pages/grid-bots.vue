@@ -8,6 +8,7 @@
     <n-gi span="4">
       <OrderBook/>
       <GridBotsForm/>
+      
     </n-gi>
   </n-grid>
 
