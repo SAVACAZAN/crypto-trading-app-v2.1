@@ -1,0 +1,130 @@
+import { create, all } from 'mathjs';
+import moment from 'moment';
+import { Scalp1ngBotSchema } from "../models/Scalp1ngBot.schema";
+
+const config = {
+    number: 'BigNumber',
+    precision: 20
+};
+
+const math = create(all, config);
+
+export default defineNitroPlugin((nitroApp) => {
+    console.log('Order Placement and Cancellation Loop Script Loaded...');
+
+    nitroApp.Scalp1ngBotLib = {
+        // Adăugăm funcția createBot
+        async createBot(userID, exchange, symbol, price, side,  BalanceBot) {
+            // Implementați logica pentru a crea un bot
+            console.log(`Creating bot for user ${userID} on ${exchange} for symbol ${symbol}`);
+            // Returnați un obiect bot sau faceți alte operațiuni necesare
+            return { userID, exchange, symbol, price, side,  BalanceBot };
+        },
+
+        async startOrderLoop(userID, exchange, symbol, price, side,  BalanceBot, loopDurationMinutes = 5) {
+            const loopDurationMs = loopDurationMinutes * 60 * 1000;
+            const intervalBetweenActions = 3000; // 3 secunde
+
+            const endTime = Date.now() + loopDurationMs;
+
+            while (Date.now() < endTime) {
+                await this.executeOrderAndCancel(userID, exchange, symbol, price, side,  BalanceBot);
+                await this.sleep(intervalBetweenActions); // Așteaptă 3 secunde înainte de a repeta
+            }
+
+            console.log('Taking a 1 minute break...');
+            await this.sleep(60 * 1000); // Pauză de 1 minut
+
+            // Recursiv, reia loop-ul
+            this.startOrderLoop(userID, exchange, symbol, price, side,  BalanceBot, loopDurationMinutes);
+        },
+
+        async executeOrderAndCancel(userID, exchange, symbol, price, side,  BalanceBot) {
+            let order = await this.placeOrder(userID, exchange, symbol, price, side,  BalanceBot);
+
+            if (order) {
+                console.log(`Order placed: ID ${order.id}, Side: ${order.side}, Price: ${order.price}`);
+                
+                // Așteaptă 2-3 secunde înainte de a anula ordinul
+                await this.sleep(2000 + Math.floor(Math.random() * 1000));
+
+                await this.cancelOrder({
+                    userID: userID,
+                    exchange: exchange,
+                    id: order.id,
+                    symbol: symbol,
+                    amount: order.amount,
+                    price: order.price,
+                    side: order.side
+                });
+
+                console.log(`Order cancelled: ID ${order.id}`);
+            } else {
+                console.log('Order placement failed.');
+            }
+        },
+
+        async placeOrder(userID, exchange, symbol, price, side,  BalanceBot) {
+            let quantityPerGrid = await this.getQuantityPerGrid(price, amount);
+            let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', side, quantityPerGrid, price);
+
+            if (orderResponse.success) {
+                console.log(`${this.getCurrentTime()}: ${symbol} - PLACING_GRID_ORDER - Type: limit, Side: ${side}, Amount: ${quantityPerGrid}, Price: ${price}`);
+                return {
+                    PriceStart: orderResponse.data.PriceStart,
+                    id: orderResponse.data.id,
+                    price: orderResponse.data.price,
+                    side: orderResponse.data.side,
+                    size: orderResponse.data.size,
+                    amount: orderResponse.data.amount,
+                };
+            } else {
+                console.log(`${this.getCurrentTime()}: ${symbol} - PLACING_GRID_ORDER - Failed with: ${orderResponse.log}`);
+                return null;
+            }
+        },
+
+        async cancelOrder(row) {
+            let data = {
+                userID: row.userID,
+                exchange: row.exchange,
+                id: row.id,
+                symbol: row.symbol,
+            };
+
+            let response = await $fetch('/api/v1/cancelOrder', {
+                method: 'POST',
+                body: data
+            });
+
+            if (response.success) {
+                let base = row.symbol.split('/')[0];
+                let quote = row.symbol.split('/')[1];
+
+                notification['info']({
+                    content: "Order Cancelled!",
+                    meta: `Cancelled ${data.exchange} limit ${row.side} order for ${row.amount} ${base} by using ${quote} at price ${row.price}`,
+                    duration: 2500,
+                });
+
+                console.log(`Order cancelled: ID ${row.id}`);
+            } else {
+                console.log(`Failed to cancel order: ID ${row.id}`);
+            }
+        },
+
+        async getQuantityPerGrid(price, amount) {
+            // Calculați cantitatea pe baza prețului și sumei
+            let quantityPerGrid = amount / price;
+            return quantityPerGrid;
+        },
+
+        async sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
+
+        getCurrentTime() {
+            return moment(new Date()).format('lll');
+        }
+    };
+});

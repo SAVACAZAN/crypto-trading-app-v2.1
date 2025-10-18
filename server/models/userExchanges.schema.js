@@ -27,6 +27,7 @@ export const userExchangesSchema = defineMongooseModel({
             required: true
         },
         apiKeys: {
+            // Array of objects: [{ name: "Main Account", keys: [{key: "apiKey", value: "..."}, {key: "secret", value: "..."}] }]
             type: Array,
             required: true
         },

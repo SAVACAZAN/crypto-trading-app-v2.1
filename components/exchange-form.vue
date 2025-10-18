@@ -9,6 +9,14 @@ let userID = useCookie('userID');
 let currentExchange = ref(app.getUserSelectedExchange);
 let currentSymbol = ref(app.getUserSelectedMarket);
 
+// API Key selector
+let availableApiKeys = ref([]);
+let selectedApiKey = computed({
+  get: () => app.getSelectedApiKey,
+  set: (value) => app.setSelectedApiKey(value)
+});
+let loadingApiKeys = ref(false);
+
 
 let sellPrice = ref('');
 let sellSize = ref('');
@@ -29,7 +37,8 @@ let quoteBalance = ref('Loading...');
 
 let userBalanceInterval = null;
 
-onMounted(() => {
+onMounted(async () => {
+  await loadApiKeys();
   userBalanceInterval = setIntervalAsync(fetchUserBalancePooling, 500);
 });
 
@@ -37,11 +46,41 @@ onUnmounted(() => {
   clearIntervalAsync(userBalanceInterval);
 });
 
+// Load available API keys for the current exchange
+async function loadApiKeys() {
+  loadingApiKeys.value = true;
+  try {
+    const response = await $fetch('/api/v1/fetchApiKeysList', {
+      query: {
+        userID: userID.value,
+        exchange: currentExchange.value
+      }
+    });
+
+    if (response.success && response.data.length > 0) {
+      availableApiKeys.value = response.data.map(apiKey => ({
+        label: `${apiKey.name} (${apiKey.preview})`,
+        value: apiKey.name
+      }));
+
+      // Select first API key by default
+      selectedApiKey.value = availableApiKeys.value[0].value;
+    }
+  } catch (error) {
+    console.error('Failed to load API keys:', error);
+  } finally {
+    loadingApiKeys.value = false;
+  }
+}
+
 async function fetchUserBalancePooling() {
+  if (!selectedApiKey.value) return;
+
   let response = await $fetch('/api/v1/fetchBalance', {
     query:{
       userID:userID.value,
       exchange:currentExchange.value,
+      apiKeyName: selectedApiKey.value,
     }
   });
 
@@ -70,6 +109,14 @@ function formatTooltip(value) {
 }
 
 async function createOrder(side, type){
+  if (!selectedApiKey.value) {
+    notification['error']({
+      content: "No API Key selected",
+      meta: "Please select an API key to create orders",
+      duration: 2500,
+    });
+    return;
+  }
 
   let data = {
     userID:userID.value,
@@ -79,6 +126,7 @@ async function createOrder(side, type){
     side:side,
     amount:(side === 'BUY') ? buySize.value : sellSize.value,
     price:(side === 'BUY') ? buyPrice.value : sellPrice.value,
+    apiKeyName: selectedApiKey.value,
   }
 
   let response = await $fetch( '/api/v1/createOrder', {
@@ -176,6 +224,21 @@ function updateSellTotal(val) {
 
 <template>
   <n-card>
+    <!-- API Key Selector -->
+    <n-space vertical style="margin-bottom: 16px;">
+      <n-text strong>Select API Key:</n-text>
+      <n-select
+        v-model:value="selectedApiKey"
+        :options="availableApiKeys"
+        :loading="loadingApiKeys"
+        placeholder="Select API Key"
+        :disabled="availableApiKeys.length === 0"
+      />
+      <n-text v-if="availableApiKeys.length === 0 && !loadingApiKeys" type="warning" depth="3">
+        No API keys found. Please add API keys in your profile.
+      </n-text>
+    </n-space>
+
     <n-tabs type="line" animated>
       <n-tab-pane name="Limit Orders" tab="Limit Orders">
         <n-grid x-gap="12" :cols="2">

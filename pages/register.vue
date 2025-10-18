@@ -25,16 +25,17 @@
             @keydown.enter.prevent
         />
       </n-form-item>
+      <n-form-item path="referralCode" label="Referral Code">
+        <n-input v-model:value="modelRef.referralCode" @keydown.enter.prevent />
+      </n-form-item>
       <n-row :gutter="[0, 24]">
         <n-col :span="24">
           <div style="display: flex; justify-content: space-between">
-
             <NuxtLink to="/login" custom v-slot="{ navigate }">
               <n-button @click="navigate">
                 Login
               </n-button>
             </NuxtLink>
-
             <n-button
                 :disabled="modelRef.username === null"
                 type="primary"
@@ -47,14 +48,13 @@
       </n-row>
     </n-form>
   </n-card>
-
 </template>
 
 <script setup>
 definePageMeta({
   layout: "no-sidebar",
 });
-import {ref} from "vue";
+import { ref } from "vue";
 const notification = useNotification();
 
 const formRef = ref(null);
@@ -63,7 +63,8 @@ const message = useMessage();
 const modelRef = ref({
   username: null,
   password: null,
-  reenteredPassword: null
+  reenteredPassword: null,
+  referralCode: null  // Adăugăm câmpul pentru codul de referal
 });
 function validatePasswordStartWith(rule, value) {
   return !!modelRef.value.password && modelRef.value.password.startsWith(value) && modelRef.value.password.length >= value.length;
@@ -78,35 +79,37 @@ function handlePasswordInput() {
   }
 }
 
-function handleValidateButtonClick(e) {
-  e.preventDefault();
+async function handleValidateButtonClick() {
   formRef.value?.validate(
       async (errors) => {
         if (!errors) {
-          // message.success("Valid");
-          let data = {
-            username:modelRef.value.username,
-            password:modelRef.value.password,
+          const data = {
+            username: modelRef.value.username,
+            password: modelRef.value.password,
+            referralCode: modelRef.value.referralCode  // Trimitem și codul de referal la server
           }
 
-          let resp = await $fetch( '/api/v1/register', {
-            method: 'POST',
-            body: data
-          } );
+          try {
+            const resp = await $fetch('/api/v1/register', {
+              method: 'POST',
+              body: data
+            });
 
-          notification['info']({
-            content: "Registered User!",
-            meta: `The user ${modelRef.value.username} has been successfully registered. Please log in!`,
-            duration: 2500,
-          });
+            notification['info']({
+              content: "Registered User!",
+              meta: `The user ${modelRef.value.username} has been successfully registered. Please log in!`,
+              duration: 2500,
+            });
 
-          setTimeout(async () => {
-            await navigateTo('/login')
-          }, 1000)
-
+            setTimeout(async () => {
+              await navigateTo('/login')
+            }, 1000);
+          } catch (error) {
+            console.error(error);
+            // Handle error notification or display to user
+          }
         } else {
           console.log(errors);
-          // message.error("Invalid");
         }
       }
   );
@@ -147,8 +150,18 @@ const rules = {
       message: "Password is not same as re-entered password!",
       trigger: ["blur", "password-input"]
     }
+  ],
+  referralCode: [  // Adăugăm regulile pentru codul de referal
+    {
+      validator(rule, value) {
+        // În acest exemplu, presupunem că codul de referal trebuie să aibă exact 6 caractere
+        if (!value || value.length !== 9) {
+          return new Error("Referral code must be 6 characters long");
+        }
+        return true;
+      },
+      trigger: ["input", "blur"]
+    }
   ]
 }
 </script>
-
-

@@ -8,6 +8,7 @@ export const useAppStore = defineStore('app', {
             userExchangeMarkets:[],
             userSelectedMarket:'',
             timeframes:null,
+            selectedApiKey:null,
         }
     },
     getters:{
@@ -25,6 +26,9 @@ export const useAppStore = defineStore('app', {
         },
         getAvailableTimeframes(state) {
             return state.timeframes;
+        },
+        getSelectedApiKey(state) {
+            return state.selectedApiKey;
         }
     },
     actions: {
@@ -89,5 +93,8 @@ export const useAppStore = defineStore('app', {
                 body: data
             } );
         },
+        setSelectedApiKey(apiKey) {
+            this.selectedApiKey = apiKey;
+        }
     },
 })

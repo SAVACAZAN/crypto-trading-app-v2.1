@@ -1,7 +1,7 @@
 import {SMA, RSI, CrossUp, CrossDown} from 'technicalindicators';
 import moment from 'moment';
 import { create, all } from 'mathjs';
-import {dcaBotSchema} from "~/server/models/dcaBot.schema";
+// import {dcaBotSchema} from "~/server/models/dcaBot.schema";
 const config = {
     number: 'BigNumber',
     precision: 20

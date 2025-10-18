@@ -60,17 +60,17 @@ async function fetchOrderBookPooling() {
 
 <template>
   <n-card>
-    <n-space vertical :size="12">
+    <n-space vertical :size="1" style="max-width: 400px; overflow-x: auto;">
       <div class="asks box">
-        <div class="row" v-for="row in asksData">
-          <div class="col">
-            {{row.price}}
+        <div class="row" v-for="row in asksData" :key="row.price">
+          <div class="col red">
+            {{ row.price }}
           </div>
-          <div class="col">
-            {{row.quantity}}
+          <div class="col red">
+            {{ row.quantity }}
           </div>
-          <div class="col">
-            {{row.total}}
+          <div class="col red">
+            {{ row.total }}
           </div>
         </div>
       </div>
@@ -80,15 +80,15 @@ async function fetchOrderBookPooling() {
         <div class="col labels">Total</div>
       </div>
       <div class="bids box">
-        <div v-for="row in bidsData" class="row">
-          <div class="col">
-            {{row.price}}
+        <div v-for="row in bidsData" class="row" :key="row.price">
+          <div class="col green">
+            {{ row.price }}
           </div>
-          <div class="col">
-            {{row.quantity}}
+          <div class="col green">
+            {{ row.quantity }}
           </div>
-          <div class="col">
-            {{row.total}}
+          <div class="col green">
+            {{ row.total }}
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ async function fetchOrderBookPooling() {
 
 <style scoped>
 .box {
-  max-height:150px;
+  max-height:300px;
   overflow-y: scroll;
 }
 
@@ -114,7 +114,7 @@ async function fetchOrderBookPooling() {
 }
 
 .col {
-  font-size:12px;
+  font-size:15px;
   width:33.333%;
 }
 
@@ -122,5 +122,48 @@ async function fetchOrderBookPooling() {
   font-size:16px;
   font-weight:bold;
   text-transform:uppercase;
+}
+
+.box {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+.box::-webkit-scrollbar {
+  width: 8px;
+  background-color: transparent;
+}
+
+.box::-webkit-scrollbar-thumb {
+  background-color: rgba(95, 92, 92, 0.3);
+  border-radius: 4px;
+}
+.red {
+  color: rgb(231, 27, 27);
+}
+
+.green {
+  color: rgb(14, 216, 14);
+}
+
+.asks {
+  flex-direction: column-reverse;
+  display: flex;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.col {
+  font-size: 15px;
+  width: 33.333%;
+}
+
+.labels {
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 </style>

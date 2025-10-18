@@ -16,7 +16,7 @@ let strategyPicker = ref();
 let strategyPickerOptions = ref([]);
 let lowerPrice = ref('');
 let upperPrice = ref('');
-let amountType = ref('quantityPerGrid');
+let amountType = ref('incrementalPercent');
 let amountTypeOptions = [
   { value: 'quantityPerGrid', label:'Qty Per Grid'},
   { value: 'totalAmount', label:'Total Amount'},
@@ -36,7 +36,7 @@ let deviationPriceBuy = ref('');
 let deviationPriceSell = ref('');
 let deviationAmountBuy = ref('');
 let deviationAmountSell = ref('');
-let usePriceGroup = ref(true);
+let usePriceGroup = ref(false);
 let priceGroupBuy = ref('');
 let priceGroupSell = ref('');
 
@@ -214,6 +214,23 @@ async function deleteStrategy() {
   localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
 }
 
+async function deleteAllStrategies() {
+  console.log('deleting all strategies');
+
+  // Clear the strategiesStore array and update localStorage
+  let strategiesStore = [];
+  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
+
+  // Clear the strategyPickerOptions array
+  strategyPickerOptions.value = [];
+
+  // Reset form values if needed
+  // ...
+
+  // Set the selected strategy to an empty string
+  strategyPicker.value = '';
+}
+
 async function createGridBot(){
 
   let data = {
@@ -299,7 +316,7 @@ onMounted(() => {
                 <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
               </n-gi>
               <n-gi>
-                <n-grid x-gap="4" :cols="3">
+                <n-grid x-gap="4" :cols="4">
                   <n-gi>
                     <n-button @click="addStrategy">A</n-button>
                   </n-gi>
@@ -309,6 +326,11 @@ onMounted(() => {
                   <n-gi>
                     <n-button @click="deleteStrategy">D</n-button>
                   </n-gi>
+                  <n-gi>
+                    <n-button @click="deleteAllStrategies">A</n-button>
+                  </n-gi>
+
+        
                 </n-grid>
               </n-gi>
             </n-grid>
@@ -343,5 +365,42 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.custom-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: rgb(36, 2, 2);
+  border: 1px solid #0bdd9e;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
 
-</style>
+.dialog-content {
+  flex: 1;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px; /* Adjust the margin as needed */
+}
+  
+  .result-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #3a14e4; /* Change the background color as needed */
+    border: 1px solid #0bdd9e;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+  }
+  </style>
+  

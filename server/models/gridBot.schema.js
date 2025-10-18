@@ -18,6 +18,11 @@ export const gridBotSchema = defineMongooseModel({
             type: String,
             required: true
         },
+        apiKeyName: {
+            type: String,
+            required: false,
+            default: null
+        },
         lowerPrice: {
             type: String,
             required: true
@@ -26,10 +31,17 @@ export const gridBotSchema = defineMongooseModel({
             type: String,
             required: true
         },
+        BalanceBotStart: {
+            type: String,
+            required: false
+        },
+        
         amountType: {
             type: String,
             required: true
         },
+
+
         amount: {
             type: String,
             required: true
@@ -42,41 +54,106 @@ export const gridBotSchema = defineMongooseModel({
             type: String,
             required: true
         },
-        incrementalPercentAmountBuy: {
-            type: String,
-            required: true
+    
+        config: {
+            deviationPriceBuy: {
+                type: String,
+                required: false
+            },
+            deviationPriceSell: {
+                type: String,
+                required: false
+            },
+            deviationAmountBuy: {
+                type: String,
+                required: false
+            },
+            deviationAmountSell: {
+                type: String,
+                required: false
+            },
+            usePriceGroup: {
+                type: Boolean,
+                required: false
+            },
+            priceGroupBuy: {
+                type: String,
+                required: false
+            },
+            priceGroupSell: {
+                type: String,
+                required: false
+            }
         },
-        incrementalPercentAmountSell: {
-            type: String,
-            required: true
+        BalanceBot: {
+            BalanceBase: {
+                type: String,
+                required: false
+            },
+            BalanceQuote: {
+                type: String,
+                required: false
+            },
+            BalanceBaseInUSD: {
+                type: String,
+                required: false
+            },
+            BalanceQuoteInUSD: {
+                type: String,
+                required: false
+            },
+            BalanceBaseProfit: {
+                type: String,
+                required: false
+            },
+            BalanceQuoteProfit: {
+                type: String,
+                required: false
+            },
+            BalanceBotProfit: {
+                type: String,
+                required: false
+            },
+            BalanceBotValInitiala: {
+                type: String,
+                required: false
+            }
         },
-        deviationPriceBuy: {
-            type: String,
-            required: true
+        TakeProfitBot: {
+            TakeProfitBotSTR1: {
+                type: String,
+                required: false
+            },
+            TakeProfitBotSTR2: {
+                type: String,
+                required: false
+            }
         },
-        deviationPriceSell: {
-            type: String,
-            required: true
-        },
-        deviationAmountBuy: {
-            type: String,
-            required: true
-        },
-        deviationAmountSell: {
-            type: String,
-            required: true
-        },
-        usePriceGroup: {
-            type: Boolean,
-            required: true
-        },
-        priceGroupBuy: {
-            type: String,
-            required: false,
-        },
-        priceGroupSell: {
-            type: String,
-            required: false
+        BotAction: {
+            BotReset: {
+                type: String,
+                required: false
+            },
+            BotCancelOrders: {
+                type: String,
+                required: false
+            },
+            BotX1: {
+                type: String,
+                required: false
+            },
+            BotX2: {
+                type: String,
+                required: false
+            },
+            BotX3: {
+                type: String,
+                required: false
+            },
+            BotX4: {
+                type: String,
+                required: false
+            }
         },
         activeOrders: {
             type: Array,
@@ -85,6 +162,6 @@ export const gridBotSchema = defineMongooseModel({
         filledOrders: {
             type: Array,
             required: true
-        },
-    },
-})
+        }
+    }
+});

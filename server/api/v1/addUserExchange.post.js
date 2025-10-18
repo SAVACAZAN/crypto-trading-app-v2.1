@@ -5,11 +5,58 @@ export default defineEventHandler(async (event) => {
     const nitroApp = useNitroApp()
     const data = await readBody(event)
 
+    // Check if exchange already exists for this user
+    let existingExchange = await userExchangesSchema.findOne({
+        userID: data.userID,
+        exchange: data.exchange
+    });
+
+    if (existingExchange) {
+        // Exchange exists, check if this API key name already exists
+        const existingKeyIndex = existingExchange.apiKeys.findIndex(
+            k => k.name === (data.apiKeyName || 'Default')
+        );
+
+        if (existingKeyIndex !== -1) {
+            // API key with this name already exists, update it
+            existingExchange.apiKeys[existingKeyIndex] = {
+                name: data.apiKeyName || 'Default',
+                keys: data.apiKeys
+            };
+            await existingExchange.save();
+
+            return {
+                data: existingExchange,
+                message: 'API key updated successfully'
+            };
+        } else {
+            // Add new API key
+            const newApiKeyEntry = {
+                name: data.apiKeyName || 'Default',
+                keys: data.apiKeys
+            };
+
+            existingExchange.apiKeys.push(newApiKeyEntry);
+            await existingExchange.save();
+
+            return {
+                data: existingExchange,
+                message: 'API key added successfully'
+            };
+        }
+    }
+
     //set rest of exchanges as not selected
     await userExchangesSchema.updateMany({userID:data.userID}, {isSelectedExchange:false});
 
     //get exchange instance
     let exchangeInstance = await nitroApp.ccxtw.fetchExchangeInstance(data.exchange, data.apiKeys);
+
+    // Format API keys in new structure
+    const formattedApiKeys = [{
+        name: data.apiKeyName || 'Default',
+        keys: data.apiKeys
+    }];
 
     //create new
     let newUserExchange = {
@@ -19,7 +66,7 @@ export default defineEventHandler(async (event) => {
         isSelectedExchange:true,
         markets:[],
         selectedMarket:'',
-        apiKeys:data.apiKeys,
+        apiKeys: formattedApiKeys,
     };
 
     //push data to db
@@ -63,11 +110,7 @@ export default defineEventHandler(async (event) => {
     });
 
     return {
-        data: {
-            id: data.userID,
-            exchange: data.exchange,
-            apiKeys: data.apiKeys,
-        }
+        data: newUserResp
     }
 })
 

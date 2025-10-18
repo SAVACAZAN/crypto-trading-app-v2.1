@@ -18,15 +18,28 @@ export default defineNitroPlugin((nitroApp) => {
             // console.log('this hit?');
 
             let prices = [];
-            let gridWidth = math.evaluate(`((${data.upperPrice} - ${data.lowerPrice}) / ${data.nrOfGrids})`);
-            let currentPrice = data.lowerPrice;
-
-
-            for (let i = 0; i < data.nrOfGrids; i++) {
-                currentPrice = math.evaluate(`${currentPrice} + ${gridWidth}`);
-                prices.push(math.evaluate(`${currentPrice} + ${gridWidth}`));
+            let gridWidth;
+            
+            if (data.nrOfGrids === 2) {
+                // Tratează cazul specific pentru nrOfGrids = 2
+                gridWidth = math.evaluate(`(${data.upperPrice} - ${data.lowerPrice}) / 2`);
+            } else {
+                gridWidth = math.evaluate(`(${data.upperPrice} - ${data.lowerPrice}) / ${data.nrOfGrids}`);
             }
-
+            
+            let currentPrice = data.lowerPrice;
+            
+            for (let i = 0; i < data.nrOfGrids; i++) {
+                if (data.nrOfGrids === 2 && i === 1) {
+                    // Tratează cazul specific pentru a doua grilă când avem doar 2 grile
+                    currentPrice = math.evaluate(`${currentPrice} + ${gridWidth}`);
+                    prices.push(currentPrice); // Adăugă prețul pentru a doua grilă
+                } else {
+                    currentPrice = math.evaluate(`${currentPrice} + ${gridWidth}`);
+                    prices.push(currentPrice);
+                }
+            }
+            
             let tickerStatus = await nitroApp.ccxtw.fetchTicker(data.userID, data.exchange, data.symbol);
 
             let lastPrice = tickerStatus.data.last;
@@ -49,26 +62,26 @@ export default defineNitroPlugin((nitroApp) => {
             let orders = [];
 
             if (data.ordersSide === 'buyOrSell') {
-                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy);
+                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, data.apiKeyName);
                 for (let i = 0; i < buyOrders.length; i++) {
                     orders.push(buyOrders[i]);
                 }
 
-                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell);
+                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, data.apiKeyName);
                 for (let i = 0; i < sellOrders.length; i++) {
                     orders.push(sellOrders[i]);
                 }
             }
 
             if (data.ordersSide === 'buyOnly') {
-                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy);
+                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, data.apiKeyName);
                 for (let i = 0; i < buyOrders.length; i++) {
                     orders.push(buyOrders[i]);
                 }
             }
 
             if (data.ordersSide === 'sellOnly')  {
-                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell);
+                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, data.apiKeyName);
                 for (let i = 0; i < sellOrders.length; i++) {
                     orders.push(sellOrders[i]);
                 }
@@ -79,7 +92,7 @@ export default defineNitroPlugin((nitroApp) => {
             await new gridBotSchema(data).save()
         },
 
-        async placeBuyOrders(userID, exchange, symbol, buyPrices, amountType, amount, nrOfGrids, incrementalPercentAmount) {
+        async placeBuyOrders(userID, exchange, symbol, buyPrices, amountType, amount, nrOfGrids, incrementalPercentAmount, apiKeyName) {
             //buy
             let orders = [];
             let localIndex = 1;
@@ -88,9 +101,9 @@ export default defineNitroPlugin((nitroApp) => {
                 let price = buyPrices[i];
                 let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amount, nrOfGrids, incrementalPercentAmount, localIndex);
 
-                console.log(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price);
+                console.log(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price, apiKeyName);
 
-                let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price);
+                let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price, {}, apiKeyName);
 
                 if (orderResponse.success) {
 
@@ -101,11 +114,11 @@ export default defineNitroPlugin((nitroApp) => {
                         size:orderResponse.data.size,
                         amount:orderResponse.data.amount,
                     });
-                    log =`${this.getCurrentTime()}: ${symbol}- PLACING_GRID_ORDER\x1b[33m - Type: limit, Side: \x1b[32mbuy, \x1b[33mAmount:\x1b[32m ${quantityPerGrid}, \x1b[33mPrice:\x1b[32m   ${price}`;
+                    log =`${this.getCurrentTime()}: ${symbol}- OWN THIS ==>\x1b[33m - Side: \x1b[32mbuy, \x1b[33mAmount:\x1b[32m ${quantityPerGrid}, \x1b[33mPrice:\x1b[32m   ${price}`;
                 }
 
                 if (!orderResponse.success) {
-                    log =`${this.getCurrentTime()}: ${symbol} - PLACING_GRID_ORDER - ${orderResponse.log}`;
+                    log =`${this.getCurrentTime()}: ${symbol} - OWN THIS ==> - ${orderResponse.log}`;
                 }
 
                 console.log(log);
@@ -115,7 +128,7 @@ export default defineNitroPlugin((nitroApp) => {
             return orders;
         },
 
-        async placeSellOrders(userID, exchange, symbol, sellPrices, amountType, amount, nrOfGrids, incrementalPercentAmount) {
+        async placeSellOrders(userID, exchange, symbol, sellPrices, amountType, amount, nrOfGrids, incrementalPercentAmount, apiKeyName) {
             //sell
             let orders = [];
             let localIndex = 1;
@@ -124,9 +137,9 @@ export default defineNitroPlugin((nitroApp) => {
                 let price = sellPrices[i];
                 let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amount, nrOfGrids, incrementalPercentAmount, localIndex);
 
-                console.log(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price);
+                console.log(userID, exchange, symbol, 'limit', 'sell', quantityPerGrid, price, apiKeyName);
 
-                let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'sell', quantityPerGrid, price);
+                let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'sell', quantityPerGrid, price, {}, apiKeyName);
 
                 if (orderResponse.success) {
                     orders.push({
@@ -136,11 +149,11 @@ export default defineNitroPlugin((nitroApp) => {
                         size:orderResponse.data.size,
                         amount:orderResponse.data.amount,
                     });
-                    log =`${this.getCurrentTime()}: ${symbol} - PLACING_GRID_ORDER - Type: limit, Side: \x1B[31msell, \x1b[33mAmount:\x1B[31m ${quantityPerGrid}, \x1b[33mPrice:\x1B[31m ${price}\x1b[33m`;
+                    log =`${this.getCurrentTime()}: ${symbol} - OWN THIS ==> - Side: \x1B[31msell, \x1b[33mAmount:\x1B[31m ${quantityPerGrid}, \x1b[33mPrice:\x1B[31m ${price}\x1b[33m`;
                 }
 
                 if (!orderResponse.success) {
-                    log =`${this.getCurrentTime()}: ${symbol} - PLACING_GRID_ORDER - ${orderResponse.log}`;
+                    log =`${this.getCurrentTime()}: ${symbol} - OWN THIS ==> - ${orderResponse.log}`;
                 }
 
                 console.log(log);
@@ -162,7 +175,21 @@ export default defineNitroPlugin((nitroApp) => {
             }
 
             if (amountType === 'incrementalPercent') {
-                quantityPerGrid = math.evaluate(`(${amount} + ((${amount} / 100) * (${incrementalPercentAmount} * ${index}))) / ${price}`);
+                if (nrOfGrids === 2) {
+                    // Tratează cazul specific pentru nrOfGrids = 2
+                    if (index === 1) {
+                        // A doua ordine din grilă
+                        // Aici puteți seta manual prețul și cantitatea pentru a doua ordine
+                        quantityPerGrid = math.evaluate(`(${amount} / ${price})`); // De exemplu, setați cantitatea la ${amount} și prețul la 'sellUpperPrice'
+                    } else {
+                        // Prima ordine din grilă
+                        // Aici puteți seta manual prețul și cantitatea pentru prima ordine
+                        quantityPerGrid = math.evaluate(`(${amount} / ${price})`); // De exemplu, setați cantitatea la ${amount} și prețul la 'buyLowerPrice'
+                    }
+                } else {
+                    // Tratează cazul general pentru nrOfGrids diferit de 2
+                    quantityPerGrid = math.evaluate(`(${amount} + ((${amount} / 100) * (${incrementalPercentAmount} * ${index}))) / ${price}`);
+                }
             }
             return quantityPerGrid;
         },
@@ -187,9 +214,9 @@ export default defineNitroPlugin((nitroApp) => {
                     if(bot.usePriceGroup) {
                         newPrice = bot.priceGroupSell;
                     } else {
-                        newPrice = math.evaluate(`${price} + ((${price} / 100) * ${bot.deviationPriceBuy})`);
+                        newPrice = math.evaluate(`${price} + ((${price} / 100) * ${bot.config.deviationPriceBuy})`);
                     }
-                    newAmount = math.evaluate(`${amount} + ((${amount} / 100) * ${bot.deviationAmountBuy})`);
+                    newAmount = math.evaluate(`${amount} + ((${amount} / 100) * ${bot.config.deviationAmountBuy})`);
                     newSide = 'sell';
                 }
 
@@ -197,9 +224,9 @@ export default defineNitroPlugin((nitroApp) => {
                     if(bot.usePriceGroup) {
                         newPrice = bot.priceGroupBuy;
                     } else {
-                        newPrice = math.evaluate(`${price} - ((${price} / 100) * ${bot.deviationPriceSell})`);
+                        newPrice = math.evaluate(`${price} - ((${price} / 100) * ${bot.config.deviationPriceSell})`);
                     }
-                    newAmount = math.evaluate(`${amount} + ((${amount} / 100) * ${bot.deviationAmountSell})`);
+                    newAmount = math.evaluate(`${amount} + ((${amount} / 100) * ${bot.config.deviationAmountSell})`);
                     newSide = 'buy';
                 }
 
@@ -221,7 +248,7 @@ export default defineNitroPlugin((nitroApp) => {
                     } else {
                         orderCounts[exchange]++;
                     }
-                    console.log(`Comandă cu succes nr. ${orderCounts[exchange]}`);
+                    console.log(`Comandaaaă cu succes nr. ${orderCounts[exchange]}`);
 
                     // Evidențierea numărului de tranzacții de tip buy și sell
                     if (side === 'buy') {

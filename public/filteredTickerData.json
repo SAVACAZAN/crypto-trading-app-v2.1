@@ -1,0 +1,548 @@
+[
+  {
+    "symbol": "ADA/EUR",
+    "bestAsk": 0.538,
+    "bestBid": 0.5364,
+    "usdVolume": 69054.33201536
+  },
+  {
+    "symbol": "ADA/USDC",
+    "bestAsk": 0.56603,
+    "bestBid": 0.56438,
+    "usdVolume": 30393.97899536
+  },
+  {
+    "symbol": "APE/EUR",
+    "bestAsk": 1.046,
+    "bestBid": 1.037,
+    "usdVolume": 4056.30062144
+  },
+  {
+    "symbol": "ARB/EUR",
+    "bestAsk": 0.56739,
+    "bestBid": 0.56504,
+    "usdVolume": 120018.47507346
+  },
+  {
+    "symbol": "AVAX/EUR",
+    "bestAsk": 38,
+    "bestBid": 16.08,
+    "usdVolume": 330.53324218
+  },
+  {
+    "symbol": "AVAX/USDC",
+    "bestAsk": 32.1,
+    "bestBid": 31.91,
+    "usdVolume": 13318.58525021
+  },
+  {
+    "symbol": "BCH/EUR",
+    "bestAsk": 500,
+    "bestBid": 208.7,
+    "usdVolume": 460.6086067
+  },
+  {
+    "symbol": "BCUT/EUR",
+    "bestAsk": 0.035,
+    "bestBid": 0.0349,
+    "usdVolume": 86442.82459833
+  },
+  {
+    "symbol": "BTC/EUR",
+    "bestAsk": 83834.2,
+    "bestBid": 83545.9,
+    "usdVolume": 4968479.73308605
+  },
+  {
+    "symbol": "BTC/USDC",
+    "bestAsk": 88189,
+    "bestBid": 87957.1,
+    "usdVolume": 6383.52473652
+  },
+  {
+    "symbol": "CATI/EUR",
+    "bestAsk": 0.3847,
+    "bestBid": 0.3832,
+    "usdVolume": 74852.50252231
+  },
+  {
+    "symbol": "CCD/EUR",
+    "bestAsk": 0.004,
+    "bestBid": 0.002251,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "CCD/USDC",
+    "bestAsk": 0.004127,
+    "bestBid": 0.002006,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "CELO/EUR",
+    "bestAsk": 14,
+    "bestBid": 0.3513,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "DGMV/EUR",
+    "bestAsk": 0.0084,
+    "bestBid": 0.002,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "DOGE/EUR",
+    "bestAsk": 0.37084,
+    "bestBid": 0.36947,
+    "usdVolume": 359.66012159
+  },
+  {
+    "symbol": "DOGS/EUR",
+    "bestAsk": 0.00062204,
+    "bestBid": 0.00061997,
+    "usdVolume": 13869.1565369
+  },
+  {
+    "symbol": "DOT/EUR",
+    "bestAsk": 6.82,
+    "bestBid": 3.02,
+    "usdVolume": 1176.75727954
+  },
+  {
+    "symbol": "EIGEN/EUR",
+    "bestAsk": 2.3509,
+    "bestBid": 2.3428,
+    "usdVolume": 102305.72811406
+  },
+  {
+    "symbol": "ETH/EUR",
+    "bestAsk": 2965.8548,
+    "bestBid": 2955.0496,
+    "usdVolume": 3419705.96056337
+  },
+  {
+    "symbol": "ETH/USDC",
+    "bestAsk": 3119.9395,
+    "bestBid": 3110.9623,
+    "usdVolume": 15164.70419561
+  },
+  {
+    "symbol": "EURT/EUR",
+    "bestAsk": 0.993,
+    "bestBid": 0.9895,
+    "usdVolume": 131620.73293959
+  },
+  {
+    "symbol": "FET/EUR",
+    "bestAsk": 1.2052,
+    "bestBid": 1.201,
+    "usdVolume": 138064.38359897
+  },
+  {
+    "symbol": "FLOKI/EUR",
+    "bestAsk": 0.0002252,
+    "bestBid": 0.0002246,
+    "usdVolume": 9161.70591659
+  },
+  {
+    "symbol": "FLOKI/USDC",
+    "bestAsk": 0.00023687,
+    "bestBid": 0.00023637,
+    "usdVolume": 110362.46471316
+  },
+  {
+    "symbol": "GOAT/EUR",
+    "bestAsk": 0.8931,
+    "bestBid": 0.8902,
+    "usdVolume": 135542.7306294
+  },
+  {
+    "symbol": "HBAR/EUR",
+    "bestAsk": 0.0865,
+    "bestBid": 0.043,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "HMSTR/EUR",
+    "bestAsk": 0.003705,
+    "bestBid": 0.003692,
+    "usdVolume": 70872.75903345
+  },
+  {
+    "symbol": "IAG/EUR",
+    "bestAsk": 0.16558,
+    "bestBid": 0.16502,
+    "usdVolume": 9481.72951474
+  },
+  {
+    "symbol": "ICP/EUR",
+    "bestAsk": 7.788,
+    "bestBid": 7.765,
+    "usdVolume": 50174.07956299
+  },
+  {
+    "symbol": "KOIN/EUR",
+    "bestAsk": 0.111479,
+    "bestBid": 0.108184,
+    "usdVolume": 25.16965458
+  },
+  {
+    "symbol": "LAVA/EUR",
+    "bestAsk": 0.01292,
+    "bestBid": 0.01275,
+    "usdVolume": 4364.59346637
+  },
+  {
+    "symbol": "LCX/BTC",
+    "bestAsk": 0.00000114,
+    "bestBid": 0.0000011,
+    "usdVolume": 39839.23170162
+  },
+  {
+    "symbol": "LCX/ETH",
+    "bestAsk": 0.00003172,
+    "bestBid": 0.00002978,
+    "usdVolume": 39414.10372156
+  },
+  {
+    "symbol": "LCX/EUR",
+    "bestAsk": 0.09494,
+    "bestBid": 0.0939,
+    "usdVolume": 70421.34766091
+  },
+  {
+    "symbol": "LCX/USDC",
+    "bestAsk": 0.10462,
+    "bestBid": 0.09391,
+    "usdVolume": 763942.56978037
+  },
+  {
+    "symbol": "LDO/EUR",
+    "bestAsk": 1.08769,
+    "bestBid": 1.0831,
+    "usdVolume": 185137.48400743
+  },
+  {
+    "symbol": "LINK/EUR",
+    "bestAsk": 12.61,
+    "bestBid": 5.2,
+    "usdVolume": 9.4785305
+  },
+  {
+    "symbol": "LTC/EUR",
+    "bestAsk": 78.64,
+    "bestBid": 78.34,
+    "usdVolume": 179.96394596
+  },
+  {
+    "symbol": "LUMIA/EUR",
+    "bestAsk": 0.95974,
+    "bestBid": 0.95558,
+    "usdVolume": 82457.17295288
+  },
+  {
+    "symbol": "MATIC/EUR",
+    "bestAsk": 0.6,
+    "bestBid": 0.305,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "MIN/EUR",
+    "bestAsk": 0.02442,
+    "bestBid": 0.02434,
+    "usdVolume": 35154.21719694
+  },
+  {
+    "symbol": "MKR/EUR",
+    "bestAsk": 0,
+    "bestBid": 5.827,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "MOG/EUR",
+    "bestAsk": 0.00000235,
+    "bestBid": 0.00000225,
+    "usdVolume": 24291.78487128
+  },
+  {
+    "symbol": "NEIRO/EUR",
+    "bestAsk": 0.08547,
+    "bestBid": 0.08517,
+    "usdVolume": 176448.82121215
+  },
+  {
+    "symbol": "NIKEPIG/EUR",
+    "bestAsk": 0.007332,
+    "bestBid": 0.00733,
+    "usdVolume": 66.39394824
+  },
+  {
+    "symbol": "NMKR/EUR",
+    "bestAsk": 0.0041,
+    "bestBid": 0.0017,
+    "usdVolume": 0.00312187
+  },
+  {
+    "symbol": "NMKR/USDC",
+    "bestAsk": 0.001994,
+    "bestBid": 0.001756,
+    "usdVolume": 18.92620594
+  },
+  {
+    "symbol": "NOT/EUR",
+    "bestAsk": 0.007587,
+    "bestBid": 0.007418,
+    "usdVolume": 138229.39658865
+  },
+  {
+    "symbol": "NVL/EUR",
+    "bestAsk": 0.909,
+    "bestBid": 0.792,
+    "usdVolume": 13502.9574118
+  },
+  {
+    "symbol": "ONDO/EUR",
+    "bestAsk": 0.82805,
+    "bestBid": 0.82466,
+    "usdVolume": 201953.43202638
+  },
+  {
+    "symbol": "OP/EUR",
+    "bestAsk": 1.5,
+    "bestBid": 1.48,
+    "usdVolume": 15060.75423366
+  },
+  {
+    "symbol": "PENDLE/EUR",
+    "bestAsk": 4.91079,
+    "bestBid": 4.8938,
+    "usdVolume": 144284.20188813
+  },
+  {
+    "symbol": "PEPE/EUR",
+    "bestAsk": 0.00002102,
+    "bestBid": 0.000021,
+    "usdVolume": 54875.24430412
+  },
+  {
+    "symbol": "PYR/EUR",
+    "bestAsk": 2.6411,
+    "bestBid": 2.628,
+    "usdVolume": 6993.00882326
+  },
+  {
+    "symbol": "QAI/EUR",
+    "bestAsk": 91.8827,
+    "bestBid": 91.0741,
+    "usdVolume": 64152.69122588
+  },
+  {
+    "symbol": "QNT/EUR",
+    "bestAsk": 90,
+    "bestBid": 56,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "RENDER/EUR",
+    "bestAsk": 6.51732,
+    "bestBid": 6.48904,
+    "usdVolume": 213398.51369065
+  },
+  {
+    "symbol": "SAFE/EUR",
+    "bestAsk": 0.99004,
+    "bestBid": 0.96078,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "SAITO/EUR",
+    "bestAsk": 0.005824,
+    "bestBid": 0.0058,
+    "usdVolume": 15104.87637238
+  },
+  {
+    "symbol": "SAND/EUR",
+    "bestAsk": 0.2665,
+    "bestBid": 0.2651,
+    "usdVolume": 3083.70185693
+  },
+  {
+    "symbol": "SKY/EUR",
+    "bestAsk": 0.05694,
+    "bestBid": 0.05674,
+    "usdVolume": 170493.34328324
+  },
+  {
+    "symbol": "SNEK/EUR",
+    "bestAsk": 0.001587,
+    "bestBid": 0.001518,
+    "usdVolume": 34269.80170176
+  },
+  {
+    "symbol": "SOL/EUR",
+    "bestAsk": 204.066,
+    "bestBid": 203.455,
+    "usdVolume": 287484.75991835
+  },
+  {
+    "symbol": "SPEEDY/EUR",
+    "bestAsk": 0.01288,
+    "bestBid": 0.01286,
+    "usdVolume": 6598.76022822
+  },
+  {
+    "symbol": "SPX/EUR",
+    "bestAsk": 0.63306,
+    "bestBid": 0.63032,
+    "usdVolume": 45038.46072607
+  },
+  {
+    "symbol": "SRX/EUR",
+    "bestAsk": 0.06019,
+    "bestBid": 0.06004,
+    "usdVolume": 34231.89979476
+  },
+  {
+    "symbol": "SWELL/EUR",
+    "bestAsk": 0.03683,
+    "bestBid": 0.03678,
+    "usdVolume": 35217.46846101
+  },
+  {
+    "symbol": "TANG/EUR",
+    "bestAsk": 0.00007,
+    "bestBid": 0.0000101,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "TANG/USDC",
+    "bestAsk": 0.0000168,
+    "bestBid": 0.0000121,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "TIA/EUR",
+    "bestAsk": 0.0065,
+    "bestBid": 0.006497,
+    "usdVolume": 46826.49039397
+  },
+  {
+    "symbol": "TIA/USDC",
+    "bestAsk": 0.006777,
+    "bestBid": 0.006766,
+    "usdVolume": 62041.23390696
+  },
+  {
+    "symbol": "TOKEN/EUR",
+    "bestAsk": 0.0544,
+    "bestBid": 0.05426,
+    "usdVolume": 73789.33819158
+  },
+  {
+    "symbol": "TON/EUR",
+    "bestAsk": 5.138,
+    "bestBid": 5.115,
+    "usdVolume": 64139.45640878
+  },
+  {
+    "symbol": "TURBO/EUR",
+    "bestAsk": 0.008966,
+    "bestBid": 0.008934,
+    "usdVolume": 112311.67416006
+  },
+  {
+    "symbol": "TYT/EUR",
+    "bestAsk": 0.010801,
+    "bestBid": 0.003235,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "UNI/EUR",
+    "bestAsk": 10.721,
+    "bestBid": 3.65,
+    "usdVolume": 1629.418845
+  },
+  {
+    "symbol": "USDC/EUR",
+    "bestAsk": 0.9512,
+    "bestBid": 0.9499,
+    "usdVolume": 6821.91762953
+  },
+  {
+    "symbol": "USDT/EUR",
+    "bestAsk": 0.9521,
+    "bestBid": 0.949,
+    "usdVolume": 733085.81019305
+  },
+  {
+    "symbol": "VIRTUAL/EUR",
+    "bestAsk": 0.36883,
+    "bestBid": 0.3676,
+    "usdVolume": 138746.14633733
+  },
+  {
+    "symbol": "VIS/EUR",
+    "bestAsk": 0.079999,
+    "bestBid": 0.07788,
+    "usdVolume": 10.29442266
+  },
+  {
+    "symbol": "VIS/USDC",
+    "bestAsk": 0.072,
+    "bestBid": 0.0094,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "W/EUR",
+    "bestAsk": 0.22385,
+    "bestBid": 0.22313,
+    "usdVolume": 250806.59412028
+  },
+  {
+    "symbol": "WLD/EUR",
+    "bestAsk": 2.18876,
+    "bestBid": 2.17891,
+    "usdVolume": 22760.51556587
+  },
+  {
+    "symbol": "WMTX/EUR",
+    "bestAsk": 0.27199,
+    "bestBid": 0.27103,
+    "usdVolume": 15484.83753219
+  },
+  {
+    "symbol": "WTK/EUR",
+    "bestAsk": 0,
+    "bestBid": 0,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "XAUT/EUR",
+    "bestAsk": 2440.16,
+    "bestBid": 2432.251,
+    "usdVolume": 101941.77663084
+  },
+  {
+    "symbol": "XDC/EUR",
+    "bestAsk": 0.029208,
+    "bestBid": 0.027986,
+    "usdVolume": 0
+  },
+  {
+    "symbol": "XRP/EUR",
+    "bestAsk": 0.75785,
+    "bestBid": 0.75558,
+    "usdVolume": 103139.64095637
+  },
+  {
+    "symbol": "XRP/USDC",
+    "bestAsk": 0.79738,
+    "bestBid": 0.795,
+    "usdVolume": 49327.37383084
+  },
+  {
+    "symbol": "ZRO/EUR",
+    "bestAsk": 3.30824,
+    "bestBid": 3.29369,
+    "usdVolume": 129464.99217719
+  }
+]

@@ -4,11 +4,13 @@ export default defineEventHandler(async (event) => {
     const nitroApp = useNitroApp()
     const query = getQuery(event)
 
-    let response = await nitroApp.ccxtw.fetchBalance(query.userID, query.exchange);
+    let response = await nitroApp.ccxtw.fetchBalance(query.userID, query.exchange, query.apiKeyName);
 
     // console.log(response);
 
     return {
-        data: response.data
+        data: response.data,
+        success: response.success,
+        log: response.log
     }
 })

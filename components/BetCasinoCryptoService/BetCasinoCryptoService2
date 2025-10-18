@@ -1,0 +1,84 @@
+BetCasinoCryptoService
+├── server
+│   ├── models
+│   │   ├── user.schema.js
+│   │   ├── game.schema.js
+│   │   ├── transaction.schema.js
+│   │   ├── wallet.schema.js
+│   │   ├── jackpot.schema.js
+│   │   ├── casinoBalance.schema.js
+│   │   ├── casinoProfit.schema.js
+│   │   ├── clientProfit.schema.js
+│   │   ├── casinoInitialBalance.schema.js
+│   │   ├── clientInitialBalance.schema.js
+│   │   ├── airdrop.schema.js
+│   │   ├── faucet.schema.js
+│   │   ├── rewards.schema.js
+│   │   ├── stake.schema.js
+│   │   ├── toppool.schema.js
+│   │   ├── bestwin.schema.js
+│   │   ├── toppayed.schema.js
+│   │   ├── referal.schema.js
+│   ├── api
+│   │   ├── getUsers.js
+│   │   ├── getGames.js
+│   │   ├── getTransactions.js
+│   │   ├── addGame.js
+│   │   ├── deposit.js
+│   │   ├── withdraw.js
+│   │   ├── placeBet.js
+│   │   ├── claimPrize.js
+│   │   ├── addJackpotContribution.js
+│   │   ├── getJackpot.js
+│   │   ├── resetJackpot.js
+│   │   ├── getCasinoBalance.js
+│   │   ├── getCasinoProfit.js
+│   │   ├── getClientProfit.js
+│   │   ├── getCasinoInitialBalance.js
+│   │   ├── getClientInitialBalance.js
+│   │   ├── getAirdrop.js
+│   │   ├── claimAirdrop.js
+│   │   ├── getFaucet.js
+│   │   ├── claimFaucet.js
+│   │   ├── getRewards.js
+│   │   ├── claimRewards.js
+│   │   ├── getStake.js
+│   │   ├── stakeTokens.js
+│   │   ├── getTopPool.js
+│   │   ├── getBestWin.js
+│   │   ├── getTopPaid.js
+│   │   ├── getReferral.js
+│   │   ├── claimReferral.js
+│   ├── database.js
+│   ├── routes
+│   │   ├── apiRoutes.js
+├── client
+│   ├── components
+│   │   ├── GameList.vue
+│   │   ├── UserList.vue
+│   │   ├── TransactionList.vue
+│   │   ├── GameForm.vue
+│   │   ├── UserForm.vue
+│   │   ├── TransactionForm.vue
+│   │   ├── WalletBalance.vue
+│   │   ├── DepositForm.vue
+│   │   ├── WithdrawForm.vue
+│   │   ├── BetPlacer.vue
+│   │   ├── JackpotInfo.vue
+│   │   ├── CasinoBalance.vue
+│   │   ├── CasinoProfit.vue
+│   │   ├── ClientProfit.vue
+│   │   ├── CasinoInitialBalance.vue
+│   │   ├── ClientInitialBalance.vue
+│   │   ├── Airdrop.vue
+│   │   ├── Faucet.vue
+│   │   ├── Rewards.vue
+│   │   ├── Stake.vue
+│   │   ├── TopPool.vue
+│   │   ├── BestWin.vue
+│   │   ├── TopPaid.vue
+│   │   ├── Referral.vue
+│   ├── App.vue
+│   ├── main.js
+├── package.json
+├── README.md

@@ -21,3 +21,34 @@ logs
 .env
 .env.*
 !.env.example
+
+# Sensitive data
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+secrets.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Windows reserved names
+nul
+CON
+PRN
+AUX
+NUL

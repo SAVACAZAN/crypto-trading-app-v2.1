@@ -1,0 +1,98 @@
+import { defineMongooseModel } from '#nuxt/mongoose'
+export const DkdBotSchema = defineMongooseModel({
+    name: 'DkdBot',
+    schema: {
+        userID: {
+            type: String,
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        exchange: {
+            type: String,
+            required: true
+        },
+        symbol: {
+            type: String,
+            required: true
+        },
+        PriceStart: {
+            type: String,
+            required: true
+        },
+        amountPriceStart: {
+            type: String,
+            required: false
+        },
+        lowerPrice: {
+            type: String,
+            required: true
+        },
+        upperPrice: {
+            type: String,
+            required: true
+        },
+        amountType: {
+            type: String,
+            required: true
+        },
+        amount: {
+            type: String,
+            required: true
+        },
+        nrOfGrids: {
+            type: String,
+            required: true
+        },
+        ordersSide: {
+            type: String,
+            required: true
+        },
+        incrementalPercentAmountBuy: {
+            type: String,
+            required: false
+        },
+        incrementalPercentAmountSell: {
+            type: String,
+            required: false
+        },
+        deviationPriceBuy: {
+            type: String,
+            required: false
+        },
+        deviationPriceSell: {
+            type: String,
+            required: false
+        },
+        deviationAmountBuy: {
+            type: String,
+            required: false
+        },
+        deviationAmountSell: {
+            type: String,
+            required: false
+        },
+        usePriceGroup: {
+            type: Boolean,
+            required: false
+        },
+        priceGroupBuy: {
+            type: String,
+            required: false,
+        },
+        priceGroupSell: {
+            type: String,
+            required: false
+        },
+        activeOrders: {
+            type: Array,
+            required: true
+        },
+        filledOrders: {
+            type: Array,
+            required: true
+        },
+    },
+})

@@ -214,7 +214,7 @@ async function fetchOrdersPooling() {
             :columns="openOrdersTableColumns"
             :data="openOrdersTableData"
             :pagination="openOrdersTablePagination"
-            :max-height="250"
+            :max-height="1250"
             size="small"
         />
       </n-tab-pane>
@@ -223,7 +223,7 @@ async function fetchOrdersPooling() {
             :columns="closedOrdersTableColumns"
             :data="closedOrdersTableData"
             :pagination="closedOrdersTablePagination"
-            :max-height="250"
+            :max-height="1250"
             size="small"
         />
       </n-tab-pane>

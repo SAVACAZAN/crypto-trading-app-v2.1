@@ -11,12 +11,12 @@ let currentSymbol = ref(app.getUserSelectedMarket);
 let base = currentSymbol.value.split('/')[0];
 let quote = currentSymbol.value.split('/')[1];
 
-let name = ref(`gridBot_${generateRandomString(5)}`);
+let name = ref(`FrontRunBot_${generateRandomString(5)}`);
 let strategyPicker = ref();
 let strategyPickerOptions = ref([]);
 let lowerPrice = ref('');
 let upperPrice = ref('');
-let amountType = ref('quantityPerGrid');
+let amountType = ref('incrementalPercent');
 let amountTypeOptions = [
   { value: 'quantityPerGrid', label:'Qty Per Grid'},
   { value: 'totalAmount', label:'Total Amount'},
@@ -32,13 +32,7 @@ let ordersSideOptions = [
 ];
 let incrementalPercentAmountBuy = ref('');
 let incrementalPercentAmountSell = ref('');
-let deviationPriceBuy = ref('');
-let deviationPriceSell = ref('');
-let deviationAmountBuy = ref('');
-let deviationAmountSell = ref('');
-let usePriceGroup = ref(true);
-let priceGroupBuy = ref('');
-let priceGroupSell = ref('');
+
 
 function generateRandomString(length = 20) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -51,7 +45,13 @@ function generateRandomString(length = 20) {
 
   return randomString;
 }
+async function createBuyOnlyBot() {
+  await createBot('buyOnly');
+}
 
+async function createSellOnlyBot() {
+  await createBot('sellOnly');
+}
 async function selectStrategy() {
   console.log('selecting');
 
@@ -72,13 +72,7 @@ async function selectStrategy() {
       ordersSide.value = strategiesStore[i].ordersSide;
       incrementalPercentAmountBuy.value = strategiesStore[i].incrementalPercentAmountBuy;
       incrementalPercentAmountSell.value = strategiesStore[i].incrementalPercentAmountSell;
-      deviationPriceBuy.value = strategiesStore[i].deviationPriceBuy;
-      deviationPriceSell.value = strategiesStore[i].deviationPriceSell;
-      deviationAmountBuy.value = strategiesStore[i].deviationAmountBuy;
-      deviationAmountSell.value = strategiesStore[i].deviationAmountSell;
-      usePriceGroup.value = strategiesStore[i].usePriceGroup;
-      priceGroupBuy.value = strategiesStore[i].priceGroupBuy;
-      priceGroupSell.value = strategiesStore[i].priceGroupSell;
+   
 
 
     }
@@ -102,13 +96,7 @@ async function addStrategy() {
     ordersSide: ordersSide.value,
     incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
     incrementalPercentAmountSell: incrementalPercentAmountSell.value,
-    deviationPriceBuy: deviationPriceBuy.value,
-    deviationPriceSell: deviationPriceSell.value,
-    deviationAmountBuy: deviationAmountBuy.value,
-    deviationAmountSell: deviationAmountSell.value,
-    usePriceGroup: usePriceGroup.value,
-    priceGroupBuy: priceGroupBuy.value,
-    priceGroupSell: priceGroupSell.value,
+
   };
 
   //push in store
@@ -155,13 +143,7 @@ async function editStrategy() {
         strategiesStore[i].ordersSide = ordersSide.value;
         strategiesStore[i].incrementalPercentAmountBuy = incrementalPercentAmountBuy.value;
         strategiesStore[i].incrementalPercentAmountSell = incrementalPercentAmountSell.value;
-        strategiesStore[i].deviationPriceBuy = deviationPriceBuy.value;
-        strategiesStore[i].deviationPriceSell = deviationPriceSell.value;
-        strategiesStore[i].deviationAmountBuy = deviationAmountBuy.value;
-        strategiesStore[i].deviationAmountSell = deviationAmountSell.value;
-        strategiesStore[i].usePriceGroup = usePriceGroup.value;
-        strategiesStore[i].priceGroupBuy = priceGroupBuy.value;
-        strategiesStore[i].priceGroupSell = priceGroupSell.value;
+   
       }
     }
   }
@@ -203,48 +185,62 @@ async function deleteStrategy() {
   ordersSide.value = 'buyOrSell';
   incrementalPercentAmountBuy.value = '';
   incrementalPercentAmountSell.value = '';
-  deviationPriceBuy.value = '';
-  deviationPriceSell.value = '';
-  deviationAmountBuy.value = '';
-  deviationAmountSell.value = '';
-  usePriceGroup.value = '';
-  priceGroupBuy.value = '';
-  priceGroupSell.value = '';
+
 
   localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
 }
 
-async function createGridBot(){
+async function deleteAllStrategies() {
+  console.log('deleting all strategies');
+
+  // Clear the strategiesStore array and update localStorage
+  let strategiesStore = [];
+  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
+
+  // Clear the strategyPickerOptions array
+  strategyPickerOptions.value = [];
+
+  // Reset form values if needed
+  // ...
+
+  // Set the selected strategy to an empty string
+  strategyPicker.value = '';
+}
+
+async function createBot(action) {
+  console.log('Creating front run bot with action:', action);
+
+  try {
+    ordersSide.value = action === 'buyOnly' ? 'buyOnly' : 'sellOnly'; // Set ordersSide based on the action
 
   let data = {
     userID: userID.value,
     name: name.value,
     exchange: currentExchange.value,
     symbol: currentSymbol.value,
+    PriceStart: PriceStart.value,
+    amountPriceStart:amountPriceStart.value,
     lowerPrice: lowerPrice.value,
     upperPrice: upperPrice.value,
     amountType: amountType.value,
     amount: amount.value,
     nrOfGrids: nrOfGrids.value,
     ordersSide: ordersSide.value,
-    incrementalPercentAmountBuy:incrementalPercentAmountBuy.value,
-    incrementalPercentAmountSell:incrementalPercentAmountSell.value,
-    deviationPriceBuy: deviationPriceBuy.value,
-    deviationPriceSell: deviationPriceSell.value,
-    deviationAmountBuy: deviationAmountBuy.value,
-    deviationAmountSell: deviationAmountSell.value,
-    usePriceGroup: usePriceGroup.value,
-    priceGroupBuy:priceGroupBuy.value,
-    priceGroupSell:priceGroupSell.value,
+    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+   
   };
 
   // console.log(data);
 
-  let response = await $fetch( '/api/v1/createGridBot', {
+  let response = await $fetch( '/api/v1/createFrontRunBot', {
     method: 'POST',
     body: data
   } );
-
+  console.log('Response from server:', response);
+  } catch (error) {
+    console.error('Error creating front run bot:', error);
+  }
 }
 
 onMounted(() => {
@@ -266,82 +262,135 @@ onMounted(() => {
 </script>
 
 <template>
-  <n-card>
-      <n-grid x-gap="12" :cols="2" item-responsive>
-        <n-gi>
-          <n-space vertical>
-            <n-input v-model:value="name" type="text" placeholder="Bot name" />
-            <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-select v-model:value="amountType" :options="amountTypeOptions" placeholder="Amount Type"/>
-            <n-select v-model:value="ordersSide" :options="ordersSideOptions" placeholder="Orders Side"/>
-            <n-input v-model:value="incrementalPercentAmountBuy" type="text" placeholder="Inc. % Amount Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationPriceBuy" type="text" placeholder="Deviation Price Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationAmountBuy" type="text" placeholder="Deviation Amount Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="priceGroupBuy" type="text" placeholder="Price Group Buy">
-              <template #suffix> {{ quote }} </template>
-            </n-input>
-            <n-button type="primary" @click="createGridBot">Create Grid bot</n-button>
-          </n-space>
-        </n-gi>
-        <n-gi>
-          <n-space vertical>
-
-            <n-grid x-gap="4" :cols="2">
-              <n-gi>
-                <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
-              </n-gi>
-              <n-gi>
-                <n-grid x-gap="4" :cols="3">
-                  <n-gi>
-                    <n-button @click="addStrategy">A</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="editStrategy">E</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="deleteStrategy">D</n-button>
-                  </n-gi>
-                </n-grid>
-              </n-gi>
-            </n-grid>
-
-
-            <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="amount" type="text" placeholder="Amount">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids"></n-input>
-            <n-input v-model:value="incrementalPercentAmountSell" type="text" placeholder="Inc. % Amount Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationPriceSell" type="text" placeholder="Deviation Price Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationAmountSell" type="text" placeholder="Deviation Amount Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="priceGroupSell" type="text" placeholder="Price Group Sell">
-              <template #suffix> {{ quote }} </template>
-            </n-input>
-            <n-checkbox v-model:checked="usePriceGroup">
-              Use Price Group
-            </n-checkbox>
-          </n-space>
-        </n-gi>
-      </n-grid>
-  </n-card>
-</template>
+    <n-card>
+        <n-grid x-gap="12" :cols="2">
+          <n-gi>
+            <n-space vertical>
+              <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" placeholder="Select strategy"/>
+              <n-input v-model:value="name" type="text" placeholder="Bot name" />
+  
+              <n-input v-model:value="PriceStart" type="text" placeholder="PriceStart">
+                <template #suffix> {{quote}} </template>
+              </n-input>
+              <n-input v-model:value="amountPriceStart" type="text" placeholder="AmountPriceStart">
+                <template #suffix> {{quote}} </template>
+              </n-input>
+  
+              <n-input v-model:value="amount" type="text" placeholder="Amount">
+                <template #suffix> {{quote}} </template>
+              </n-input>
+  
+  
+              
+  
+              <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price">
+               <template #suffix> {{quote}} </template>
+                </n-input>
+                
+              <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
+                <template #suffix> {{quote}} </template>
+              </n-input>
+              <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids"></n-input>
+                
+              
+              <n-select v-model:value="amountType" :options="amountTypeOptions" placeholder="Amount Type"/>
+             
+              <n-input v-model:value="incrementalPercentAmountBuy" type="text" placeholder="Inc. % Amount Buy">
+                <template #suffix> % </template>
+              </n-input>
+             
+           
+          
+       
+              <n-grid x-gap="4" :cols="2">
+                <n-gi>
+                  <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
+                </n-gi>
+                <n-gi>
+                  <n-grid x-gap="4" :cols="4">
+                    <n-gi>
+                      <n-button @click="addStrategy">A</n-button>
+                    </n-gi>
+                    <n-gi>
+                      <n-button @click="editStrategy">E</n-button>
+                    </n-gi>
+                    <n-gi>
+                      <n-button @click="deleteStrategy">D</n-button>
+                    </n-gi>
+                    <n-gi>
+                      <n-button @click="deleteAllStrategies">A</n-button>
+                    </n-gi>
+  
+          
+                  </n-grid>
+                </n-gi>
+              </n-grid>
+            
+       
+             
+  
+       
+  
+              <n-input v-model:value="incrementalPercentAmountSell" type="text" placeholder="Inc. % Amount Sell">
+                <template #suffix> % </template>
+              </n-input>
+           
+              <n-checkbox v-model:checked="ActiveRANGE">
+                Active RANGE
+              </n-checkbox>
+            </n-space>
+          </n-gi>
+          
+        </n-grid>
+        
+        <n-button-group>
+        <n-button class="buy-button" type="primary" @click="createBuyOnlyBot">Buy Only</n-button>
+        <n-button class="sell-button" type="primary" @click="createSellOnlyBot">Sell Only</n-button>
+      </n-button-group>
+  
+      <span style="margin-right: 10px;"></span>
+        
+  
+    </n-card>
+  </template>
 
 <style scoped>
+.custom-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: rgb(36, 2, 2);
+  border: 1px solid #0bdd9e;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
 
-</style>
+.dialog-content {
+  flex: 1;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px; /* Adjust the margin as needed */
+}
+  
+  .result-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: #3a14e4; /* Change the background color as needed */
+    border: 1px solid #0bdd9e;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+  }
+  </style>
+  

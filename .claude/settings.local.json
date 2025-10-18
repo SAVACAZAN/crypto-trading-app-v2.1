@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(tasklist)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(cat:*)",
+      "Bash(node -e \"const ccxt = require(''ccxt''); console.log(''Available exchanges:'', ccxt.exchanges.filter(e => e.includes(''coin'')).join('', ''))\")",
+      "Bash(node:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

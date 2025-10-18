@@ -1,9 +1,18 @@
 <template>
-    <h2>Dev Tools</h2>
+    
+    <h2>DELETE bots</h2>
 
     <n-space>
-      <n-button @click="deleteDBChartData">Delete DB chart data</n-button>
+     
       <n-button @click="deleteDBGridBotsData">Delete DB Grid Bots data</n-button>
+      <n-button @click="deleteDBdkdBotsData">Delete DB dkd Bots data</n-button>
+      <n-button @click="deleteDBFrontRunBotsData">Delete DB FrontRun Bots data</n-button>
+    </n-space>
+
+    <h2>DELETEDATA</h2>
+    <n-space>
+      <n-button @click="deleteDBChartData">Delete DB chart data</n-button>
+   
       <n-button @click="deleteDBDCABotsData">Delete DB DCA Bots data</n-button>
 <!--      <n-button>Delete DB User Exchanges and markets data</n-button>-->
 <!--      <n-button>Delete ALL DB User Data</n-button>-->
@@ -46,4 +55,25 @@ async function deleteDBDCABotsData() {
     duration: 2500,
   });
 }
+
+async function deleteDBdkdBotsData() {
+  await $fetch('/api/v1/deleteDBdkdBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all dkd bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBFrontRunBotsData() {
+  await $fetch('/api/v1/deleteDBFrontRunBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all FrontRun bots data from database.`,
+    duration: 2500,
+  });
+}
+
 </script>

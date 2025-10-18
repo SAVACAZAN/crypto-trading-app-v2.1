@@ -1,0 +1,100 @@
+import { setIntervalAsync } from "set-interval-async"
+import {grinderBotSchema} from "~/server/models/grinderBot.schema";
+import { create, all } from 'mathjs';
+const config = {
+    number: 'BigNumber',
+    precision: 20
+}
+const math = create(all, config);
+
+export default defineNitroPlugin((nitroApp) => {
+    startScheduler(nitroApp)
+    console.log('Grinder Bot Engine Loaded...')
+})
+
+function startScheduler(nitroApp) {
+    setIntervalAsync(async () => {
+
+        //get bots from db
+        // let runningBots = await grinderBotSchema.find({});
+
+        console.log('test??');
+        // //pas 1 - create buy order la pretul de la best bid 
+
+        let data = {
+            userID: "66c471f9296ffb4d03e9b096",
+            exchange:"probit",
+            symbol: "JOB/USDT",
+        }
+
+        let orderBookData = await nitroApp.ccxtw.fetchOrderBook(data.userID, data.exchange, data.symbol);
+
+        let price = orderBookData.data.bids[0][0];
+
+
+
+        let sellData = {
+            type:"limit",
+            side: "SELL",
+            amount:"10",
+            price:"",
+        }
+
+        // sellData.price = calculatePercentage(price, 0.2);
+
+        // Calculate 1% of the original number
+        const onePercent = math.multiply(price, 0.001);
+
+        // Add 1% to the original number
+        const increasedValue = math.add(price, onePercent);
+
+
+        console.log(increasedValue, onePercent, price);
+        
+        let buyData = {
+            type:"limit",
+            side: "BUY",
+            amount:"10",
+            price:"",
+        }
+
+        // console.log(price);
+
+        let isSellOrderPlaced = false;
+
+
+        if(isSellOrderPlaced === false) {
+
+            isSellOrderPlaced = true;
+
+            // long
+            // step 1 -  create order sell minim amount, la cel mai apropiat pret bestbid 0.2%
+            let sellOrder = await nitroApp.ccxtw.createOrder(data.userID, data.exchange, data.symbol, sellData.type, sellData.side, sellData.amount, sellData.price);
+
+            if(sellOrder.success === true) {
+                
+                //step 2 - place order de buy
+                let buyOrder = await nitroApp.ccxtw.createOrder(data.userID, data.exchange, data.symbol, buyData.type, buyData.side, buyData.amount, buyData.price);
+
+                console.log(buyOrder);
+
+                if(buyOrder.success === true) {
+                    setIntervalAsync(async () => {
+                        //step 3 - cancel order de buy
+                        await nitroApp.ccxtw.cancelOrder(data.userID, data.exchange, buyOrder.data.id, data.symbol);
+                    }, 100);
+                }
+
+                
+
+            }
+            
+        }
+        
+    }, 100);
+}
+
+function calculatePercentage(number, percentage) {
+    let res = math.evaluate(`${number} * (${percentage} / 100)`);
+    return res;
+}

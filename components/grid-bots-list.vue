@@ -28,10 +28,7 @@ const gridBotsTableColumns = [
     title: "Upper Price",
     key: "upperPrice"
   },
-  {
-    title: "Amount Type",
-    key: "amountType"
-  },
+
   {
     title: "Amount",
     key: "amount"
@@ -40,38 +37,16 @@ const gridBotsTableColumns = [
     title: "nr Of Grids",
     key: "nrOfGrids"
   },
+
   {
-    title: "orders Side",
-    key: "ordersSide"
+    title: "BalanceBot",
+    key: "BalanceBot"
   },
   {
-    title: "incremental % Buy",
-    key: "incrementalPercentAmountBuy"
+    title: "Profit",
+    key: "Profit"
   },
-  {
-    title: "incremental % Sell",
-    key: "incrementalPercentAmountSell"
-  },
-  {
-    title: "Deviation Price Buy",
-    key: "deviationPriceBuy"
-  },
-  {
-    title: "Deviation Price Sell",
-    key: "deviationPriceSell"
-  },
-  {
-    title: "Deviation Amount Buy",
-    key: "deviationAmountBuy"
-  },
-  {
-    title: "Deviation Amount Sell",
-    key: "deviationAmountSell"
-  },
-  {
-    title: "Use Price Group",
-    key: "usePriceGroup"
-  },
+
 ];
 const gridBotsTableData = ref([]);
 
@@ -310,38 +285,45 @@ async function fetchOrdersPooling() {
 </script>
 
 <template>
-  <n-card>
-    <n-tabs type="line" animated>
+  <n-card style="font-size: 12px; max-width: 100%;">
+    <n-tabs type="line" animated style="max-width: 100%;">
       <n-tab-pane name="Grid Bots" tab="Grid Bots">
-        <n-data-table
-            :columns="gridBotsTableColumns"
-            :data="gridBotsTableData"
-            :pagination="gridBotsTablePagination"
-            :max-height="250"
-            size="small"
-        />
+        <div style="max-width: 100%; overflow-x: auto;">
+          <n-data-table
+              :columns="gridBotsTableColumns"
+              :data="gridBotsTableData"
+              :pagination="gridBotsTablePagination"
+              :max-height="150"
+              size="small"
+          />
+        </div>
       </n-tab-pane>
       <n-tab-pane name="Open Orders" tab="Open Orders">
-        <n-data-table
-            :columns="openOrdersTableColumns"
-            :data="openOrdersTableData"
-            :pagination="openOrdersTablePagination"
-            :max-height="250"
-            size="small"
-        />
+        <div style="max-width: 100%; overflow-x: auto;">
+          <n-data-table
+              :columns="openOrdersTableColumns"
+              :data="openOrdersTableData"
+              :pagination="openOrdersTablePagination"
+              :max-height="150"
+              size="small"
+          />
+        </div>
       </n-tab-pane>
       <n-tab-pane name="Closed Orders" tab="Closed Orders">
-        <n-data-table
-            :columns="closedOrdersTableColumns"
-            :data="closedOrdersTableData"
-            :pagination="closedOrdersTablePagination"
-            :max-height="250"
-            size="small"
-        />
+        <div style="max-width: 100%; overflow-x: auto;">
+          <n-data-table
+              :columns="closedOrdersTableColumns"
+              :data="closedOrdersTableData"
+              :pagination="closedOrdersTablePagination"
+              :max-height="150"
+              size="small"
+          />
+        </div>
       </n-tab-pane>
     </n-tabs>
   </n-card>
 </template>
+
 
 <style scoped>
 

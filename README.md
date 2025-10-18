@@ -1,63 +1,122 @@
-# Nuxt 3 Minimal Starter
+# Crypto Trading Application
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A comprehensive cryptocurrency trading platform built with Nuxt 3, supporting multiple exchanges including Coinbase Advanced, Kraken, Bitrue, LCX, and ProBit.
 
-## Setup
+## Features
 
-Make sure to install the dependencies:
+- 🔐 **Multi-Exchange Support**: Manage API keys and trade across multiple exchanges
+- 📊 **Real-time Balance Tracking**: View balances across all exchanges in real-time
+- 🤖 **DCA Bots**: Automated Dollar Cost Averaging trading bots
+- 📈 **Trading Strategies**: Multiple built-in strategies with backtesting
+- 💹 **Portfolio Management**: Track and manage your crypto portfolio
+- 🎰 **Casino Features**: Betting, staking, rewards, and jackpot system
+- 📉 **Advanced Charts**: Lightweight charts integration for market analysis
 
+## Tech Stack
+
+- **Frontend**: Nuxt 3, Vue 3, Naive UI
+- **Backend**: Nuxt Server API Routes
+- **Database**: MongoDB with Mongoose
+- **Charts**: Chart.js, Lightweight Charts
+- **Exchange Integration**: CCXT v4
+- **Trading Indicators**: technicalindicators, @debut/indicators
+- **Machine Learning**: TensorFlow.js
+- **State Management**: Pinia with persistence
+
+## Prerequisites
+
+- Node.js 16+
+- MongoDB running locally or remote connection
+- Exchange API keys (optional, for trading features)
+
+## Installation
+
+1. Clone the repository:
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
+git clone <repository-url>
+cd crypto-app
 ```
 
-## Development Server
+2. Install dependencies:
+```bash
+npm install
+```
 
-Start the development server on `http://localhost:3000`:
+3. Configure MongoDB connection in `nuxt.config.ts`:
+```typescript
+mongoose: {
+  uri: 'mongodb://127.0.0.1:27017/crypto-app-V1',
+  options: {},
+  modelsDir: 'models',
+}
+```
+
+4. Start development server:
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`
+
+## Project Structure
+
+```
+├── pages/                  # Vue pages
+│   ├── dashboard.vue       # Main dashboard with balances
+│   ├── profile.vue         # API key management
+│   ├── trade.vue          # Trading interface
+│   ├── dca-bots.vue       # DCA bot management
+│   └── back-testing.vue   # Strategy backtesting
+├── components/            # Vue components
+├── server/               # Nuxt server
+│   ├── api/v1/          # API endpoints
+│   ├── models/          # Mongoose schemas
+│   └── plugins/         # Server plugins (CCXT wrapper)
+├── strategies/          # Trading strategies
+├── composables/         # Vue composables
+└── stores/             # Pinia stores
+```
+
+## Available Exchanges
+
+- **Coinbase Advanced Trade**
+- **Kraken**
+- **Bitrue**
+- **LCX**
+- **ProBit**
+
+## API Key Management
+
+1. Navigate to the Profile page
+2. Select an exchange from the dropdown
+3. Enter API key name and credentials
+4. API keys are stored securely in MongoDB
+5. Each user can have multiple API keys per exchange
+
+## Security Notes
+
+- Never commit `.env` files or API keys to version control
+- API keys are stored in the database (ensure MongoDB is secured)
+- Use environment variables for sensitive configuration
+- This is a private repository - keep it that way
+
+## Development
 
 ```bash
-# npm
+# Development server
 npm run dev
 
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
+# Build for production
 npm run build
 
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-```
-
-Locally preview production build:
-
-```bash
-# npm
+# Preview production build
 npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## License
+
+Private - All Rights Reserved
+
+## Support
+
+For issues or questions, please contact the repository owner.

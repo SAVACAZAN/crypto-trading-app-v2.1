@@ -9,8 +9,9 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    startScheduler(nitroApp)
-    // console.log('Balance Engine Loaded...')
+    // DISABLED - Causing errors with invalid API keys
+    // startScheduler(nitroApp)
+    console.log('Balance Engine DISABLED to prevent API errors')
 })
 
 function startScheduler(nitroApp) {
@@ -25,15 +26,17 @@ function startScheduler(nitroApp) {
                 let currentExchange = exchanges[i].exchange;
                 let userID = exchanges[i].userID;
 
-
                 const balance = await $fetch('/api/v1/fetchBalance', {
                     query:{
                         userID:userID,
                         exchange:currentExchange,
                     }
+                }).catch(err => {
+                    console.error(`Failed to fetch balance for ${currentExchange}:`, err.data?.message || err.message);
+                    return null;
                 });
 
-                if (balance.data) {
+                if (balance && balance.data) {
                     let newBalance = [];
                     let total = 0;
 
@@ -46,7 +49,7 @@ function startScheduler(nitroApp) {
                                 query:{
                                     userID:userID,
                                     exchange:currentExchange,
-                                    symbol:`${coin}/USDT`,
+                                    symbol:`${coin}/USD`,
                                 }
                             });
 
@@ -54,7 +57,7 @@ function startScheduler(nitroApp) {
                                 usdtVal = math.evaluate(`${balance.data.total[coin]} * ${ticker.data.last}`).toFixed(2);
                                 total = math.evaluate(`${total} + ${usdtVal}`);
                             } else {
-                                if (coin === 'USDT') {
+                                if (coin === 'USD') {
                                     usdtVal = balance.data.total[coin].toFixed(2);
                                 }
                                 total = math.evaluate(`${total} + ${usdtVal}`);

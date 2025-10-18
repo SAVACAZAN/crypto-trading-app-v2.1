@@ -1,0 +1,200 @@
+import { create, all } from 'mathjs';
+import moment from 'moment';
+import { FronRunSchema } from "../models/FronRun.schema";
+
+// Initialize the mathjs instance
+const config = {
+    number: 'BigNumber',
+    precision: 20
+};
+const math = create(all, config);  // Make sure this is defined globally
+
+export default defineNitroPlugin((nitroApp) => {
+    console.log('Grid Bots Library Loaded...');
+
+    nitroApp.FrontRunLib = {
+        async createBot(data) {
+            // Fetch ticker data
+            let tickerStatus = await nitroApp.ccxtw.fetchTicker(data.userID, data.exchange, data.symbol);
+            let lastPrice = tickerStatus.data.last;
+            let prices = [];
+            let gridWidth = math.evaluate(`((${data.upperPrice} - ${data.lowerPrice}) / ${data.nrOfGrids})`);
+            let currentPrice = data.lowerPrice;
+
+            for (let i = 0; i < data.nrOfGrids; i++) {
+                currentPrice = math.evaluate(`${currentPrice} + ${gridWidth}`);
+                prices.push(currentPrice);
+            }
+
+            let orders = [];
+
+            // Determinăm dacă primul ordin este buy sau sell la PriceStart
+            let firstOrderSide = (lastPrice < ((data.upperPrice + data.lowerPrice) / 2)) ? 'buy' : 'sell';
+
+            // Plasăm ordinul la PriceStart
+            orders.push(await this.placeOrder(data.userID, data.exchange, data.symbol, data.PriceStart, firstOrderSide, data.amountType, data.amountPriceStart));
+
+            // Restul ordinelor din grilă sunt opuse primului ordin
+            let oppositeSide = firstOrderSide === 'buy' ? 'sell' : 'buy';
+            orders.push(...await this.placeOrders(data.userID, data.exchange, data.symbol, prices.slice(1), oppositeSide, data.amountType, data.amount, data.nrOfGrids - 1));
+
+            data['activeOrders'] = orders;
+
+            await new FronRunSchema(data).save();
+        },
+
+        async checkAndPlaceOrder(dbOrder, order, bot, gridOrdersIndex) {
+            if (dbOrder.id === order.id) {
+                let side = order.side;  // Latura actuală a ordinului (buy sau sell)
+                let price = order.price;  // Prețul ordinului completat
+                let amount = order.amount;  // Cantitatea ordinului completat
+                
+                // Asigurăm că variabilele incrementalPercentAmount și incrementalPercentPrice nu sunt undefined
+                const incrementalPercentAmountBuy = bot.incrementalPercentAmountBuy || 0;
+                const incrementalPercentAmountSell = bot.incrementalPercentAmountSell || 0;
+                const incrementalPercentPriceBuy = bot.incrementalPercentPriceBuy || 0;
+                const incrementalPercentPriceSell = bot.incrementalPercentPriceSell || 0;
+        
+                // Calculăm noul "side" opus pentru ordinul care urmează
+                let newSide = side === 'buy' ? 'sell' : 'buy';  // Dacă a fost buy, facem sell; dacă a fost sell, facem buy
+                
+                // Creștem cantitatea pe partea opusă în funcție de strategia botului
+                let newAmount = side === 'buy'
+                    ? math.evaluate(`${amount} * (1 + (${incrementalPercentAmountSell} / 100))`)  // Creștem cantitatea pentru sell
+                    : math.evaluate(`${amount} * (1 + (${incrementalPercentAmountBuy} / 100))`);  // Creștem cantitatea pentru buy
+        
+                try {
+                    if (order.filled) {
+                        console.log(`Ordinul ${order.id} a fost completat.`);
+        
+                        // Verificăm dacă ordinul completat este la PriceStart
+                        if (gridOrdersIndex === 0) {
+                            console.log(`Ordinul completat este PriceStart.`);
+        
+                            // Calculăm noul preț pentru ordinul opus
+                            let newPrice = side === 'buy'
+                                ? math.evaluate(`${bot.PriceStart} + ((${bot.PriceStart} / 100) * ${incrementalPercentPriceSell})`)  // Preț mai mare pentru sell
+                                : math.evaluate(`${bot.PriceStart} - ((${bot.PriceStart} / 100) * ${incrementalPercentPriceBuy})`);  // Preț mai mic pentru buy
+        
+                            // Plasăm un nou ordin opus la noul preț
+                            let newOrderResponse = await nitroApp.ccxtw.createOrder(bot.userID, bot.exchange, bot.symbol, 'limit', newSide, newAmount, newPrice, false);
+                            
+                            if (newOrderResponse.success) {
+                                console.log(`Ordin invers plasat: ${newOrderResponse.data.id}, preț: ${newPrice}, side: ${newSide}`);
+                                
+                                // Actualizăm ordinul din lista activeOrders
+                                bot.activeOrders[gridOrdersIndex].id = newOrderResponse.data.id;
+                                bot.activeOrders[gridOrdersIndex].price = newOrderResponse.data.price;
+                                bot.activeOrders[gridOrdersIndex].side = newOrderResponse.data.side;
+                                bot.activeOrders[gridOrdersIndex].amount = newOrderResponse.data.amount;
+                                
+                                // Actualizăm schema în baza de date
+                                await FronRunSchema.updateOne({ _id: bot._id }, { activeOrders: bot.activeOrders });
+                            } else {
+                                console.log(`Eșec la plasarea noului ordin: ${newOrderResponse.log}`);
+                            }
+                        } else {
+                            // Dacă ordinul completat este din grilă (nu este PriceStart)
+                            console.log(`Ordinul completat este din grilă. Plasăm unul nou la PriceStart.`);
+        
+                            // Plasăm un ordin pe partea opusă la prețul PriceStart
+                            let newPrice = bot.PriceStart;
+        
+                            // Plasăm un nou ordin opus la prețul PriceStart
+                            let newOrderResponse = await nitroApp.ccxtw.createOrder(bot.userID, bot.exchange, bot.symbol, 'limit', newSide, newAmount, newPrice, false);
+        
+                            if (newOrderResponse.success) {
+                                console.log(`Ordin invers plasat la PriceStart: ${newOrderResponse.data.id}, preț: ${newPrice}, side: ${newSide}`);
+                                
+                                // Actualizăm ordinul din lista activeOrders
+                                bot.activeOrders[gridOrdersIndex].id = newOrderResponse.data.id;
+                                bot.activeOrders[gridOrdersIndex].price = newOrderResponse.data.price;
+                                bot.activeOrders[gridOrdersIndex].side = newOrderResponse.data.side;
+                                bot.activeOrders[gridOrdersIndex].amount = newOrderResponse.data.amount;
+                                
+                                // Actualizăm schema în baza de date
+                                await FronRunSchema.updateOne({ _id: bot._id }, { activeOrders: bot.activeOrders });
+                            } else {
+                                console.log(`Eșec la plasarea noului ordin la PriceStart: ${newOrderResponse.log}`);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Eroare la plasarea ordinului invers:', error);
+                }
+            }
+        }
+        
+        ,
+
+        async placeOrder(userID, exchange, symbol, price, side, amountType, amountPriceStart) {
+            let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amountPriceStart, 1, 0);
+            let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', side, quantityPerGrid, price);
+        
+            if (orderResponse.success) {
+                console.log(`Ordin plasat: ${orderResponse.data.id}, preț: ${price}, side: ${side}`);
+        
+                return {
+                    PriceStart: orderResponse.data.PriceStart,
+                    id: orderResponse.data.id,
+                    price: orderResponse.data.price,
+                    side: orderResponse.data.side,
+                    size: orderResponse.data.size,
+                    amount: orderResponse.data.amount,
+                };
+            } else {
+                console.log(`${this.getCurrentTime()}: ${symbol} - Eroare la plasarea ordinului: ${orderResponse.log}`);
+                return null;
+            }
+        },
+
+        async placeOrders(userID, exchange, symbol, prices, side, amountType, amount, nrOfGrids) {
+            let orders = [];
+        
+            for (let i = 0; i < nrOfGrids; i++) {
+                let price = prices[i];
+                let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amount, nrOfGrids, i);
+                let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', side, quantityPerGrid, price);
+        
+                if (orderResponse.success) {
+                    orders.push({
+                        PriceStart: orderResponse.data.PriceStart,
+                        id: orderResponse.data.id,
+                        price: orderResponse.data.price,
+                        side: orderResponse.data.side,
+                        size: orderResponse.data.size,
+                        amount: orderResponse.data.amount,
+                    });
+        
+                    console.log(`Ordin plasat: ${orderResponse.data.id}, preț: ${price}, side: ${side}`);
+                } else {
+                    console.log(`${this.getCurrentTime()}: ${symbol} - Eroare la plasarea ordinului: ${orderResponse.log}`);
+                }
+            }
+        
+            return orders;
+        },
+
+        async getQuantityPerGrid(price, amountType, amount, nrOfGrids, index) {
+            let quantityPerGrid = null;
+
+            if (amountType === 'quantityPerGrid') {
+                quantityPerGrid = math.evaluate(`${amount} / ${price}`);
+            }
+
+            if (amountType === 'totalAmount') {
+                quantityPerGrid = math.evaluate(`(${amount} / ${nrOfGrids}) / ${price}`);
+            }
+
+            if (amountType === 'incrementalPercent') {
+                quantityPerGrid = math.evaluate(`(${amount} + ((${amount} / 100) * (${index} + 1) * ${amount})) / ${price}`);
+            }
+
+            return quantityPerGrid;
+        },
+
+        getCurrentTime() {
+            return moment(new Date()).format('lll');
+        }
+    };
+});

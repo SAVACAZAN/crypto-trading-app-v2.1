@@ -101,17 +101,17 @@ function handleValidateButtonClick(e) {
                 meta: `Check console for error code and message!`,
                 duration: 2500,
               });
-              // console.log(resp);
+              console.log(resp);
             }
 
 
           } catch (e){
             notification['error']({
               content: "Error!",
-              meta: `Check console for error code and message!`,
+              meta: `${e.statusMessage || e.message}`,
               duration: 2500,
             });
-            // console.log(e);
+            console.log(e);
           }
 
 

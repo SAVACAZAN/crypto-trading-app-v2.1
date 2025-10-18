@@ -1,0 +1,709 @@
+import ccxt from 'ccxt'
+import {userExchangesSchema} from "~/server/models/userExchanges.schema";
+
+// Custom LCX Exchange implementation
+class LCXExchange {
+    constructor(config) {
+        this.apiKey = config.apiKey;
+        this.secret = config.secret;
+        this.id = 'lcx';
+        this.name = 'LCX';
+    }
+
+    async fetchBalance() {
+        // LCX custom balance implementation
+        const response = await fetch('https://api.lcx.com/v1/balance', {
+            headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'X-API-SECRET': this.secret
+            }
+        });
+        return await response.json();
+    }
+
+    async fetchMarkets() {
+        const response = await fetch('https://api.lcx.com/v1/markets');
+        return await response.json();
+    }
+
+    async loadMarkets() {
+        this.markets = await this.fetchMarkets();
+        return this.markets;
+    }
+
+    has = {
+        fetchBalance: true,
+        fetchMarkets: true,
+        fetchTicker: true,
+        fetchOrderBook: true,
+        fetchOHLCV: true,
+        createOrder: true,
+        cancelOrder: true,
+        fetchOrder: true,
+        fetchOrders: true,
+        fetchOpenOrders: true,
+        fetchClosedOrders: true
+    };
+}
+
+class CCXTW {
+    constructor(){
+        this.users = new Map();
+        this.krakenNonces = new Map();
+    }
+
+    async loadInstance(userID, exchange, apiKeyName = null) {
+        const apiKeys = await this.getApiKeys(userID, exchange, apiKeyName);
+
+        if (!apiKeys) {
+            throw new Error(`No API keys found for ${exchange}`);
+        }
+
+        let instance;
+
+        // Handle custom LCX exchange
+        if (exchange === 'lcx') {
+            instance = new LCXExchange(apiKeys);
+        } else {
+            // Get the exchange class from ccxt
+            const ExchangeClass = ccxt[exchange] || ccxt.default?.[exchange];
+
+            if (!ExchangeClass) {
+                throw new Error(`Exchange ${exchange} not found in CCXT`);
+            }
+
+            // Special handling for Kraken nonce
+            if (exchange === 'kraken') {
+                const keyHash = `${userID}_${exchange}_${apiKeyName || 'default'}`;
+                const krakenConfig = {
+                    apiKey: apiKeys.apiKey,
+                    secret: apiKeys.secret,
+                    enableRateLimit: true,
+                    rateLimit: 3000,
+                    options: {
+                        nonce: () => {
+                            const now = Date.now();
+                            const lastNonce = this.krakenNonces.get(keyHash) || now;
+                            const newNonce = Math.max(lastNonce + 1, now);
+                            this.krakenNonces.set(keyHash, newNonce);
+                            return newNonce;
+                        }
+                    }
+                };
+                instance = new ExchangeClass(krakenConfig);
+            } else if (exchange === 'coinbaseadvanced') {
+                // Handle Coinbase Advanced with proper private key formatting
+                instance = new ExchangeClass({
+                    apiKey: apiKeys.apiKey,
+                    secret: apiKeys.secret,
+                    privateKey: apiKeys.privateKey,
+                    enableRateLimit: true
+                });
+            } else {
+                instance = new ExchangeClass(apiKeys);
+            }
+        }
+
+        await instance.loadMarkets();
+
+        // Retrieve the user's data (nested Map) using their userID
+        const userExchangeData = this.users.get(userID);
+
+        // Check if the user exists in the main data container
+        if (!userExchangeData) {
+            // If the user doesn't exist, create a new entry for them
+            const newUserExchangeData = new Map();
+            this.users.set(userID, newUserExchangeData);
+        }
+
+        // Create unique key for this exchange + API key combination
+        const instanceKey = apiKeyName ? `${exchange}_${apiKeyName}` : exchange;
+
+        // Now you can set the exchange data for the user
+        this.users.get(userID).set(instanceKey, instance);
+    }
+
+    async getApiKeys(userID, exchange, apiKeyName = null) {
+        let returnObj = {};
+        const userExchanges = await userExchangesSchema.findOne({userID, exchange});
+
+        if (userExchanges) {
+            let apiKeysArray = userExchanges.apiKeys;
+            let keysToUse = [];
+
+            if (apiKeysArray && apiKeysArray.length > 0) {
+                // Check if we have the new format with named keys
+                const namedEntries = apiKeysArray.filter(k => k.name !== undefined && k.keys !== undefined);
+
+                if (namedEntries.length > 0) {
+                    // New format: array of { name: 'Alex', keys: [{key, value}, ...] }
+                    if (apiKeyName) {
+                        // Find specific named key
+                        const namedKey = namedEntries.find(k => k.name === apiKeyName);
+                        if (namedKey && namedKey.keys) {
+                            keysToUse = namedKey.keys;
+                        } else {
+                            // Fallback to first named key if requested key not found
+                            keysToUse = namedEntries[0].keys;
+                        }
+                    } else {
+                        // No specific key requested, use first one
+                        keysToUse = namedEntries[0].keys;
+                    }
+                } else {
+                    // Old format: flat array of {key: 'apiKey', value: '...'}
+                    keysToUse = apiKeysArray.filter(k => k.key !== undefined && k.value !== undefined);
+                }
+            }
+
+            // Convert keysToUse array to object format
+            for (let i = 0; i < keysToUse.length; i++) {
+                const key = keysToUse[i].key;
+                let value = keysToUse[i].value;
+
+                // Special handling for Coinbase Advanced privateKey
+                if (exchange === 'coinbaseadvanced' && key === 'privateKey') {
+                    // Ensure proper formatting with newlines
+                    value = value.replace(/\\n/g, '\n');
+                }
+
+                returnObj[key] = value;
+            }
+
+            return returnObj;
+        } else {
+            return false;
+        }
+    };
+
+    async getInstance(userID, exchange, apiKeyName = null) {
+        if (!this.users.has(userID)) {
+            this.users.set(userID, new Map());
+        }
+
+        const instanceKey = apiKeyName ? `${exchange}_${apiKeyName}` : exchange;
+
+        if (!this.users.get(userID).has(instanceKey)) {
+            await this.loadInstance(userID, exchange, apiKeyName);
+        }
+
+        return this.users.get(userID).get(instanceKey);
+    }
+
+    /*
+    * PUBLIC METHODS
+    */
+
+    async fetchExchanges() {
+        return ccxt.exchanges;
+    }
+
+    async fetchExchangeInstance(exchange, keys) {
+        let exKeys = [];
+
+        for (let i = 0; i < keys.length; i++) {
+            exKeys[keys[i].key] = keys[i].value;
+        }
+
+        let instance = new ccxt[exchange] (exKeys);
+        await instance.loadMarkets();
+        return instance;
+    }
+
+    async fetchMarkets(userID, exchange, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if (instance.has['fetchMarkets']){
+                try {
+                    data = await instance.fetchMarkets();
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchMarkets`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchTicker(userID, exchange, symbol, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if (instance.has['fetchTicker']) {
+                try {
+                    data = await instance.fetchTicker(symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchTicker`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchOrderBook(userID, exchange, symbol, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if (instance.has['fetchOrderBook']) {
+                try {
+                    data = await instance.fetchOrderBook(symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchOrderBook`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchOHLCV(userID, exchange, symbol, timeframe, since, limit, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['fetchOHLCV']) {
+                try {
+                    data = await instance.fetchOHLCV(symbol, timeframe, since, limit);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchOHLCV`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    /*
+    * PRIVATE METHODS
+    */
+
+    async fetchBalance(userID, exchange, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if (instance.has['fetchBalance']) {
+                try {
+                    data = await instance.fetchBalance();
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchBalance`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async createOrder(userID, exchange, symbol, type, side, amount, price, params = {}, apiKeyName = null) {
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['createOrder']) {
+                try {
+                    if(exchange === 'binance') {
+                        if (type === 'oco') {
+                            data = await instance.privatePostOrderOco({
+                                'symbol': symbol.split('/').join(''),
+                                'quantity': instance.amountToPrecision(symbol, amount),
+                                'side': side,
+                                'price': instance.priceToPrecision(symbol, params.tpPrice),
+                                'stopPrice': instance.priceToPrecision(symbol, params.stopLossPrice),
+                                'stopLimitPrice': instance.priceToPrecision(symbol, params.stopLimitPrice),
+                                'stopLimitTimeInForce': 'GTC',
+                            });
+                        }
+
+                        if (type === 'limit' || type === 'take_profit_limit' || type === 'take_profit') {
+                            data = await instance.createOrder(symbol, type, side, amount, price, params);
+                        }
+
+                        if (type === 'market') {
+                            data = await instance.createOrder(symbol, type, side, amount);
+                        }
+                    } else {
+                        data = await instance.createOrder(symbol, type, side, amount, price);
+                    }
+
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support createOrder`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async cancelOrder(userID, exchange, id, symbol, apiKeyName = null){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['cancelOrder']) {
+                try {
+                    data = await instance.cancelOrder(id, symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support cancelOrder`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchOrder(userID, exchange, id, symbol, apiKeyName = null){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['fetchOrder']) {
+                try {
+                    data = await instance.fetchOrder(id, symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchOrder`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchOrders(userID, exchange, symbol, apiKeyName = null){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['fetchOrders']) {
+                try {
+                    data = await instance.fetchOrders(symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchOrders`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchOpenOrders(userID, exchange, symbol, apiKeyName = null){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['fetchOpenOrders']) {
+                try {
+                    data = await instance.fetchOpenOrders(symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchOpenOrders`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async fetchClosedOrders(userID, exchange, symbol, apiKeyName = null){
+        let log = null;
+        let data = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['fetchClosedOrders']) {
+                try {
+                    data = await instance.fetchClosedOrders(symbol);
+                    success = true;
+                } catch (e) {
+                    data = null;
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support fetchClosedOrders`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            data,
+            success,
+            log
+        };
+    };
+
+    async setLeverage(userID, exchange, leverage, symbol, apiKeyName = null){
+        let log = null;
+        let success = null;
+
+        try {
+            const instance = await this.getInstance(userID, exchange, apiKeyName);
+
+            if(instance.has['setLeverage']) {
+                try {
+                    await instance.setLeverage(leverage, symbol);
+                    success = true;
+                } catch (e) {
+                    success = false;
+                    if (e instanceof ccxt.NetworkError) {
+                        log =`Failed due to a network error: ${e.message}`;
+                    } else if (e instanceof ccxt.ExchangeError) {
+                        log =`Failed due to a exchange error: ${e.message}`;
+                    } else {
+                        log =`Failed with: ${e.message}`;
+                    }
+                }
+            } else {
+                log = `Exchange ${exchange} does not support setLeverage`;
+                success = false;
+            }
+        } catch (e) {
+            log = `Failed to load instance: ${e.message}`;
+            success = false;
+        }
+
+        return {
+            success,
+            log
+        };
+    };
+
+}
+
+export default defineNitroPlugin((nitroApp) => {
+    nitroApp.ccxtw = new CCXTW();
+})
