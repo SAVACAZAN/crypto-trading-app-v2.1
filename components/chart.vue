@@ -290,7 +290,9 @@ onMounted(async () => {
 
 
 onUnmounted(() => {
-  clearIntervalAsync(ohlcvInterval);
+  if (ohlcvInterval) {
+    clearIntervalAsync(ohlcvInterval);
+  }
 });
 
 async function fetchOHLCVRecentData(timeframe) {

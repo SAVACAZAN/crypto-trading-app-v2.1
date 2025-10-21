@@ -8,14 +8,21 @@
         <n-layout>
             <n-layout-header bordered class="header">
                 <n-space justify="space-between" align="center" class="inner">
-                    <nuxt-link to="/dashboard"><n-text><b>Crypto App</b></n-text></nuxt-link>
-                    <n-text>userID: {{userID}}</n-text>
-                    <n-text>Referral Code: {{referralCode}}</n-text>
-                    <n-text>referredBy : {{referredBy}}</n-text>
-                    
-                    <n-dropdown :options="dropdownOptions">
-                        <n-button>User profile</n-button>
-                    </n-dropdown>
+                    <!-- LEFT SIDE - LOGO + TICKER BAR + API SELECTOR -->
+                    <div class="navbar-left">
+                        <nuxt-link to="/dashboard"><n-text class="app-title"><b>Crypto App</b></n-text></nuxt-link>
+                        <TickerBar />
+                        <ApiSelector />
+                    </div>
+
+                    <!-- RIGHT SIDE - USER INFO -->
+                    <div class="navbar-right">
+                        <n-text class="user-id-text">ID: {{userID}}</n-text>
+                        <n-text class="referral-text">Ref: {{referralCode}}</n-text>
+                        <n-dropdown :options="dropdownOptions">
+                            <n-button size="small" class="profile-btn">👤</n-button>
+                        </n-dropdown>
+                    </div>
                 </n-space>
             </n-layout-header>
             <n-layout has-sider class="container">
@@ -69,15 +76,9 @@ import {
     HeartOutline  as HeartOutline ,
     CalculatorOutline  as CalculatorOutline ,
     AttachOutline  as AttachOutline ,
-
-BookmarkOutline as BookmarkOutline,
-
-CafeOutline as CafeOutline,
-
-
-
+    BookmarkOutline as BookmarkOutline,
+    CafeOutline as CafeOutline,
     BugOutline  as BugOutline ,
-
     TrophyOutline as  TrophyOutline,
 } from "@vicons/ionicons5";
 let userIDCookie = useCookie('userID');
@@ -88,9 +89,6 @@ let referralCode = referralCodeCookie.value;
 
 let referredByCookie = useCookie('referredBy');
 let referredBy = referredByCookie.value;
-
-
-
 
 function renderIcon(icon) {
     return () => h(NIcon, null, { default: () => h(icon) });
@@ -168,6 +166,20 @@ const sidebarOptions = [
         key: 'grid-bots-plus',
         icon: renderIcon(StarOutline),
     },
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                    to: {
+                        name: 'GridBotReadme',
+                    }
+                },
+                { default: () => '📚 Grid Bot README' }
+            ),
+        key: 'GridBotReadme',
+        icon: renderIcon(BookIcon),
+    },
 
 
     {
@@ -191,10 +203,25 @@ const sidebarOptions = [
                 NuxtLink,
                 {
                     to: {
+                        name: 'AiToolz',
+                    }
+                },
+                { default: () => '🤖 AI Toolz' }
+            ),
+        key: 'AiToolz',
+        icon: renderIcon(Analytics),
+    },
+
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                    to: {
                         name: 'OpenOrdersDev',
                     }
                 },
-                { default: () => 'OpenOrdersDev' }
+                { default: () => 'Open Orders' }
             ),
         key: 'OpenOrdersDev',
         icon: renderIcon(SearchOutline),
@@ -206,13 +233,28 @@ const sidebarOptions = [
                 NuxtLink,
                 {
                     to: {
-                        name: 'TickerBar2',
+                        name: 'ClosedOrdersDev',
                     }
                 },
-                { default: () => 'TickerBar2' }
+                { default: () => 'Closed Orders' }
             ),
-        key: 'TickerBar2',
-        icon: renderIcon(SearchOutline),
+        key: 'ClosedOrdersDev',
+        icon: renderIcon(BookIcon),
+    },
+
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                    to: {
+                        name: 'TickerBarPage',
+                    }
+                },
+                { default: () => '📊 Ticker Bar' }
+            ),
+        key: 'TickerBarPage',
+        icon: renderIcon(BarChart),
     },
     {
         label: () =>
@@ -288,20 +330,20 @@ const sidebarOptions = [
     //     icon: renderIcon(BookmarkOutline),
     // },
 
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'BetCasinoCrypto',
-                    }
-                },
-                { default: () => 'BetCasinoCrypto' }
-            ),
-        key: 'BetCasinoCrypto',
-        icon: renderIcon(TrophyOutline),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'BetCasinoCrypto',
+    //                 }
+    //             },
+    //             { default: () => 'BetCasinoCrypto' }
+    //         ),
+    //     key: 'BetCasinoCrypto',
+    //     icon: renderIcon(TrophyOutline),
+    // },
 
     // {
     //     label: () =>
@@ -446,4 +488,85 @@ const dropdownOptions = [
 
 
 </script>
+
+<style scoped>
+/* ========== COMPACT NAVBAR ========== */
+.header {
+  height: 36px !important;
+  padding: 0 12px !important;
+  line-height: 36px !important;
+}
+
+.inner {
+  height: 100%;
+}
+
+.app-title {
+  font-size: 14px !important;
+  font-weight: 900;
+  background: linear-gradient(90deg, #00ffff, #ff00ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.compact-text {
+  font-size: 9px !important;
+  opacity: 0.7;
+}
+
+/* USER ID - CYAN */
+.user-id-text {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #00ffff !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+/* REFERRAL CODE - MAGENTA */
+.referral-text {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #ff00ff !important;
+  text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+}
+
+.profile-btn {
+  padding: 2px 8px !important;
+  height: 24px !important;
+  font-size: 14px !important;
+}
+
+/* Footer also compact */
+.footer {
+  height: 32px !important;
+  padding: 0 12px !important;
+  line-height: 32px !important;
+  font-size: 10px !important;
+  opacity: 0.6;
+}
+
+/* Sidebar adjustment */
+.sidebar {
+  margin-top: 0 !important;
+}
+
+.container {
+  height: calc(100vh - 68px) !important;
+}
+
+/* NAVBAR LEFT - LOGO + TICKER BAR */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* NAVBAR RIGHT - USER INFO */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+</style>
 

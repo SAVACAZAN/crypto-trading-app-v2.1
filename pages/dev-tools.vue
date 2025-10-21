@@ -1,22 +1,61 @@
 <template>
-    
-    <h2>DELETE bots</h2>
+    <div style="padding: 20px;">
+      <h1>Developer Tools</h1>
+      <p style="color: #888; margin-bottom: 30px;">Manage and delete bot data from the database</p>
 
-    <n-space>
-     
-      <n-button @click="deleteDBGridBotsData">Delete DB Grid Bots data</n-button>
-      <n-button @click="deleteDBdkdBotsData">Delete DB dkd Bots data</n-button>
-      <n-button @click="deleteDBFrontRunBotsData">Delete DB FrontRun Bots data</n-button>
-    </n-space>
+      <n-card title="Delete Bot Data" style="margin-bottom: 20px;">
+        <n-space vertical :size="16">
+          <div>
+            <h3 style="margin-bottom: 12px;">Trading Bots</h3>
+            <n-space wrap>
+              <n-button type="error" @click="deleteDBGridBotsData">
+                Delete Grid Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBDCABotsData">
+                Delete DCA Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBOneClickBotsData">
+                Delete OneClick Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBCoPilotBotsData">
+                Delete CoPilot Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBGrinderBotsData">
+                Delete Grinder Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBScalp1ngBotsData">
+                Delete Scalp1ng Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBFibBotsData">
+                Delete Fib Bots
+              </n-button>
+            </n-space>
+          </div>
 
-    <h2>DELETEDATA</h2>
-    <n-space>
-      <n-button @click="deleteDBChartData">Delete DB chart data</n-button>
-   
-      <n-button @click="deleteDBDCABotsData">Delete DB DCA Bots data</n-button>
-<!--      <n-button>Delete DB User Exchanges and markets data</n-button>-->
-<!--      <n-button>Delete ALL DB User Data</n-button>-->
-    </n-space>
+          <n-divider />
+
+          <div>
+            <h3 style="margin-bottom: 12px;">Advanced Bots</h3>
+            <n-space wrap>
+              <n-button type="error" @click="deleteDBdkdBotsData">
+                Delete DKD Bots
+              </n-button>
+              <n-button type="error" @click="deleteDBFrontRunBotsData">
+                Delete FrontRun Bots
+              </n-button>
+            </n-space>
+          </div>
+        </n-space>
+      </n-card>
+
+      <n-card title="Delete Other Data">
+        <n-space wrap>
+          <n-button type="warning" @click="deleteDBChartData">
+            Delete Chart Data
+          </n-button>
+        </n-space>
+      </n-card>
+    </div>
 </template>
 
 <script setup>
@@ -72,6 +111,56 @@ async function deleteDBFrontRunBotsData() {
   notification['info']({
     content: "Data deleted!",
     meta: `Deleted all FrontRun bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBOneClickBotsData() {
+  await $fetch('/api/v1/deleteDBOneClickBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all OneClick bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBCoPilotBotsData() {
+  await $fetch('/api/v1/deleteDBCoPilotBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all CoPilot bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBGrinderBotsData() {
+  await $fetch('/api/v1/deleteDBGrinderBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all Grinder bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBScalp1ngBotsData() {
+  await $fetch('/api/v1/deleteDBScalp1ngBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all Scalp1ng bots data from database.`,
+    duration: 2500,
+  });
+}
+
+async function deleteDBFibBotsData() {
+  await $fetch('/api/v1/deleteDBFibBotsData');
+
+  notification['info']({
+    content: "Data deleted!",
+    meta: `Deleted all Fib bots data from database.`,
     duration: 2500,
   });
 }

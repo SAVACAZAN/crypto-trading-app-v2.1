@@ -12,15 +12,19 @@
 
     
     <n-gi span="12 800:3">
-      <TickerBar/>
-      <OrderBook/>
-   
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+    
+        
+        </div>
+        <OrderBook/>
+      </div>
     </n-gi>
 
 
 
     <n-gi span="2 800:6">
-      <GridBotsBalance/>
+      <!-- GridBotsBalance removed - API selector now in GridBotsList -->
       <GridBotsList/>
       <OpenOrdersDev :use-store-api-key="true"/>
 

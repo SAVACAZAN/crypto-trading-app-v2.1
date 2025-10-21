@@ -23,6 +23,11 @@ export const gridBotSchema = defineMongooseModel({
             required: false,
             default: null
         },
+        apiKeyNames: {
+            type: Array,
+            required: false,
+            default: []
+        },
         lowerPrice: {
             type: String,
             required: true

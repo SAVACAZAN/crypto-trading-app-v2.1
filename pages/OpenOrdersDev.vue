@@ -1,16 +1,14 @@
 
 <template>
-  <h2>OpenOrderDev Toolz</h2>
-<n-grid x-gap="12" :cols="12" item-responsive>
- <n-gi span="12 800:8">
-   <TickerBar/>
  
+<n-grid x-gap="12" :cols="12" item-responsive>
+ <n-gi span="12 800:10">
    <OpenOrdersDev/>
  </n-gi>
- <n-gi span="12 800:4">
-   <OrderBook/>
-   
-   
+ <n-gi span="12 800:2">
+   <!-- <OrderBook/>
+ -->
+
  </n-gi>
 </n-grid>
 

@@ -1,6 +1,9 @@
 <script setup>
 import { useAppStore } from '~/stores/app.store';
 import {clearIntervalAsync, setIntervalAsync} from "set-interval-async"
+
+const emit = defineEmits(['update:orderbook']);
+
 const app = useAppStore()
 
 let userID = useCookie('userID');
@@ -52,6 +55,9 @@ async function fetchOrderBookPooling() {
       })
     }
     asksData.value = asks;
+
+    // Emit orderbook data to parent component
+    emit('update:orderbook', orderBook.data);
   }
 }
 

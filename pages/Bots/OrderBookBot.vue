@@ -4,13 +4,13 @@
   <n-grid x-gap="12" :cols="12" item-responsive>
     <n-gi span="12 800:8">
       <TickerBar/>
-    
+
       <OrderBookBotsForm/>
     </n-gi>
     <n-gi span="12 800:4">
       <OrderBook/>
-      
-      
+
+
     </n-gi>
   </n-grid>
 

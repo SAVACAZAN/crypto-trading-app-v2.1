@@ -1,6 +1,23 @@
 <template>
     <div style="padding: 20px;">
-      <h2>Dashboard</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Dashboard</h2>
+        <n-space>
+          <n-tag v-if="lastUpdated" type="info">
+            Last updated: {{ formatTime(lastUpdated) }}
+          </n-tag>
+          <n-button type="primary" :loading="isRefreshing" @click="refreshBalances">
+            <template #icon>
+              <n-icon>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+              </n-icon>
+            </template>
+            Refresh Balances
+          </n-button>
+        </n-space>
+      </div>
 
       <!-- Global totals with detailed breakdown -->
       <n-card style="margin-bottom: 20px;" title="Global Totals">
@@ -103,163 +120,221 @@ definePageMeta({
 })
 import { Pie } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { useNotification } from 'naive-ui'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
+const notification = useNotification();
 const { getExchangeLogo } = useExchangeLogos();
 
 let userID = useCookie('userID');
+let isRefreshing = ref(false);
+let lastUpdated = ref(null);
+let exchanges = ref([]);
 
-let loaded = true;
+// Load cached balances on mount
+await loadCachedBalances();
 
-// Fetch user exchanges
-console.log('🔍 Dashboard: Fetching user exchanges...');
-const dbExchanges = await $fetch('/api/v1/fetchUserExchanges', {
-  query:{
-    userID:userID.value,
-  }
-});
+async function loadCachedBalances() {
+  try {
+    console.log('🔍 Dashboard: Loading cached balances...');
 
-console.log('📊 Dashboard: Found exchanges:', dbExchanges.data.map(e => e.exchange));
-
-let exchanges = [];
-
-// Process each exchange and fetch balances for each API key
-if (dbExchanges.data.length) {
-  for (let i = 0; i < dbExchanges.data.length; i++) {
-    let currentExchange = dbExchanges.data[i].exchange;
-    let apiKeys = dbExchanges.data[i].apiKeys;
-
-    console.log(`\n💱 Processing ${currentExchange}...`);
-
-    let exchangeData = {
-      name: currentExchange,
-      apiKeys: [],
-      combinedBalance: []
-    };
-
-    // Handle both old format (flat array) and new format (array with name)
-    let apiKeysList = [];
-
-    if (apiKeys && apiKeys.length > 0) {
-      if (apiKeys[0].name !== undefined) {
-        // New format: array of { name, keys: [...] }
-        apiKeysList = apiKeys.map(k => k.name);
-        console.log(`  📋 API Keys (named):`, apiKeysList);
-      } else {
-        // Old format: single unnamed key
-        apiKeysList = ['default'];
-        console.log(`  📋 API Keys (default):`, apiKeysList);
+    // Fetch user exchanges structure
+    const dbExchanges = await $fetch('/api/v1/fetchUserExchanges', {
+      query: {
+        userID: userID.value,
       }
-    }
+    });
 
-    // Fetch balance for each API key
-    for (let apiKeyName of apiKeysList) {
-      console.log(`  🔑 Fetching balance for ${currentExchange} - ${apiKeyName}...`);
+    console.log('📊 Dashboard: Found exchanges:', dbExchanges.data.map(e => e.exchange));
 
-      try {
-        const response = await $fetch('/api/v1/fetchBalance', {
-          query: {
-            userID: userID.value,
-            exchange: currentExchange,
-            apiKeyName: apiKeyName
+    // Fetch cached balances
+    const cachedResponse = await $fetch('/api/v1/getCachedBalances', {
+      query: {
+        userID: userID.value
+      }
+    });
+
+    console.log('💾 Dashboard: Loaded cached balances:', cachedResponse.count);
+
+    let exchangesData = [];
+
+    // Process each exchange
+    if (dbExchanges.data.length) {
+      for (let i = 0; i < dbExchanges.data.length; i++) {
+        let currentExchange = dbExchanges.data[i].exchange;
+        let apiKeys = dbExchanges.data[i].apiKeys;
+
+        console.log(`\n💱 Processing ${currentExchange}...`);
+
+        let exchangeData = {
+          name: currentExchange,
+          apiKeys: [],
+          combinedBalance: []
+        };
+
+        // Handle both old format (flat array) and new format (array with name)
+        let apiKeysList = [];
+
+        if (apiKeys && apiKeys.length > 0) {
+          if (apiKeys[0].name !== undefined) {
+            // New format: array of { name, keys: [...] }
+            apiKeysList = apiKeys.map(k => k.name);
+            console.log(`  📋 API Keys (named):`, apiKeysList);
+          } else {
+            // Old format: single unnamed key
+            apiKeysList = ['default'];
+            console.log(`  📋 API Keys (default):`, apiKeysList);
           }
-        });
-
-        console.log(`  ✅ Response:`, {
-          success: response.success,
-          hasData: !!response.data,
-          hasFree: response.data?.free ? Object.keys(response.data.free).length : 0,
-          log: response.log
-        });
-
-        if (response.success && response.data && response.data.free) {
-          // Convert balance object to array format
-          let balanceArray = [];
-          let totalUSD = 0;
-
-          // Helper function to calculate used = total - free if used is not available
-          const calculateUsed = (freeVal, totalVal, usedVal) => {
-            const f = Number(freeVal || 0);
-            const t = Number(totalVal || 0);
-            const u = Number(usedVal || 0);
-
-            // If used is not provided or is 0, calculate it from total - free
-            if (u === 0 && t > 0) {
-              return Math.max(0, t - f);
-            }
-            return u;
-          };
-
-          for (let coin in response.data.free) {
-            const freeVal = response.data.free[coin] || 0;
-            const totalVal = response.data.total[coin] || 0;
-            const usedVal = calculateUsed(freeVal, totalVal, response.data.used[coin]);
-
-            // Include any asset that has any balance (free, used, or total)
-            if (freeVal > 0 || usedVal > 0 || totalVal > 0) {
-              let coinData = {
-                coin: coin,
-                free: freeVal,
-                used: usedVal,
-                total: totalVal,
-                usdt: 0
-              };
-              balanceArray.push(coinData);
-              console.log(`    💰 ${coin}: free=${freeVal}, used=${usedVal}, total=${totalVal}`);
-            }
-          }
-
-          console.log(`  📈 Found ${balanceArray.length} assets with balance`);
-
-          exchangeData.apiKeys.push({
-            apiKeyName: apiKeyName,
-            balance: balanceArray,
-            totalUSD: totalUSD,
-            error: null
-          });
-
-          // Add to combined balance for chart
-          balanceArray.forEach(asset => {
-            let existingAsset = exchangeData.combinedBalance.find(a => a.coin === asset.coin);
-            if (existingAsset) {
-              existingAsset.free += asset.free;
-              existingAsset.used += asset.used;
-              existingAsset.total += asset.total;
-              existingAsset.usdt += asset.usdt;
-            } else {
-              exchangeData.combinedBalance.push({ ...asset });
-            }
-          });
-        } else {
-          console.log(`  ⚠️ No balance data or failed:`, response.log);
-          // Add empty entry with error message
-          exchangeData.apiKeys.push({
-            apiKeyName: apiKeyName,
-            balance: [],
-            totalUSD: 0,
-            error: response.log || 'Failed to fetch balance'
-          });
         }
-      } catch (e) {
-        console.error(`  ❌ Error fetching balance for ${currentExchange} - ${apiKeyName}:`, e.message);
-        // Add error entry
-        exchangeData.apiKeys.push({
-          apiKeyName: apiKeyName,
-          balance: [],
-          totalUSD: 0,
-          error: e.message || 'Network error'
-        });
+
+        // Find cached balance for each API key
+        for (let apiKeyName of apiKeysList) {
+          const cachedBalance = cachedResponse.balances.find(
+            b => b.exchange === currentExchange && b.apiKeyName === apiKeyName
+          );
+
+          if (cachedBalance) {
+            console.log(`  ✅ Found cached balance for ${currentExchange} - ${apiKeyName}`);
+
+            // Update lastUpdated timestamp
+            if (!lastUpdated.value || new Date(cachedBalance.lastUpdated) > new Date(lastUpdated.value)) {
+              lastUpdated.value = cachedBalance.lastUpdated;
+            }
+
+            // Convert cached balance to array format
+            let balanceArray = [];
+
+            if (cachedBalance.balance && cachedBalance.balance.free) {
+              const calculateUsed = (freeVal, totalVal, usedVal) => {
+                const f = Number(freeVal || 0);
+                const t = Number(totalVal || 0);
+                const u = Number(usedVal || 0);
+                if (u === 0 && t > 0) {
+                  return Math.max(0, t - f);
+                }
+                return u;
+              };
+
+              for (let coin in cachedBalance.balance.free) {
+                const freeVal = cachedBalance.balance.free[coin] || 0;
+                const totalVal = cachedBalance.balance.total[coin] || 0;
+                const usedVal = calculateUsed(freeVal, totalVal, cachedBalance.balance.used[coin]);
+
+                if (freeVal > 0 || usedVal > 0 || totalVal > 0) {
+                  let coinData = {
+                    coin: coin,
+                    free: freeVal,
+                    used: usedVal,
+                    total: totalVal,
+                    usdt: 0
+                  };
+                  balanceArray.push(coinData);
+                }
+              }
+            }
+
+            exchangeData.apiKeys.push({
+              apiKeyName: apiKeyName,
+              balance: balanceArray,
+              totalUSD: cachedBalance.totalUSD || 0,
+              error: null
+            });
+
+            // Add to combined balance for chart
+            balanceArray.forEach(asset => {
+              let existingAsset = exchangeData.combinedBalance.find(a => a.coin === asset.coin);
+              if (existingAsset) {
+                existingAsset.free += asset.free;
+                existingAsset.used += asset.used;
+                existingAsset.total += asset.total;
+                existingAsset.usdt += asset.usdt;
+              } else {
+                exchangeData.combinedBalance.push({ ...asset });
+              }
+            });
+          } else {
+            console.log(`  ⚠️ No cached balance for ${currentExchange} - ${apiKeyName}`);
+            // Add empty entry
+            exchangeData.apiKeys.push({
+              apiKeyName: apiKeyName,
+              balance: [],
+              totalUSD: 0,
+              error: 'No cached data available. Click refresh to load.'
+            });
+          }
+        }
+
+        exchangesData.push(exchangeData);
+        console.log(`  ✓ Added ${currentExchange} to dashboard`);
       }
     }
 
-    // Always add exchange even if no balances (to show errors)
-    exchanges.push(exchangeData);
-    console.log(`  ✓ Added ${currentExchange} to dashboard`);
+    exchanges.value = exchangesData;
+    console.log(`\n🎯 Dashboard: Total exchanges loaded: ${exchanges.value.length}`);
+
+  } catch (error) {
+    console.error('❌ Error loading cached balances:', error);
+    notification.error({
+      content: 'Failed to load balances',
+      meta: error.message,
+      duration: 3000
+    });
   }
 }
 
-console.log(`\n🎯 Dashboard: Total exchanges loaded: ${exchanges.length}`);
+async function refreshBalances() {
+  isRefreshing.value = true;
+
+  try {
+    console.log('🔄 Refreshing balances from exchanges...');
+
+    const response = await $fetch('/api/v1/syncBalances', {
+      method: 'POST',
+      body: {
+        userID: userID.value
+      }
+    });
+
+    console.log('✅ Sync complete:', response);
+
+    notification.success({
+      content: 'Balances refreshed!',
+      meta: `Updated ${response.cached} balances successfully`,
+      duration: 3000
+    });
+
+    // Reload cached balances after sync
+    await loadCachedBalances();
+
+  } catch (error) {
+    console.error('❌ Error refreshing balances:', error);
+    notification.error({
+      content: 'Failed to refresh balances',
+      meta: error.message,
+      duration: 3000
+    });
+  } finally {
+    isRefreshing.value = false;
+  }
+}
+
+function formatTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
 
 // Define table columns with formatted numbers
 const tableColumns = [
@@ -289,77 +364,116 @@ const tableColumns = [
   },
 ];
 
-// Calculate global totals for all important currencies
-let GlobalBalanceLCX = 0;
-let GlobalBalanceJOB = 0;
-let GlobalBalanceUSD = 0;
-let GlobalBalanceUSDC = 0;
-let GlobalBalanceUSDT = 0;
-let GlobalBalanceEUR = 0;
-
-// Detailed breakdown by exchange
-let exchangeTotals = {};
-
-exchanges.forEach(exchange => {
-  // Initialize exchange totals
-  if (!exchangeTotals[exchange.name]) {
-    exchangeTotals[exchange.name] = {
-      LCX: 0,
-      JOB: 0,
-      USD: 0,
-      USDC: 0,
-      USDT: 0,
-      EUR: 0
-    };
-  }
-
-  exchange.combinedBalance.forEach(asset => {
-    const coin = asset.coin.toUpperCase();
-    const total = asset.total;
-
-    // Add to exchange totals
-    if (exchangeTotals[exchange.name][coin] !== undefined) {
-      exchangeTotals[exchange.name][coin] += total;
-    }
-
-    // Add to global totals
-    if (coin === "LCX") {
-      GlobalBalanceLCX += total;
-    } else if (coin === "JOB") {
-      GlobalBalanceJOB += total;
-    } else if (coin === "USD") {
-      GlobalBalanceUSD += total;
-    } else if (coin === "USDC") {
-      GlobalBalanceUSDC += total;
-    } else if (coin === "USDT") {
-      GlobalBalanceUSDT += total;
-    } else if (coin === "EUR") {
-      GlobalBalanceEUR += total;
-    }
+// Calculate global totals for all important currencies (computed)
+const GlobalBalanceLCX = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "LCX") total += asset.total;
+    });
   });
+  return total;
 });
 
-// Create data for global totals table with GRAND TOTAL row
-const globalTotalsData = [
-  ...Object.keys(exchangeTotals).map(exchangeName => ({
-    exchange: exchangeName.toUpperCase(),
-    LCX: exchangeTotals[exchangeName].LCX,
-    JOB: exchangeTotals[exchangeName].JOB,
-    USD: exchangeTotals[exchangeName].USD,
-    USDC: exchangeTotals[exchangeName].USDC,
-    USDT: exchangeTotals[exchangeName].USDT,
-    EUR: exchangeTotals[exchangeName].EUR
-  })),
-  {
-    exchange: 'GRAND TOTAL',
-    LCX: GlobalBalanceLCX,
-    JOB: GlobalBalanceJOB,
-    USD: GlobalBalanceUSD,
-    USDC: GlobalBalanceUSDC,
-    USDT: GlobalBalanceUSDT,
-    EUR: GlobalBalanceEUR
-  }
-];
+const GlobalBalanceJOB = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "JOB") total += asset.total;
+    });
+  });
+  return total;
+});
+
+const GlobalBalanceUSD = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "USD") total += asset.total;
+    });
+  });
+  return total;
+});
+
+const GlobalBalanceUSDC = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "USDC") total += asset.total;
+    });
+  });
+  return total;
+});
+
+const GlobalBalanceUSDT = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "USDT") total += asset.total;
+    });
+  });
+  return total;
+});
+
+const GlobalBalanceEUR = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "EUR") total += asset.total;
+    });
+  });
+  return total;
+});
+
+// Create data for global totals table with GRAND TOTAL row (computed)
+const globalTotalsData = computed(() => {
+  let exchangeTotals = {};
+
+  exchanges.value.forEach(exchange => {
+    // Initialize exchange totals
+    if (!exchangeTotals[exchange.name]) {
+      exchangeTotals[exchange.name] = {
+        LCX: 0,
+        JOB: 0,
+        USD: 0,
+        USDC: 0,
+        USDT: 0,
+        EUR: 0
+      };
+    }
+
+    exchange.combinedBalance.forEach(asset => {
+      const coin = asset.coin.toUpperCase();
+      const total = asset.total;
+
+      // Add to exchange totals
+      if (exchangeTotals[exchange.name][coin] !== undefined) {
+        exchangeTotals[exchange.name][coin] += total;
+      }
+    });
+  });
+
+  return [
+    ...Object.keys(exchangeTotals).map(exchangeName => ({
+      exchange: exchangeName.toUpperCase(),
+      LCX: exchangeTotals[exchangeName].LCX,
+      JOB: exchangeTotals[exchangeName].JOB,
+      USD: exchangeTotals[exchangeName].USD,
+      USDC: exchangeTotals[exchangeName].USDC,
+      USDT: exchangeTotals[exchangeName].USDT,
+      EUR: exchangeTotals[exchangeName].EUR
+    })),
+    {
+      exchange: 'GRAND TOTAL',
+      LCX: GlobalBalanceLCX.value,
+      JOB: GlobalBalanceJOB.value,
+      USD: GlobalBalanceUSD.value,
+      USDC: GlobalBalanceUSDC.value,
+      USDT: GlobalBalanceUSDT.value,
+      EUR: GlobalBalanceEUR.value
+    }
+  ];
+});
 
 // Define columns for global totals breakdown table
 const globalTotalsColumns = [

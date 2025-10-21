@@ -1,6 +1,6 @@
 <template>
     <h2>Frontrunning Bots</h2>
-    <TickerBar/>
+    <ticker-bar/>
     <ALL-STR/>
 </template>
 

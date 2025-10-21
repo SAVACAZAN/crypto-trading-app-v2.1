@@ -80,6 +80,38 @@ export const userSchema = defineMongooseModel({
                 action: String // Poate fi un șir care indică ultima acțiune (de exemplu, 'claimed' pentru cerere efectuată)
             },
         },
-
+        // AI API Keys for multiple providers (Claude, ChatGPT, Gemini, DeepAI, Cohere, HuggingFace, Replicate, Anthropic, Mistral, Perplexity, Groq, Together)
+        aiApiKeys: {
+            type: Object,
+            required: false,
+            default: {}
+        },
+        // Google OAuth fields
+        email: {
+            type: String,
+            required: false
+        },
+        fullName: {
+            type: String,
+            required: false
+        },
+        profilePicture: {
+            type: String,
+            required: false
+        },
+        googleId: {
+            type: String,
+            required: false
+        },
+        authProvider: {
+            type: String,
+            required: false,
+            default: 'local'
+        },
+        emailVerified: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
     },
 });

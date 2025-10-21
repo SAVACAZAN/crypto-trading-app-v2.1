@@ -1,19 +1,15 @@
 
 <template>
-  <h2>ClosedOrdersDev Toolz</h2>
+  <div style="padding: 16px; background: #0a0a0a; min-height: 100vh;">
+    <h2 style="color: #f5a623; margin-bottom: 16px;">📊 Closed Orders Analytics</h2>
 
-  <TickerBar/>
- 
- <ClosedOrdersDev/>
-
-
+    <!-- Use the new tabbed component with separated pages for better performance -->
+    <ClosedOrdersDevTabbed />
+  </div>
 </template>
 
-
-
-
 <script setup>
-import ClosedOrdersDev from '~/components/ClosedOrdersDev.vue';
+import ClosedOrdersDevTabbed from '~/components/ClosedOrdersDevTabbed.vue';
 
 definePageMeta({
 middleware: 'auth'

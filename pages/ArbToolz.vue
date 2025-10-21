@@ -19,9 +19,9 @@
         <Page8 />
       </n-tab-pane>
 
-      <n-tab-pane name="dkd-bots" tab="DkDBot">
+      <!-- <n-tab-pane name="dkd-bots" tab="DkDBot">
         <Page4 />
-      </n-tab-pane>
+      </n-tab-pane> -->
 
       <n-tab-pane name="fib-bots" tab="FibBot">
         <Page5 />
@@ -77,7 +77,7 @@ import { useAppStore } from '~/stores/app.store';
 import Page1 from '~/pages/grid-bots-plus.vue'; // Import your page components
 import Page2 from '~/pages/grid-bots.vue'; // Import your page components
 import Page3 from '~/pages/frontrun.vue'; // Import your page components
-import Page4 from '~/pages/Bots/dkdbots.vue'; // Import your page components
+// import Page4 from '~/pages/Bots/dkdbots.vue'; // Import your page components - Commented out with tab
 import Page5 from '~/pages/Bots/FibBots.vue'; // Import your page components
 
 import Page6 from '~/pages/Bots/AIBOT.vue'; // Import your page components

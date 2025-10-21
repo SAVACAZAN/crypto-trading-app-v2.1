@@ -15,7 +15,24 @@ export default defineNitroPlugin((nitroApp) => {
     nitroApp.GridBotsLib = {
         createBot: async function(data){
 
-            // console.log('this hit?');
+            // DEBUG: Log incoming data to verify apiKeyName
+            console.log('🔵 [createBot] Received data:');
+            console.log('   userID:', data.userID);
+            console.log('   exchange:', data.exchange);
+            console.log('   symbol:', data.symbol);
+            console.log('   apiKeyNames:', data.apiKeyNames);  // Changed to apiKeyNames (array)
+            console.log('   ordersSide:', data.ordersSide);
+
+            // Support both single apiKeyName (old format) and apiKeyNames array (new format)
+            let apiKeyNamesArray = [];
+            if (data.apiKeyNames && Array.isArray(data.apiKeyNames)) {
+                apiKeyNamesArray = data.apiKeyNames;
+            } else if (data.apiKeyName) {
+                // Backward compatibility with old single apiKeyName
+                apiKeyNamesArray = [data.apiKeyName];
+            }
+
+            console.log('   📋 API Keys to use:', apiKeyNamesArray);
 
             let prices = [];
             let gridWidth;
@@ -61,39 +78,65 @@ export default defineNitroPlugin((nitroApp) => {
 
             let orders = [];
 
-            if (data.ordersSide === 'buyOrSell') {
-                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, data.apiKeyName);
-                for (let i = 0; i < buyOrders.length; i++) {
-                    orders.push(buyOrders[i]);
+            // Place orders for EACH selected API key
+            for (let apiKeyName of apiKeyNamesArray) {
+                console.log(`\n🔑 Placing orders with API Key: ${apiKeyName}`);
+
+                if (data.ordersSide === 'buyOrSell') {
+                    let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, apiKeyName);
+                    for (let i = 0; i < buyOrders.length; i++) {
+                        orders.push(buyOrders[i]);
+                    }
+
+                    let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, apiKeyName);
+                    for (let i = 0; i < sellOrders.length; i++) {
+                        orders.push(sellOrders[i]);
+                    }
                 }
 
-                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, data.apiKeyName);
-                for (let i = 0; i < sellOrders.length; i++) {
-                    orders.push(sellOrders[i]);
+                if (data.ordersSide === 'buyOnly') {
+                    let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, apiKeyName);
+                    for (let i = 0; i < buyOrders.length; i++) {
+                        orders.push(buyOrders[i]);
+                    }
                 }
-            }
 
-            if (data.ordersSide === 'buyOnly') {
-                let buyOrders = await this.placeBuyOrders(data.userID, data.exchange, data.symbol, buyPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountBuy, data.apiKeyName);
-                for (let i = 0; i < buyOrders.length; i++) {
-                    orders.push(buyOrders[i]);
+                if (data.ordersSide === 'sellOnly')  {
+                    let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, apiKeyName);
+                    for (let i = 0; i < sellOrders.length; i++) {
+                        orders.push(sellOrders[i]);
+                    }
                 }
-            }
 
-            if (data.ordersSide === 'sellOnly')  {
-                let sellOrders = await this.placeSellOrders(data.userID, data.exchange, data.symbol, sellPrices, data.amountType, data.amount, data.nrOfGrids, data.incrementalPercentAmountSell, data.apiKeyName);
-                for (let i = 0; i < sellOrders.length; i++) {
-                    orders.push(sellOrders[i]);
+                console.log(`✅ Completed placing orders with API Key: ${apiKeyName}\n`);
+
+                // Add delay between switching API keys for Coinbase Advanced
+                if (data.exchange === 'coinbaseadvanced' && apiKeyNamesArray.indexOf(apiKeyName) < apiKeyNamesArray.length - 1) {
+                    console.log('⏱️  Waiting 2000ms before switching to next API key...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
 
             data['activeOrders'] = orders;
+
+            // Store apiKeyNames array in database
+            data['apiKeyNames'] = apiKeyNamesArray;
+
+            // Store first API key as apiKeyName for backward compatibility
+            if (apiKeyNamesArray.length > 0) {
+                data['apiKeyName'] = apiKeyNamesArray[0];
+            }
+
+            console.log('💾 Saving to database with:');
+            console.log('   apiKeyName:', data['apiKeyName']);
+            console.log('   apiKeyNames:', data['apiKeyNames']);
 
             await new gridBotSchema(data).save()
         },
 
         async placeBuyOrders(userID, exchange, symbol, buyPrices, amountType, amount, nrOfGrids, incrementalPercentAmount, apiKeyName) {
             //buy
+            console.log(`🟢 [placeBuyOrders] Using apiKeyName: ${apiKeyName}`);
             let orders = [];
             let localIndex = 1;
             for (let i = buyPrices.length - 1; i > 0; i--) {
@@ -101,7 +144,7 @@ export default defineNitroPlugin((nitroApp) => {
                 let price = buyPrices[i];
                 let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amount, nrOfGrids, incrementalPercentAmount, localIndex);
 
-                console.log(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price, apiKeyName);
+                console.log(`🟢 [placeBuyOrders] API: ${apiKeyName} | ${symbol} | BUY | Amount: ${quantityPerGrid} | Price: ${price}`);
 
                 let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price, {}, apiKeyName);
 
@@ -123,6 +166,12 @@ export default defineNitroPlugin((nitroApp) => {
 
                 console.log(log);
                 localIndex++;
+
+                // Add delay between orders to prevent rate limiting (1000ms for Coinbase Advanced)
+                if (i > 1 && exchange === 'coinbaseadvanced') {
+                    console.log('⏱️  Waiting 1000ms before next order...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
 
             return orders;
@@ -130,6 +179,7 @@ export default defineNitroPlugin((nitroApp) => {
 
         async placeSellOrders(userID, exchange, symbol, sellPrices, amountType, amount, nrOfGrids, incrementalPercentAmount, apiKeyName) {
             //sell
+            console.log(`🔴 [placeSellOrders] Using apiKeyName: ${apiKeyName}`);
             let orders = [];
             let localIndex = 1;
             for (let i = 0; i < sellPrices.length; i++) {
@@ -137,7 +187,7 @@ export default defineNitroPlugin((nitroApp) => {
                 let price = sellPrices[i];
                 let quantityPerGrid = await this.getQuantityPerGrid(price, amountType, amount, nrOfGrids, incrementalPercentAmount, localIndex);
 
-                console.log(userID, exchange, symbol, 'limit', 'sell', quantityPerGrid, price, apiKeyName);
+                console.log(`🔴 [placeSellOrders] API: ${apiKeyName} | ${symbol} | SELL | Amount: ${quantityPerGrid} | Price: ${price}`);
 
                 let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'sell', quantityPerGrid, price, {}, apiKeyName);
 
@@ -158,6 +208,12 @@ export default defineNitroPlugin((nitroApp) => {
 
                 console.log(log);
                 localIndex++;
+
+                // Add delay between orders to prevent rate limiting (1000ms for Coinbase Advanced)
+                if (i < sellPrices.length - 1 && exchange === 'coinbaseadvanced') {
+                    console.log('⏱️  Waiting 1000ms before next order...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
 
             return orders;
@@ -230,7 +286,12 @@ export default defineNitroPlugin((nitroApp) => {
                     newSide = 'buy';
                 }
 
-                let newOrderResponse = await nitroApp.ccxtw.createOrder(bot.userID, bot.exchange, bot.symbol, 'limit', newSide, newAmount, newPrice, false);
+                // Add delay before placing inverse order for Coinbase Advanced to prevent rate limiting
+                if (bot.exchange === 'coinbaseadvanced') {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+
+                let newOrderResponse = await nitroApp.ccxtw.createOrder(bot.userID, bot.exchange, bot.symbol, 'limit', newSide, newAmount, newPrice, {}, bot.apiKeyName);
 
                 if (newOrderResponse.success) {
                     const priceColor = side === 'buy' ? '\x1b[32m' : '\x1b[31m';

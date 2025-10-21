@@ -1,68 +1,113 @@
 <template>
-  <n-grid x-gap="12" :cols="12" item-responsive>
-    <!-- LEFT COLUMN: Grid Bot Form + AI Advisors -->
-    <n-gi span="12 800:3">
-      <!-- Dynamic AI Advisor Cards (FREE providers first) -->
-      <UniversalAiAdvisor
-        v-for="provider in activeProviders"
-        :key="provider.id"
-        :provider="provider"
-        :balance="balanceData"
-        :orderbook="orderbookData"
-        :price-history="priceHistoryData"
-        :current-price="currentPrice"
-        @apply-suggestion="applyAISuggestion"
-        style="margin-bottom: 12px;"
-      />
+  <div class="modern-grid-ai-page">
+    <!-- HEADER SECTION -->
+ 
 
-      <!-- Show message if no AI providers configured -->
-      <n-card v-if="activeProviders.length === 0" style="margin-bottom: 12px; background: linear-gradient(135deg, #1a1a2e 0%, #2d1810 100%); border: 2px dashed #f55036;">
-        <div style="text-align: center; padding: 20px; color: #a0aec0;">
-          <span style="font-size: 48px;">⚡</span>
-          <h3 style="color: #f55036; margin-top: 12px;">Groq AI Not Configured</h3>
-          <p style="font-size: 13px; margin-top: 8px;">
-            Get FREE & SUPER FAST AI-powered grid bot recommendations!
-          </p>
-          <ul style="text-align: left; display: inline-block; margin-top: 12px; font-size: 12px;">
-            <li><strong>⚡ Groq API</strong> - FREE & Lightning Fast (Llama 3.3 70B)</li>
-            <li>✅ Multi-bot suggestions (1-10 configurations)</li>
-            <li>📊 Balance-aware recommendations</li>
-            <li>🎯 Complete bot configurations (upper/lower/incremental/deviation)</li>
-            <li>🔒 Risk level assessment</li>
-          </ul>
-          <p style="font-size: 12px; margin-top: 16px; color: #f55036;">
-            → Go to your <strong>Profile</strong> page to add your FREE Groq API key!
-          </p>
-          <p style="font-size: 10px; margin-top: 8px; color: #888;">
-            Get your free key at: <a href="https://console.groq.com" target="_blank" style="color: #f55036;">console.groq.com</a>
-          </p>
+    <!-- MAIN CONTENT - 3 COLUMN LAYOUT -->
+    <div class="main-layout">
+      <!-- LEFT SIDEBAR: AI Advisors + Quick Stats -->
+      <div class="left-sidebar">
+        <!-- AI Advisor Section -->
+        <div class="section-header">
+          <span class="section-icon">⚡</span>
+          <h2>AI Advisor</h2>
         </div>
-      </n-card>
 
-      <!-- Grid Bot Form -->
-      <GridBotsFormPlusAI
-        ref="gridBotFormRef"
-        @update:balance="updateBalance"
-        @update:orderbook="updateOrderbook"
-        @update:price="updateCurrentPrice"
-      />
-    </n-gi>
+        <!-- Dynamic AI Advisor Cards (FREE providers first) -->
+        <UniversalAiAdvisor
+          v-for="provider in activeProviders"
+          :key="provider.id"
+          :provider="provider"
+          :balance="balanceData"
+          :orderbook="orderbookData"
+          :price-history="priceHistoryData"
+          :current-price="currentPrice"
+          @apply-suggestion="applyAISuggestion"
+          class="ai-advisor-card"
+        />
 
-    <!-- MIDDLE COLUMN: OrderBook & Ticker -->
-    <n-gi span="12 800:3">
-      <TickerBar
-        @update:price="updateCurrentPrice"
-        @update:balance="updateBalance"
-      />
-      <OrderBook @update:orderbook="updateOrderbook" />
-    </n-gi>
+        <!-- Show message if no AI providers configured -->
+        <div v-if="activeProviders.length === 0" class="no-ai-card">
+          <div class="no-ai-content">
+            <span class="no-ai-icon">⚡</span>
+            <h3>Groq AI Not Configured</h3>
+            <p class="no-ai-desc">Get FREE & SUPER FAST AI-powered grid bot recommendations!</p>
 
-    <!-- RIGHT COLUMN: Grid Bots List & Open Orders -->
-    <n-gi span="12 800:6">
-      <GridBotsList />
-      <OpenOrdersDev :use-store-api-key="true" />
-    </n-gi>
-  </n-grid>
+            <div class="features-list">
+              <div class="feature-item">
+                <span class="check">✅</span>
+                <span>Multi-bot suggestions (1-10)</span>
+              </div>
+              <div class="feature-item">
+                <span class="check">✅</span>
+                <span>Balance-aware recommendations</span>
+              </div>
+              <div class="feature-item">
+                <span class="check">✅</span>
+                <span>Complete bot configurations</span>
+              </div>
+              <div class="feature-item">
+                <span class="check">✅</span>
+                <span>Risk level assessment</span>
+              </div>
+            </div>
+
+            <div class="no-ai-cta">
+              <p>→ Go to your <strong>Profile</strong> page to add your FREE Groq API key!</p>
+              <a href="https://console.groq.com" target="_blank" class="groq-link">console.groq.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER COLUMN: Grid Bot Form -->
+      <div class="center-content">
+        <div class="section-header">
+          <span class="section-icon">⚙️</span>
+          <h2>Bot Configuration</h2>
+        </div>
+
+        <GridBotsFormPlusAI
+          ref="gridBotFormRef"
+          @update:balance="updateBalance"
+          @update:orderbook="updateOrderbook"
+          @update:price="updateCurrentPrice"
+        />
+      </div>
+
+      <!-- RIGHT SIDEBAR: Market Data (Ticker Only) -->
+      <div class="right-sidebar">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h2>Market Data</h2>
+        </div>
+
+        <TickerBar
+          @update:price="updateCurrentPrice"
+          @update:balance="updateBalance"
+        />
+      </div>
+    </div>
+
+    <!-- BOTTOM SECTION: Active Bots & Orders -->
+    <div class="bottom-section">
+      <div class="bots-column">
+        <div class="section-header">
+          <span class="section-icon">🤖</span>
+          <h2>Active Grid Bots</h2>
+        </div>
+        <GridBotsList />
+      </div>
+
+      <div class="orders-column">
+        <div class="section-header">
+          <span class="section-icon">📋</span>
+          <h2>Open Orders</h2>
+        </div>
+        <OpenOrdersDev :use-store-api-key="true" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -129,9 +174,6 @@ async function fetchUserAiKeys() {
   }
 }
 
-// Load user exchange data
-await app.loadUserExchangeData(userID.value);
-
 // Fetch price history for AI analysis
 async function fetchPriceHistory() {
   try {
@@ -173,12 +215,223 @@ function applyAISuggestion(suggestion) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Load exchange data without blocking
+  await app.loadUserExchangeData(userID.value);
+
+  // Fetch AI keys and price history
   fetchUserAiKeys();
   fetchPriceHistory();
 });
 </script>
 
 <style scoped>
-/* Page-specific styles */
+/* ========== FIXED HEIGHT LAYOUT (NO PAGE SCROLL) ========== */
+.modern-grid-ai-page {
+  height: calc(100vh - 68px);
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== MAIN LAYOUT (3 COLUMNS - FIXED HEIGHT) ========== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 12px;
+  flex: 1;
+  padding: 12px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (max-width: 1400px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+
+/* ========== LEFT SIDEBAR (COMPACT) ========== */
+.left-sidebar {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== CENTER CONTENT (NO SCROLL) ========== */
+.center-content {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== RIGHT SIDEBAR (COMPACT) ========== */
+.right-sidebar {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== SECTION HEADERS (COMPACT) ========== */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.section-icon {
+  font-size: 16px;
+}
+
+.section-header h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* ========== AI ADVISOR CARD ========== */
+.ai-advisor-card {
+  margin-bottom: 16px;
+}
+
+/* ========== NO AI CONFIGURED CARD ========== */
+.no-ai-card {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1810 100%);
+  border: 2px dashed #f55036;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.no-ai-content {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.no-ai-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.no-ai-card h3 {
+  color: #f55036;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+.no-ai-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 16px;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: left;
+}
+
+.feature-item .check {
+  font-size: 14px;
+}
+
+.no-ai-cta {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-ai-cta p {
+  font-size: 12px;
+  color: #f55036;
+  margin-bottom: 8px;
+}
+
+.groq-link {
+  color: #f55036;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.groq-link:hover {
+  color: #ff6b52;
+  text-decoration: underline;
+}
+
+/* ========== BOTTOM SECTION (HIDDEN - USE SEPARATE PAGES) ========== */
+.bottom-section {
+  display: none;
+}
+
+/* ========== SCROLLBAR STYLING ========== */
+.left-sidebar::-webkit-scrollbar,
+.center-content::-webkit-scrollbar,
+.right-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-sidebar::-webkit-scrollbar-track,
+.center-content::-webkit-scrollbar-track,
+.right-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb,
+.center-content::-webkit-scrollbar-thumb,
+.right-sidebar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+}
+
+.left-sidebar::-webkit-scrollbar-thumb:hover,
+.center-content::-webkit-scrollbar-thumb:hover,
+.right-sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
 </style>

@@ -29,32 +29,90 @@ const refreshInterval = ref(null);
 const currentExchange = computed(() => app.getUserSelectedExchange);
 const currentSymbol = computed(() => app.getUserSelectedMarket);
 const currentApiKey = computed(() => app.getSelectedApiKey);
+const currentApiKeys = computed(() => app.getSelectedApiKeys); // ✅ GET ALL SELECTED API KEYS
 
 async function analyzeMarket() {
   loading.value = true;
   error.value = null;
 
   try {
+    console.log('🤖 [AI ADVISOR] Starting analysis...');
+    console.log('📊 Exchange:', currentExchange.value);
+    console.log('💰 Symbol:', currentSymbol.value);
+    console.log('🔑 Selected API Keys:', currentApiKeys.value);
+
+    // ✅ FETCH BALANCES FROM ALL SELECTED API KEYS AND COMBINE THEM
     let balanceToUse = props.balance;
     if (!balanceToUse) {
-      const balanceResponse = await $fetch('/api/v1/fetchBalance', {
-        query: { userID: userID.value, exchange: currentExchange.value }
+      const apiKeysToFetch = currentApiKeys.value && currentApiKeys.value.length > 0
+        ? currentApiKeys.value
+        : [currentApiKey.value];
+
+      console.log('📡 Fetching COMBINED balance for', apiKeysToFetch.length, 'API keys:', apiKeysToFetch);
+
+      // ✅ USE NEW ENDPOINT TO GET COMBINED BALANCE DIRECTLY FROM MONGODB
+      const balanceResponse = await $fetch('/api/v1/fetchCombinedBalance', {
+        query: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          apiKeyNames: apiKeysToFetch.join(','),  // Send as comma-separated string
+          symbol: currentSymbol.value
+        }
       });
-      if (balanceResponse.success) balanceToUse = balanceResponse.data;
+
+      if (balanceResponse.success) {
+        balanceToUse = balanceResponse.data;
+        const [baseCurrency, quoteCurrency] = currentSymbol.value.split('/');
+        console.log('✅ COMBINED Balance from MongoDB:', balanceToUse);
+        console.log('   📊 API Keys used:', balanceResponse.apiKeysUsed);
+        console.log('   📦 Documents processed:', balanceResponse.totalDocuments);
+        console.log(`   💰 ${baseCurrency}: ${balanceToUse[baseCurrency]?.free || 0} (free)`);
+        console.log(`   💰 ${quoteCurrency}: ${balanceToUse[quoteCurrency]?.free || 0} (free)`);
+      } else {
+        console.error('❌ Failed to fetch combined balance:', balanceResponse.error);
+      }
+    }
+
+    // ✅ VALIDATION - EXCHANGE AND SYMBOL REQUIRED
+    if (!currentExchange.value || !currentSymbol.value) {
+      error.value = 'Please select an exchange and trading pair first';
+      return;
     }
 
     let orderbookToUse = props.orderbook;
     if (!orderbookToUse) {
       const orderbookResponse = await $fetch('/api/v1/fetchOrderBook', {
-        query: { userID: userID.value, exchange: currentExchange.value, symbol: currentSymbol.value }
+        query: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          symbol: currentSymbol.value,
+          apiKeyName: currentApiKey.value
+        }
       });
       if (orderbookResponse.success) orderbookToUse = orderbookResponse.data;
+    }
+
+    // ✅ GET CURRENT PRICE FROM STORE (LIVE TICKER)
+    let currentPriceToUse = app.getCurrentPrice || props.currentPrice;
+    if (!currentPriceToUse && orderbookToUse) {
+      const midPrice = (orderbookToUse.bids?.[0]?.[0] + orderbookToUse.asks?.[0]?.[0]) / 2;
+      currentPriceToUse = midPrice || orderbookToUse.bids?.[0]?.[0] || orderbookToUse.asks?.[0]?.[0];
+      console.log('💰 Current Price (fallback from orderbook):', currentPriceToUse);
+    } else {
+      console.log('💰 Current Price (from live ticker):', currentPriceToUse);
     }
 
     let priceHistoryToUse = props.priceHistory;
     if (!priceHistoryToUse || priceHistoryToUse.length === 0) {
       const priceResponse = await $fetch('/api/v1/fetchChart', {
-        query: { userID: userID.value, exchange: currentExchange.value, symbol: currentSymbol.value, timeframe: '1d', limit: 30 }
+        query: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          symbol: currentSymbol.value,
+          timeframe: '1d',
+          limit: 30,
+          apiKeyName: currentApiKey.value
+        }
       });
       if (priceResponse.success) priceHistoryToUse = priceResponse.data;
     }
@@ -67,7 +125,7 @@ async function analyzeMarket() {
         priceHistory: priceHistoryToUse,
         symbol: currentSymbol.value,
         exchange: currentExchange.value,
-        currentPrice: props.currentPrice,
+        currentPrice: currentPriceToUse,
         timeframe: '30d',
         userID: userID.value,
         apiKeyName: currentApiKey.value
@@ -116,7 +174,10 @@ const keyMetrics = computed(() => {
   if (aiSuggestions.value.recommendedBots && Array.isArray(aiSuggestions.value.recommendedBots)) {
     return {
       isMultiBot: true,
-      totalBalance: aiSuggestions.value.totalBalance || 0,
+      baseBalance: aiSuggestions.value.baseBalance || 0,
+      quoteBalance: aiSuggestions.value.quoteBalance || 0,
+      baseCurrency: aiSuggestions.value.baseCurrency || 'BASE',
+      quoteCurrency: aiSuggestions.value.quoteCurrency || 'QUOTE',
       botsCount: aiSuggestions.value.recommendedBots.length,
       recommendedBots: aiSuggestions.value.recommendedBots,
       marketAnalysis: aiSuggestions.value.marketAnalysis || '',
@@ -171,13 +232,21 @@ const keyMetrics = computed(() => {
       <div v-else-if="aiAnalysis && aiSuggestions && keyMetrics">
         <!-- MULTI-BOT RECOMMENDATIONS -->
         <div v-if="keyMetrics.isMultiBot">
-          <!-- Summary Stats -->
-          <n-grid :cols="2" :x-gap="8" :y-gap="8" style="margin-bottom: 12px;">
+          <!-- Summary Stats - INDIVIDUAL BALANCES -->
+          <n-grid :cols="3" :x-gap="8" :y-gap="8" style="margin-bottom: 12px;">
             <n-gi>
-              <div :style="`background: ${provider.color}22; padding: 12px; border-radius: 8px; border: 1px solid ${provider.color}44;`">
-                <div :style="`color: ${provider.color}; font-size: 10px; font-weight: 600;`">TOTAL BALANCE</div>
+              <div :style="`background: #4ade8022; padding: 12px; border-radius: 8px; border: 1px solid #4ade8044;`">
+                <div style="color: #4ade80; font-size: 10px; font-weight: 600;">BASE ({{ keyMetrics.baseCurrency }})</div>
                 <div style="color: #fff; font-size: 16px; font-weight: 700; margin-top: 4px;">
-                  ${{ keyMetrics.totalBalance.toFixed(2) }}
+                  {{ keyMetrics.baseBalance.toFixed(2) }}
+                </div>
+              </div>
+            </n-gi>
+            <n-gi>
+              <div :style="`background: #60a5fa22; padding: 12px; border-radius: 8px; border: 1px solid #60a5fa44;`">
+                <div style="color: #60a5fa; font-size: 10px; font-weight: 600;">QUOTE ({{ keyMetrics.quoteCurrency }})</div>
+                <div style="color: #fff; font-size: 16px; font-weight: 700; margin-top: 4px;">
+                  {{ keyMetrics.quoteBalance.toFixed(2) }}
                 </div>
               </div>
             </n-gi>
@@ -185,7 +254,7 @@ const keyMetrics = computed(() => {
               <div :style="`background: ${provider.color}22; padding: 12px; border-radius: 8px; border: 1px solid ${provider.color}44;`">
                 <div :style="`color: ${provider.color}; font-size: 10px; font-weight: 600;`">RECOMMENDED BOTS</div>
                 <div style="color: #fff; font-size: 16px; font-weight: 700; margin-top: 4px;">
-                  {{ keyMetrics.botsCount }} Configurations
+                  {{ keyMetrics.botsCount }}
                 </div>
               </div>
             </n-gi>

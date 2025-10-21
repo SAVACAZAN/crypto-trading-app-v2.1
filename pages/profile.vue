@@ -145,6 +145,54 @@
         </n-space>
       </n-card>
     </div>
+
+    <!-- AI Providers Section -->
+    <n-card style="margin-top: 24px; border: 2px solid #667eea;">
+      <template #header>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div>
+              <h2 style="margin: 0; font-size: 20px; color: #667eea;">🤖 AI Providers API Keys</h2>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: #888;">
+                Configure API keys for multiple AI providers to power your trading bots
+              </p>
+            </div>
+          </div>
+          <n-tag :bordered="false" type="info" size="large">
+            {{ activeAiCount }} / {{ aiProviders.length }} Active
+          </n-tag>
+        </div>
+      </template>
+
+      <!-- Info Box -->
+      <div style="padding: 12px; background: rgba(102, 126, 234, 0.05); border-left: 3px solid #667eea; border-radius: 4px; margin-bottom: 20px;">
+        <div style="font-size: 13px; color: #a0a0a0; line-height: 1.6;">
+          <strong style="color: #667eea;">ℹ️ About AI Integration:</strong><br/>
+          Your AI API keys are securely stored and used for analyzing market conditions, generating trading strategies, and providing grid bot configuration suggestions.
+          Each provider offers unique capabilities - configure multiple providers for enhanced analysis.
+        </div>
+      </div>
+
+      <!-- AI Providers Grid -->
+      <n-grid :cols="3" :x-gap="16" :y-gap="16" responsive="screen" item-responsive>
+        <n-gi v-for="provider in aiProviders" :key="provider.id" span="12 800:4">
+          <AiApiKeyCard
+            :provider="provider"
+            :api-key="aiApiKeys[provider.id]"
+            :saving="savingStates[provider.id]"
+            :deleting="deletingStates[provider.id]"
+            @save="(key) => saveAiApiKey(provider.id, key)"
+            @delete="deleteAiApiKey(provider.id)"
+          />
+        </n-gi>
+      </n-grid>
+    </n-card>
   </div>
 </template>
 
@@ -495,6 +543,270 @@ function notify(type, data) {
     keepAliveOnHover: true
   });
 }
+
+// ==================== AI PROVIDERS CONFIGURATION ====================
+
+const aiProviders = [
+  {
+    id: 'claude',
+    name: 'Claude AI',
+    emoji: '🤖',
+    description: 'Anthropic Claude 3.5 for advanced market analysis',
+    color: '#667eea',
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    placeholder: 'sk-ant-api03-...',
+    link: 'https://console.anthropic.com/settings/keys',
+    linkText: 'Anthropic Console',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>'
+  },
+  {
+    id: 'chatgpt',
+    name: 'ChatGPT',
+    emoji: '💬',
+    description: 'OpenAI GPT-4 for trading strategies & insights',
+    color: '#10a37f',
+    gradient: 'linear-gradient(135deg, #10a37f 0%, #1a7f64 100%)',
+    placeholder: 'sk-proj-...',
+    link: 'https://platform.openai.com/api-keys',
+    linkText: 'OpenAI Platform',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12l-4-4v3H3v2h15v3l4-4z"/></svg>'
+  },
+  {
+    id: 'gemini',
+    name: 'Google Gemini',
+    emoji: '✨',
+    description: 'Google Gemini Pro for multi-modal analysis',
+    color: '#4285f4',
+    gradient: 'linear-gradient(135deg, #4285f4 0%, #34a853 100%)',
+    placeholder: 'AIzaSy...',
+    link: 'https://makersuite.google.com/app/apikey',
+    linkText: 'Google AI Studio',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+  },
+  {
+    id: 'deepai',
+    name: 'DeepAI',
+    emoji: '🧠',
+    description: 'DeepAI for technical indicator predictions',
+    color: '#ff6b6b',
+    gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+    placeholder: 'quickstart-...',
+    link: 'https://deepai.org/dashboard/profile',
+    linkText: 'DeepAI Dashboard',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>'
+  },
+  {
+    id: 'cohere',
+    name: 'Cohere',
+    emoji: '⚡',
+    description: 'Cohere for NLP-based market sentiment analysis',
+    color: '#39c5bb',
+    gradient: 'linear-gradient(135deg, #39c5bb 0%, #2a9d8f 100%)',
+    placeholder: 'trial-...',
+    link: 'https://dashboard.cohere.com/api-keys',
+    linkText: 'Cohere Dashboard',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v10M23 12h-6m-6 0H1"/></svg>'
+  },
+  {
+    id: 'huggingface',
+    name: 'HuggingFace',
+    emoji: '🤗',
+    description: 'HuggingFace models for custom ML strategies',
+    color: '#ffcc00',
+    gradient: 'linear-gradient(135deg, #ffcc00 0%, #ff9933 100%)',
+    placeholder: 'hf_...',
+    link: 'https://huggingface.co/settings/tokens',
+    linkText: 'HF Tokens',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'
+  },
+  {
+    id: 'replicate',
+    name: 'Replicate',
+    emoji: '🔄',
+    description: 'Replicate for advanced pattern recognition',
+    color: '#ff4b4b',
+    gradient: 'linear-gradient(135deg, #ff4b4b 0%, #d63031 100%)',
+    placeholder: 'r8_...',
+    link: 'https://replicate.com/account/api-tokens',
+    linkText: 'Replicate Account',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>'
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic API',
+    emoji: '🎯',
+    description: 'Direct Anthropic API for real-time decisions',
+    color: '#9333ea',
+    gradient: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+    placeholder: 'sk-ant-...',
+    link: 'https://console.anthropic.com/settings/keys',
+    linkText: 'Anthropic Console',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
+  },
+  {
+    id: 'mistral',
+    name: 'Mistral AI',
+    emoji: '🌪️',
+    description: 'Mistral for fast European-based AI analysis',
+    color: '#f97316',
+    gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+    placeholder: 'mstr-...',
+    link: 'https://console.mistral.ai/api-keys',
+    linkText: 'Mistral Console',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 4.5,7.5 4.5,16.5 12,22 19.5,16.5 19.5,7.5"/></svg>'
+  },
+  {
+    id: 'perplexity',
+    name: 'Perplexity',
+    emoji: '🔍',
+    description: 'Perplexity for real-time web-based insights',
+    color: '#06b6d4',
+    gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+    placeholder: 'pplx-...',
+    link: 'https://www.perplexity.ai/settings/api',
+    linkText: 'Perplexity Settings',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>'
+  },
+  {
+    id: 'groq',
+    name: 'Groq',
+    emoji: '⚙️',
+    description: 'Groq for ultra-fast inference speed',
+    color: '#ef4444',
+    gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    placeholder: 'gsk_...',
+    link: 'https://console.groq.com/keys',
+    linkText: 'Groq Console',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 4l7.53 13H4.47L12 6z"/></svg>'
+  },
+  {
+    id: 'together',
+    name: 'Together AI',
+    emoji: '🤝',
+    description: 'Together AI for collaborative model inference',
+    color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    placeholder: 'together-...',
+    link: 'https://api.together.xyz/settings/api-keys',
+    linkText: 'Together Settings',
+    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>'
+  }
+];
+
+// AI API Keys State
+const aiApiKeys = ref({});
+const savingStates = ref({});
+const deletingStates = ref({});
+
+// Initialize states
+aiProviders.forEach(provider => {
+  aiApiKeys.value[provider.id] = '';
+  savingStates.value[provider.id] = false;
+  deletingStates.value[provider.id] = false;
+});
+
+// Count active AI providers
+const activeAiCount = computed(() => {
+  return Object.values(aiApiKeys.value).filter(key => key && key.length > 0).length;
+});
+
+// Fetch all AI API keys
+async function fetchAiApiKeys() {
+  try {
+    const response = await $fetch('/api/v1/getAiApiKeys', {
+      query: { userID }
+    });
+
+    if (response.success && response.data) {
+      Object.assign(aiApiKeys.value, response.data);
+    }
+  } catch (error) {
+    console.error('Failed to fetch AI API keys:', error);
+  }
+}
+
+// Save AI API Key
+async function saveAiApiKey(providerId, apiKey) {
+  if (!apiKey || apiKey.trim() === '') {
+    notify('warning', {
+      content: "Invalid API Key",
+      meta: "Please enter a valid API key",
+    });
+    return;
+  }
+
+  savingStates.value[providerId] = true;
+
+  try {
+    const response = await $fetch('/api/v1/saveAiApiKey', {
+      method: 'POST',
+      body: {
+        userID,
+        providerId,
+        apiKey: apiKey.trim()
+      }
+    });
+
+    if (response.success) {
+      aiApiKeys.value[providerId] = apiKey.trim();
+
+      const provider = aiProviders.find(p => p.id === providerId);
+      notify('success', {
+        content: "API Key Saved",
+        meta: `${provider.name} API key saved successfully!`,
+      });
+    } else {
+      notify('error', {
+        content: "Save Failed",
+        meta: response.message || "Failed to save API key",
+      });
+    }
+  } catch (error) {
+    notify('error', {
+      content: "Error",
+      meta: error.message || "An error occurred while saving",
+    });
+  } finally {
+    savingStates.value[providerId] = false;
+  }
+}
+
+// Delete AI API Key
+async function deleteAiApiKey(providerId) {
+  deletingStates.value[providerId] = true;
+
+  try {
+    const response = await $fetch('/api/v1/deleteAiApiKey', {
+      method: 'POST',
+      body: { userID, providerId }
+    });
+
+    if (response.success) {
+      aiApiKeys.value[providerId] = '';
+
+      const provider = aiProviders.find(p => p.id === providerId);
+      notify('info', {
+        content: "API Key Removed",
+        meta: `${provider.name} API key deleted`,
+      });
+    } else {
+      notify('error', {
+        content: "Delete Failed",
+        meta: response.message || "Failed to delete API key",
+      });
+    }
+  } catch (error) {
+    notify('error', {
+      content: "Error",
+      meta: error.message || "An error occurred while deleting",
+    });
+  } finally {
+    deletingStates.value[providerId] = false;
+  }
+}
+
+// Fetch AI keys on mount
+fetchAiApiKeys();
 </script>
 
 <style scoped>
@@ -551,5 +863,16 @@ function notify(type, data) {
   color: #888;
   margin-top: 4px;
   padding-left: 4px;
+}
+
+.add-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  color: #fff;
 }
 </style>
