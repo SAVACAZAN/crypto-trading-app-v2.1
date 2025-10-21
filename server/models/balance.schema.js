@@ -10,17 +10,30 @@ export const balanceSchema = defineMongooseModel({
             type: String,
             required: true
         },
+        apiKeyName: {
+            type: String,
+            required: true
+        },
         balance: {
             type: Object,
             required: true
         },
         totalUSD:{
             type: Number,
-            required: true
+            required: false,
+            default: 0
         },
         timestamp:{
             type: Date,
             required: true
+        },
+        lastUpdated:{
+            type: Date,
+            required: true,
+            default: Date.now
         }
     },
+    options: {
+        timestamps: true
+    }
 })
