@@ -100,14 +100,11 @@ async function fetchOrderBookPooling() {
 </template>
 
 <style scoped>
-/* Card Styling - Compact & Full Width */
+/* Card Styling */
 .order-book-card {
-  width: 100%;
-  height: 100%;
-}
-
-:deep(.n-card__content) {
-  padding: 8px !important;
+  max-width: fit-content;
+  min-width: 50px;
+  margin: 0 auto;
 }
 
 .card-title {
@@ -129,7 +126,7 @@ async function fetchOrderBookPooling() {
 .bids-section {
   display: flex;
   flex-direction: column;
-  max-height: 200px;
+  max-height: 330px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -141,13 +138,13 @@ async function fetchOrderBookPooling() {
 /* Scrollbar Styling */
 .asks-section::-webkit-scrollbar,
 .bids-section::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .asks-section::-webkit-scrollbar-thumb,
 .bids-section::-webkit-scrollbar-thumb {
   background-color: rgba(95, 92, 92, 0.3);
-  border-radius: 2px;
+  border-radius: 1px;
 }
 
 .asks-section::-webkit-scrollbar-track,
@@ -159,31 +156,30 @@ async function fetchOrderBookPooling() {
 .order-row {
   display: grid;
   grid-template-columns: auto auto auto;
-  gap: 6px;
-  padding: 2px 4px;
+  gap: 4px;
+  /* padding: 3px 6px; */
   align-items: center;
   transition: background-color 0.15s ease;
 }
 
 .order-row:hover {
   background-color: rgba(128, 128, 128, 0.08);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 /* Headers Row */
 .headers-row {
   display: grid;
   grid-template-columns: auto auto auto;
-  gap: 6px;
-  padding: 4px 4px;
+  gap: 1px;
+  padding: 6px 6px;
   border-top: 1px solid rgba(128, 128, 128, 0.2);
   border-bottom: 1px solid rgba(128, 128, 128, 0.2);
   background-color: rgba(128, 128, 128, 0.05);
-  margin: 4px 0;
 }
 
 .header-cell {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -198,12 +194,12 @@ async function fetchOrderBookPooling() {
 
 /* Data Cells */
 .cell {
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'Courier New', monospace;
   font-weight: 500;
   white-space: nowrap;
   text-align: right;
-  padding: 0;
+  padding: 0 2px;
 }
 
 .price-cell {
@@ -221,12 +217,17 @@ async function fetchOrderBookPooling() {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .order-book-card {
+    max-width: 100%;
+    min-width: auto;
+  }
+
   .cell {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .header-cell {
-    font-size: 8px;
+    font-size: 10px;
   }
 }
 </style>

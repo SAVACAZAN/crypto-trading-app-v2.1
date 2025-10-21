@@ -35,19 +35,34 @@ let name = ref(`FrontRunBot_${generateRandomString(5)}`);
 
 
 let strategyPicker = ref('1st');
+let previousStrategy = ref('1st');
 
 // Stări pentru dezactivarea butoanelor "Buy Only" și "Sell Only"
 let isBuyDisabled = ref(false);
 let isSellDisabled = ref(false);
 
 function selectStrategy(strategy) {
+  const wasBuy = previousStrategy.value.startsWith('BUY');
+  const wasSell = previousStrategy.value.startsWith('SELL');
+  const isBuy = strategy.startsWith('BUY');
+  const isSell = strategy.startsWith('SELL');
+
+  // Swap prices only when switching between BUY and SELL strategies
+  if ((wasBuy && isSell) || (wasSell && isBuy)) {
+    const tempLower = lowerPrice.value;
+    const tempUpper = upperPrice.value;
+    lowerPrice.value = tempUpper;
+    upperPrice.value = tempLower;
+  }
+
   strategyPicker.value = strategy;
+  previousStrategy.value = strategy;
 
   // Dezactivăm butoanele "Buy Only" și "Sell Only" în funcție de strategia selectată
-  if (strategy.startsWith('BUY')) {
+  if (isBuy) {
     isSellDisabled.value = true;
     isBuyDisabled.value = false;
-  } else if (strategy.startsWith('SELL')) {
+  } else if (isSell) {
     isBuyDisabled.value = true;
     isSellDisabled.value = false;
   } else {
@@ -63,7 +78,7 @@ let PriceStart = ref('');
 let amountPriceStart = ref('');
 let amountType = ref('incrementalPercent');
 let amountTypeOptions = [
- 
+
   { value: 'totalAmount', label:'Total Amount'},
   { value: 'incrementalPercent', label:'Incremental Amount'}
 ];
@@ -79,7 +94,12 @@ let incrementalPercentAmountSell = ref('');
 
 let ActiveRANGE = ref(false);
 
-
+// Collapse state for sections - all start collapsed
+let showBotConfig = ref(false);
+let showPriceAdjust = ref(false);
+let showStrategies = ref(false);
+let showGridConfig = ref(false);
+let showIncremental = ref(false);
 
 let orderBookInterval = null;
 
@@ -364,8 +384,10 @@ if (strategy in strategyMapping) {
     if (bestAsk.value) {
       PriceStart.value = bestAsk.value;
       amountPriceStart.value = '2';
-      lowerPrice.value = (bestAsk.value * (1 + lowerPercent)).toFixed(decimalPlaces);  // Folosește numărul de zecimale corect
-      upperPrice.value = (bestAsk.value * (1 + upperPercent)).toFixed(decimalPlaces);  // Folosește numărul de zecimale corect
+      // For SELL strategy: lower price = current - deviation, upper price = current + deviation
+      // upperPercent is negative (e.g., -0.05), so we use Math.abs() to make it positive
+      lowerPrice.value = (bestAsk.value * (1 + upperPercent)).toFixed(decimalPlaces);  // Lower (smaller value)
+      upperPrice.value = (bestAsk.value * (1 + lowerPercent)).toFixed(decimalPlaces);  // Upper (larger value)
       amountType.value = 'incrementalPercent';
       amount.value = '1';
       nrOfGrids.value = '25';
@@ -485,8 +507,8 @@ onMounted(() => {
 
   // localStorage.setItem('test', '123');
 
-   
-  
+
+
   // Restul codului pe care l-ați furnizat înainte poate rămâne aici
   return {
     bestBid,
@@ -515,568 +537,535 @@ onMounted(() => {
 </script>
 
 <template>
-
-<!-- API Key Selector and Balance Display -->
-<n-card style="margin-bottom: 16px; padding: 8px;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
-    <thead>
-      <tr style="border-bottom: 1px solid #444;">
-        <th style="text-align: left; padding: 4px 8px; width: 25%;">API Key</th>
-        <th style="text-align: left; padding: 4px 8px; width: 10%;">Coin</th>
-        <th style="text-align: right; padding: 4px 8px; color: #10eb04; width: 21.66%;">Free</th>
-        <th style="text-align: right; padding: 4px 8px; color: #f5a623; width: 21.66%;">Used</th>
-        <th style="text-align: right; padding: 4px 8px; color: #50e3c2; width: 21.66%;">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td rowspan="2" style="padding: 4px 8px; vertical-align: middle;">
-          <n-select
-            v-model:value="selectedApiKey"
-            :options="availableApiKeys"
-            :loading="loadingApiKeys"
-            placeholder="Select API Key"
-            :disabled="availableApiKeys.length === 0"
-            size="small"
-            :render-label="renderApiKeyLabel"
-          />
-        </td>
-        <td v-if="selectedApiKey && !loadingBalance" style="padding: 4px 8px;">
-          <span style="display: inline-flex; align-items: center;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10eb04; margin-right: 6px;"></span>
-            <span style="font-weight: bold; color: #10eb04;">{{ base }}</span>
-          </span>
-        </td>
-        <td v-if="selectedApiKey && !loadingBalance" style="padding: 4px 8px; text-align: right; color: #10eb04;">{{ Number(balanceBaseFree).toFixed(8) }}</td>
-        <td v-if="selectedApiKey && !loadingBalance" style="padding: 4px 8px; text-align: right; color: #f5a623;">{{ Number(balanceBaseUsed).toFixed(8) }}</td>
-        <td v-if="selectedApiKey && !loadingBalance" style="padding: 4px 8px; text-align: right; color: #50e3c2;">{{ Number(balanceBaseTotal).toFixed(8) }}</td>
-        <td v-if="!selectedApiKey || loadingBalance" colspan="4" style="padding: 4px 8px; text-align: center;">
-          <n-spin v-if="loadingBalance" size="small" />
-          <n-text v-else type="warning" style="font-size: 11px;">Select an API key</n-text>
-        </td>
-      </tr>
-      <tr v-if="selectedApiKey && !loadingBalance">
-        <td style="padding: 4px 8px;">
-          <span style="display: inline-flex; align-items: center;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #05f5ed; margin-right: 6px;"></span>
-            <span style="font-weight: bold; color: #05f5ed;">{{ quote }}</span>
-          </span>
-        </td>
-        <td style="padding: 4px 8px; text-align: right; color: #10eb04;">{{ Number(balanceQuoteFree).toFixed(8) }}</td>
-        <td style="padding: 4px 8px; text-align: right; color: #f5a623;">{{ Number(balanceQuoteUsed).toFixed(8) }}</td>
-        <td style="padding: 4px 8px; text-align: right; color: #50e3c2;">{{ Number(balanceQuoteTotal).toFixed(8) }}</td>
-      </tr>
-    </tbody>
-  </table>
-</n-card>
-
-<n-card>
-  
-    <!-- Grup pentru butoanele de tip "BUY" -->
-    <tr>
-      <n-button-group class="strategy-buttons-buy">
-        <n-button type="default" :ghost="strategyPicker !== '1st'">BUY--->SELLGRID</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID2%')" :ghost="strategyPicker !== 'BUY--->SELLGRID2%'">2</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID5%')" :ghost="strategyPicker !== 'BUY--->SELLGRID5%'">5</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID7%')" :ghost="strategyPicker !== 'BUY--->SELLGRID7%'">7</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID10%')" :ghost="strategyPicker !== 'BUY--->SELLGRID10%'">10</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID20%')" :ghost="strategyPicker !== 'BUY--->SELLGRID20%'">20</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID50%')" :ghost="strategyPicker !== 'BUY--->SELLGRID50%'">50</n-button>
-        <n-button type="default" @click="selectStrategy('BUY--->SELLGRID80%')" :ghost="strategyPicker !== 'BUY--->SELLGRID80%'">80</n-button>
-      </n-button-group>
-    </tr>
-    
-    <!-- Grup pentru butoanele de tip "SELL" -->
-    <tr>
-      <n-button-group class="strategy-buttons-sell">
-        <n-button type="default" :ghost="strategyPicker !== '2nd'">SELL--->BUYGRID</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID2%')" :ghost="strategyPicker !== 'SELL--->BUYGRID2%'">2</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID5%')" :ghost="strategyPicker !== 'SELL--->BUYGRID5%'">5</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID7%')" :ghost="strategyPicker !== 'SELL--->BUYGRID7%'">7</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID10%')" :ghost="strategyPicker !== 'SELL--->BUYGRID10%'">10</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID20%')" :ghost="strategyPicker !== 'SELL--->BUYGRID20%'">20</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID50%')" :ghost="strategyPicker !== 'SELL--->BUYGRID50%'">50</n-button>
-        <n-button type="default" @click="selectStrategy('SELL--->BUYGRID80%')" :ghost="strategyPicker !== 'SELL--->BUYGRID80%'">80</n-button>
-      </n-button-group>
-    </tr>
-
-    <tr>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(10)"> NrGrids 10</n-button>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(20)"> NrGrids 20</n-button>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(25)"> NrGrids 25</n-button>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(35)"> NrGrids 35</n-button>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(50)"> NrGrids 50</n-button>
-      <n-button class="set-NrGrids-button" @click="setNrGrids(100)"> NrGrids 100</n-button>
-    </tr>
-    
-    <tr>
-      <!-- Butoane pentru setarea amount -->
-      <n-button class="set-amount-button" @click="setAmount(1)"> Amount 1</n-button>
-    <n-button class="set-amount-button" @click="setAmount(5)"> Amount 5</n-button>
-    <n-button class="set-amount-button" @click="setAmount(10)"> Amount 10</n-button>
-
-    <n-button class="set-amount-button" @click="setAmount(20)"> Amount 20</n-button>
-    <n-button class="set-amount-button" @click="setAmount(50)"> Amount 50</n-button>
-    <n-button class="set-amount-button" @click="setAmount(100)"> Amount 100</n-button>
-    </tr>
-
-    <n-button type="primary" @click="setIncrementalAmounts(0.5, 0.7)">0.5, 0.7 </n-button>
-    <n-button type="primary" @click="setIncrementalAmounts(1, 1.5)">1, 1.5  </n-button>
-    <n-button type="primary" @click="setIncrementalAmounts(2, 2.5)">2, 2.5  </n-button>
-
-
-      <n-button type="primary" @click="setAccumulation(1, 0.5)">1, 0.5</n-button>
-      <n-button type="primary" @click="setAccumulation(2, 1)"> 2, 1  </n-button>
-      <n-button type="primary" @click="setAccumulation(3, 1.5)">3, 1.5  </n-button>
-      <n-button type="primary" @click="setAccumulation(4, 2)">4, 2   </n-button>
-      <n-button type="primary" @click="setAccumulation(5, 2.5)">5, 2.5  </n-button>
-
-      <n-button type="primary" @click="setDistribution(0.5, 1)">0.5, 1  </n-button>
-      <n-button type="primary" @click="setDistribution(1, 2)">1, 2  </n-button>
-      <n-button type="primary" @click="setDistribution(1.5, 3)">1.5, 3  </n-button>
-      <n-button type="primary" @click="setDistribution(2, 4)">2, 4  </n-button>
-      <n-button type="primary" @click="setDistribution(2.5, 5)">2.5, 5  </n-button>
-
-
-
-</n-card>
-
-
-
-  <n-card>
- 
-
-  
-
-    <n-grid x-gap="12" :cols="2">
-
-      <!-- Primul tabel pentru Bot Name, Price Start și Amount Price Start -->
-      <n-gi>
-       
-        
-    
-     
-        
-        
-        <n-space vertical>
-
-
-
-          <table class="form-table">
-            <tr>
-              <td class="label-cell label-bot-name"><label>Bot Name</label></td>
-              <td class="input-cell">
-                <n-input class="input-bot-name" v-model:value="name" placeholder="FrontRunBot_zc6Iv" />
-              </td>
-            </tr>
-
-            <tr>
-              <td class="label-cell label-price-start"><label>Price Start</label></td>
-              <td class="input-cell">
-                <n-input class="input-price-start" v-model:value="PriceStart" placeholder="Price Start">
-                  <template #suffix>{{ quote }}</template>
-                </n-input>
-              </td>
-            </tr>
-
-            <tr>
-              <td class="label-cell label-amount-price-start"><label>Amount Price Start</label></td>
-              <td class="input-cell">
-                <n-input class="input-amount-price-start" v-model:value="amountPriceStart" placeholder="Amount Price Start">
-                  <template #suffix>{{ quote }}</template>
-                </n-input>
-              </td>
-            </tr>
-          </table>
-          
-          <n-button-group>
-           <!-- Butoane Buy Only și Sell Only -->
-    <tr>
-      <td class="label-cell">
-        <n-button class="buy-button" type="primary" @click="createBuyOnlyBot" :disabled="isBuyDisabled">Buy Only</n-button>
-      </td>
-    </tr> 
-    <tr>
-      <td class="label-cell">
-        <n-button class="sell-button" type="primary" @click="createSellOnlyBot" :disabled="isSellDisabled">Sell Only</n-button>
-
-      </td>
-    </tr> 
-
-    <tr>
-            <!-- Buton pentru Enable All -->
-            <n-button type="primary" @click="enableAllButtons">Enable All</n-button>
-            <n-button class="reset-button" type="warning" @click="resetFields">Reset All</n-button>
-            
-             
-             
-         
-          <n-checkbox class="label-cell"  v-model:checked="ActiveRANGE">Active RANGE</n-checkbox> 
-     
-        </tr>   
-        </n-button-group>
-         
-       
-
-            <n-grid x-gap="2" :cols="4">
-
-
-
-
-
-              <n-gi>
-  <table>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.0001)" :disabled="isSellDisabled">-</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.001)" :disabled="isBuyDisabled">+</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.005)" :disabled="isSellDisabled">- 0.5</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.005)" :disabled="isBuyDisabled">+ 0.5</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.01)" :disabled="isSellDisabled">- 1%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.01)" :disabled="isBuyDisabled">+ 1%</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.02)" :disabled="isSellDisabled">- 2%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.02)" :disabled="isBuyDisabled">+ 2%</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.03)" :disabled="isSellDisabled">- 3%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.03)" :disabled="isBuyDisabled">+ 3%</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.05)" :disabled="isSellDisabled">- 5%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.05)" :disabled="isBuyDisabled">+ 5%</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.07)" :disabled="isSellDisabled">- 7%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.07)" :disabled="isBuyDisabled">+ 7%</n-button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <n-button class="buy-button" @click="updateLowerPrice(0.09)" :disabled="isSellDisabled">- 9%</n-button>
-      </td>
-      <td>
-        <n-button class="sell-button" @click="updateUpperPrice(0.09)" :disabled="isBuyDisabled">+ 9%</n-button>
-      </td>
-    </tr>
-  </table>
-              </n-gi>
-
+<div class="frontrun-container">
+  <!-- All Configuration Cards in One Row -->
+  <n-grid :cols="3" x-gap="20">
+    <!-- Left Column: Bot Config + Actions -->
     <n-gi>
-      <table>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.1)" :disabled="isSellDisabled">- 10%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.1)" :disabled="isBuyDisabled">+ 10%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.2)" :disabled="isSellDisabled">- 20%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.2)" :disabled="isBuyDisabled">+ 20%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.3)" :disabled="isSellDisabled">- 30%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.3)" :disabled="isBuyDisabled">+ 30%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.5)" :disabled="isSellDisabled">- 50%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.5)" :disabled="isBuyDisabled">+ 50%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.6)" :disabled="isSellDisabled">- 60%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.6)" :disabled="isBuyDisabled">+ 60%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.7)" :disabled="isSellDisabled">- 70%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.7)" :disabled="isBuyDisabled">+ 70%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.8)" :disabled="isSellDisabled">- 80%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.8)" :disabled="isBuyDisabled">+ 80%</n-button>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <n-button class="buy-button" @click="updateLowerPrice(0.97)" :disabled="isSellDisabled">- 90%</n-button>
-          </td>
-          <td>
-            <n-button class="sell-button" @click="updateUpperPrice(0.9)" :disabled="isBuyDisabled">+ 90%</n-button>
-          </td>
-        </tr>
-      </table>
+      <n-card class="bot-config-card">
+        <div class="section-header clickable" @click="showBotConfig = !showBotConfig">
+          🤖 Bot Configuration
+          <span class="collapse-icon">{{ showBotConfig ? '▼' : '▶' }}</span>
+        </div>
+
+        <div v-show="showBotConfig">
+
+        <n-space vertical size="small">
+    
+
+          <!-- Price Start, Lower Price & Upper Price (Same Row) -->
+          <n-grid :cols="3" x-gap="8">
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #eadb11;">Price Start</label>
+                <n-input v-model:value="PriceStart" placeholder="Price Start" size="small">
+                  <template #suffix>{{ quote }}</template>
+                </n-input>
+              </div>
+            </n-gi>
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #10eb04;">Lower Price</label>
+                <n-input v-model:value="lowerPrice" placeholder="Lower Price" size="small">
+                  <template #suffix>{{ quote }}</template>
+                </n-input>
+              </div>
+            </n-gi>
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #f72c09;">Upper Price</label>
+                <n-input v-model:value="upperPrice" placeholder="Upper Price" size="small">
+                  <template #suffix>{{ quote }}</template>
+                </n-input>
+              </div>
+            </n-gi>
+          </n-grid>
+
+          <!-- Amount Price Start, Amount & Number of Grids (Same Row) -->
+          <n-grid :cols="3" x-gap="8">
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #05f5ed;">AmountPStart</label>
+                <n-input v-model:value="amountPriceStart" placeholder="Amount Price Start" size="small">
+                  <template #suffix>{{ quote }}</template>
+                </n-input>
+              </div>
+            </n-gi>
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #05f5ed;">Amount</label>
+                <n-input v-model:value="amount" placeholder="Amount" size="small">
+                  <template #suffix>{{ quote }}</template>
+                </n-input>
+              </div>
+            </n-gi>
+            <n-gi>
+              <div class="input-group">
+                <label class="input-label" style="color: #cb8d07;">Number of Grids</label>
+                <n-input v-model:value="nrOfGrids" placeholder="Number of Grids" size="small" />
+              </div>
+            </n-gi>
+          </n-grid>
+
+          <!-- Incremental % Buy -->
+          <div class="input-group">
+            <label class="input-label" style="color: #10eb04;">Incremental % Buy</label>
+            <n-input v-model:value="incrementalPercentAmountBuy" placeholder="Incremental % Buy" size="small">
+              <template #suffix>%</template>
+            </n-input>
+          </div>
+
+          <!-- Incremental % Sell -->
+          <div class="input-group">
+            <label class="input-label" style="color: #f72c09;">Incremental % Sell</label>
+            <n-input v-model:value="incrementalPercentAmountSell" placeholder="Incremental % Sell" size="small">
+              <template #suffix>%</template>
+            </n-input>
+          </div>
+
+                <!-- Bot Name -->
+          <div class="input-group">
+            <label class="input-label" style="color: #eb06eb;">Bot Name</label>
+            <n-input v-model:value="name" placeholder="FrontRunBot_zc6Iv" size="small" />
+          </div>
+        </n-space>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <n-space>
+            <n-button class="buy-btn" type="success" @click="createBuyOnlyBot" :disabled="isBuyDisabled">
+              🟢 Buy Only
+            </n-button>
+            <n-button class="sell-btn" type="error" @click="createSellOnlyBot" :disabled="isSellDisabled">
+              🔴 Sell Only
+            </n-button>
+            <n-button type="info" @click="enableAllButtons">Enable All</n-button>
+            <n-button type="warning" @click="resetFields">Reset All</n-button>
+          </n-space>
+          <n-checkbox v-model:checked="ActiveRANGE" style="margin-top: 8px;">
+            <span style="font-size: 11px; color: #f5a623;">Active RANGE</span>
+          </n-checkbox>
+        </div>
+        </div>
+      </n-card>
     </n-gi>
 
+    <!-- Right Column: Price Adjustment -->
+    <n-gi>
+      <n-card class="price-adjust-card">
+        <div class="section-header clickable" @click="showPriceAdjust = !showPriceAdjust">
+          📈 Price Adjustment
+          <span class="collapse-icon">{{ showPriceAdjust ? '▼' : '▶' }}</span>
+        </div>
+
+        <div v-show="showPriceAdjust">
+        <n-grid :cols="2" x-gap="8">
+          <!-- Lower Price Adjustments -->
+          <n-gi>
+            <div class="price-adjust-section lower-section">
+              <div class="adjust-label">🟢 Lower Price (-)</div>
+              <n-space vertical size="small">
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.0001)" :disabled="isSellDisabled">- 0.01%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.005)" :disabled="isSellDisabled">- 0.5%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.01)" :disabled="isSellDisabled">- 1%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.02)" :disabled="isSellDisabled">- 2%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.03)" :disabled="isSellDisabled">- 3%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.05)" :disabled="isSellDisabled">- 5%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.07)" :disabled="isSellDisabled">- 7%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.09)" :disabled="isSellDisabled">- 9%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.1)" :disabled="isSellDisabled">- 10%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.2)" :disabled="isSellDisabled">- 20%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.3)" :disabled="isSellDisabled">- 30%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.5)" :disabled="isSellDisabled">- 50%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.6)" :disabled="isSellDisabled">- 60%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.7)" :disabled="isSellDisabled">- 70%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.8)" :disabled="isSellDisabled">- 80%</n-button>
+                <n-button size="small" class="adjust-btn buy-btn" @click="updateLowerPrice(0.97)" :disabled="isSellDisabled">- 90%</n-button>
+              </n-space>
+            </div>
+          </n-gi>
+
+          <!-- Upper Price Adjustments -->
+          <n-gi>
+            <div class="price-adjust-section upper-section">
+              <div class="adjust-label">🔴 Upper Price (+)</div>
+              <n-space vertical size="small">
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.001)" :disabled="isBuyDisabled">+ 0.1%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.005)" :disabled="isBuyDisabled">+ 0.5%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.01)" :disabled="isBuyDisabled">+ 1%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.02)" :disabled="isBuyDisabled">+ 2%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.03)" :disabled="isBuyDisabled">+ 3%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.05)" :disabled="isBuyDisabled">+ 5%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.07)" :disabled="isBuyDisabled">+ 7%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.09)" :disabled="isBuyDisabled">+ 9%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.1)" :disabled="isBuyDisabled">+ 10%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.2)" :disabled="isBuyDisabled">+ 20%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.3)" :disabled="isBuyDisabled">+ 30%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.5)" :disabled="isBuyDisabled">+ 50%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.6)" :disabled="isBuyDisabled">+ 60%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.7)" :disabled="isBuyDisabled">+ 70%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.8)" :disabled="isBuyDisabled">+ 80%</n-button>
+                <n-button size="small" class="adjust-btn sell-btn" @click="updateUpperPrice(0.9)" :disabled="isBuyDisabled">+ 90%</n-button>
+              </n-space>
+            </div>
+          </n-gi>
+        </n-grid>
+        </div>
+      </n-card>
+    </n-gi>
+
+    <!-- Third Column: Trading Strategies + Grid & Amount Config + Incremental Settings -->
+    <n-gi>
+      <n-space vertical size="small">
+        <!-- Trading Strategies -->
+        <n-card class="strategy-card">
+          <div class="section-header clickable" @click="showStrategies = !showStrategies">
+            📊 Trading Strategies
+            <span class="collapse-icon">{{ showStrategies ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="showStrategies">
+            <!-- BUY Strategy -->
+            <div class="strategy-section buy-section">
+              <div class="strategy-label">🟢 BUY → SELL Grid (%)</div>
+              <n-button-group class="strategy-buttons">
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID2%')" :type="strategyPicker === 'BUY--->SELLGRID2%' ? 'success' : 'default'">2%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID5%')" :type="strategyPicker === 'BUY--->SELLGRID5%' ? 'success' : 'default'">5%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID7%')" :type="strategyPicker === 'BUY--->SELLGRID7%' ? 'success' : 'default'">7%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID10%')" :type="strategyPicker === 'BUY--->SELLGRID10%' ? 'success' : 'default'">10%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID20%')" :type="strategyPicker === 'BUY--->SELLGRID20%' ? 'success' : 'default'">20%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID50%')" :type="strategyPicker === 'BUY--->SELLGRID50%' ? 'success' : 'default'">50%</n-button>
+                <n-button size="small" @click="selectStrategy('BUY--->SELLGRID80%')" :type="strategyPicker === 'BUY--->SELLGRID80%' ? 'success' : 'default'">80%</n-button>
+              </n-button-group>
+            </div>
+
+            <!-- SELL Strategy -->
+            <div class="strategy-section sell-section">
+              <div class="strategy-label">🔴 SELL → BUY Grid (%)</div>
+              <n-button-group class="strategy-buttons">
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID2%')" :type="strategyPicker === 'SELL--->BUYGRID2%' ? 'error' : 'default'">2%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID5%')" :type="strategyPicker === 'SELL--->BUYGRID5%' ? 'error' : 'default'">5%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID7%')" :type="strategyPicker === 'SELL--->BUYGRID7%' ? 'error' : 'default'">7%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID10%')" :type="strategyPicker === 'SELL--->BUYGRID10%' ? 'error' : 'default'">10%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID20%')" :type="strategyPicker === 'SELL--->BUYGRID20%' ? 'error' : 'default'">20%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID50%')" :type="strategyPicker === 'SELL--->BUYGRID50%' ? 'error' : 'default'">50%</n-button>
+                <n-button size="small" @click="selectStrategy('SELL--->BUYGRID80%')" :type="strategyPicker === 'SELL--->BUYGRID80%' ? 'error' : 'default'">80%</n-button>
+              </n-button-group>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- Grid & Amount Configuration -->
+        <n-card class="config-card">
+          <div class="section-header clickable" @click="showGridConfig = !showGridConfig">
+            ⚙️ Grid & Amount Config
+            <span class="collapse-icon">{{ showGridConfig ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="showGridConfig">
+            <!-- Number of Grids -->
+            <div class="config-section">
+              <div class="config-label">📊 Number of Grids</div>
+              <n-button-group class="config-buttons">
+                <n-button size="small" @click="setNrGrids(10)">10</n-button>
+                <n-button size="small" @click="setNrGrids(20)">20</n-button>
+                <n-button size="small" @click="setNrGrids(25)">25</n-button>
+                <n-button size="small" @click="setNrGrids(35)">35</n-button>
+                <n-button size="small" @click="setNrGrids(50)">50</n-button>
+                <n-button size="small" @click="setNrGrids(100)">100</n-button>
+              </n-button-group>
+            </div>
+
+            <!-- Amount -->
+            <div class="config-section">
+              <div class="config-label">💰 Amount (USDC)</div>
+              <n-button-group class="config-buttons">
+                <n-button size="small" @click="setAmount(1)">1</n-button>
+                <n-button size="small" @click="setAmount(5)">5</n-button>
+                <n-button size="small" @click="setAmount(10)">10</n-button>
+                <n-button size="small" @click="setAmount(20)">20</n-button>
+                <n-button size="small" @click="setAmount(50)">50</n-button>
+                <n-button size="small" @click="setAmount(100)">100</n-button>
+              </n-button-group>
+            </div>
+          </div>
+        </n-card>
+
+        <!-- Incremental Amount Settings -->
+        <n-card class="incremental-card">
+          <div class="section-header clickable" @click="showIncremental = !showIncremental">
+            📈 Incremental Settings
+            <span class="collapse-icon">{{ showIncremental ? '▼' : '▶' }}</span>
+          </div>
+          <div v-show="showIncremental">
+            <div class="incremental-section">
+              <div class="incremental-label">🔵 Basic (Buy%, Sell%)</div>
+              <n-button-group class="incremental-buttons">
+                <n-button size="small" @click="setIncrementalAmounts(0.5, 0.7)">0.5, 0.7</n-button>
+                <n-button size="small" @click="setIncrementalAmounts(1, 1.5)">1, 1.5</n-button>
+                <n-button size="small" @click="setIncrementalAmounts(2, 2.5)">2, 2.5</n-button>
+              </n-button-group>
+            </div>
+
+            <div class="incremental-section">
+              <div class="incremental-label">🟢 Accumulation</div>
+              <n-button-group class="incremental-buttons">
+                <n-button size="small" @click="setAccumulation(1, 0.5)">1, 0.5</n-button>
+                <n-button size="small" @click="setAccumulation(2, 1)">2, 1</n-button>
+                <n-button size="small" @click="setAccumulation(3, 1.5)">3, 1.5</n-button>
+                <n-button size="small" @click="setAccumulation(4, 2)">4, 2</n-button>
+                <n-button size="small" @click="setAccumulation(5, 2.5)">5, 2.5</n-button>
+              </n-button-group>
+            </div>
+
+            <div class="incremental-section">
+              <div class="incremental-label">🔴 Distribution</div>
+              <n-button-group class="incremental-buttons">
+                <n-button size="small" @click="setDistribution(0.5, 1)">0.5, 1</n-button>
+                <n-button size="small" @click="setDistribution(1, 2)">1, 2</n-button>
+                <n-button size="small" @click="setDistribution(1.5, 3)">1.5, 3</n-button>
+                <n-button size="small" @click="setDistribution(2, 4)">2, 4</n-button>
+                <n-button size="small" @click="setDistribution(2.5, 5)">2.5, 5</n-button>
+              </n-button-group>
+            </div>
+          </div>
+        </n-card>
+      </n-space>
+    </n-gi>
+  </n-grid>
 
 
 
-      
-    </n-grid>
-
-
-
-
-          
-        </n-space>
-      </n-gi>
-
-      <!-- Al doilea tabel pentru restul câmpurilor -->
-      <n-gi>
-        <n-space vertical>
-          <table class="form-table">
-          
-
-            <tr>
-              <td class="label-cell label-lower-price"><label>Lower Price</label></td>
-              <td class="input-cell">
-                <n-input class="input-lower-price" v-model:value="lowerPrice" placeholder="Lower Price">
-                  <template #suffix>{{ quote }}</template>
-                </n-input>
-              </td>
-            </tr>
-
-            <tr>
-              <td class="label-cell label-upper-price"><label>Upper Price</label></td>
-              <td class="input-cell">
-                <n-input class="input-upper-price" v-model:value="upperPrice" placeholder="Upper Price">
-                  <template #suffix>{{ quote }}</template>
-                </n-input>
-              </td>
-            </tr>
-        
-
-            
-            <tr>
-              <td class="label-cell label-amount"><label>Amount</label></td>
-              <td class="input-cell">
-                <n-input class="input-amount" v-model:value="amount" placeholder="Amount">
-                  <template #suffix>{{ quote }}</template>
-                </n-input>
-              </td>
-            </tr>
-
-            <tr>
-              <td class="label-cell label-number-grids"><label>Number of Grids</label></td>
-              <td class="input-cell">
-                <n-input class="input-number-grids" v-model:value="nrOfGrids" placeholder="Number of Grids" />
-              </td>
-            </tr>
-
-      
-
-            <tr>
-              <td class="label-cell label-incremental-buy"><label>Incremental % Amount Buy</label></td>
-              <td class="input-cell">
-                <n-input class="input-incremental-buy" v-model:value="incrementalPercentAmountBuy" placeholder="Incremental % Amount Buy">
-                  <template #suffix>%</template>
-                </n-input>
-              </td>
-            </tr>
-
-            <tr>
-              <td class="label-cell label-incremental-sell"><label>Incremental % Amount Sell</label></td>
-              <td class="input-cell">
-                <n-input class="input-incremental-sell" v-model:value="incrementalPercentAmountSell" placeholder="Incremental % Amount Sell">
-                  <template #suffix>%</template>
-                </n-input>
-              </td>
-            </tr>
-          </table>
-        </n-space>
-      </n-gi>
-
-    </n-grid>
-  </n-card>
+</div>
 </template>
 
 <style scoped>
-.form-table {
+.frontrun-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
-  border-collapse: collapse;
+  height: 100%;
+  padding: 4px;
+  margin: 0;
+  overflow: hidden;
 }
 
-.label-cell,
-.input-cell {
+/* Section Headers */
+.section-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f5a623;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-header.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.section-header.clickable:hover {
+  color: #10eb04;
+  border-bottom-color: #10eb04;
+}
+
+.collapse-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+  color: #10eb04;
+}
+
+/* ===== STRATEGY CARD ===== */
+.strategy-card {
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  width: 100%;
+}
+
+.strategy-section {
+  margin-bottom: 8px;
   padding: 8px;
-  width: 50%;
-  vertical-align: middle;
-  border: 1px solid #0ab08c;
+  border-radius: 4px;
 }
 
-.label-cell {
-  text-align: left;
-  padding-right: 16px;
-  font-weight: bold;
+.buy-section {
+  background: linear-gradient(135deg, #0a2e01 0%, #0f1a0a 100%);
+  border: 1px solid #10eb04;
 }
 
-/* Stilurile pentru etichete (label) */
-.label-bot-name label {
-  color: #eb06eb; /* Albastru */
+.sell-section {
+  background: linear-gradient(135deg, #2e0a01 0%, #1a0a0a 100%);
+  border: 1px solid #e90a15;
 }
 
-.label-price-start label {
-  color: #eadb11; /* Verde */
+.strategy-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #d0d0d0;
+  margin-bottom: 4px;
 }
 
-.label-amount-price-start label {
-  color: #05f5ed; /* Roșu */
+.strategy-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
-.label-amount label {
-  color: #05f5ed; /* Galben */
+.strategy-buttons .n-button {
+  flex: 1;
+  min-width: 40px;
+  font-size: 10px;
+  padding: 0;
+  height: 22px;
 }
 
-.label-lower-price label {
-  color: #10eb04; /* Culoare cyan */
+/* ===== CONFIG CARD ===== */
+.config-card {
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  min-width: 280px;
+  max-width: 280px;
 }
 
-.label-upper-price label {
-  color: #f72c09; /* Gri */
+.incremental-card {
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  min-width: 300px;
+  max-width: 300px;
 }
 
-.label-number-grids label {
-  color: #cb8d07; /* Gri deschis */
+.config-section, .incremental-section {
+  padding: 4px;
+  background: #0f0f0f;
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+  margin-bottom: 4px;
 }
 
-.label-amount-type label {
-  color: #6610f2; /* Mov */
+.config-section:last-child, .incremental-section:last-child {
+  margin-bottom: 0;
 }
 
-.label-incremental-buy label {
-  color: #10eb04; /* Portocaliu */
+.config-label, .incremental-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #d0d0d0;
+  margin-bottom: 2px;
 }
 
-.label-incremental-sell label {
-  color: #f72c09; /* Verde deschis */
+.config-buttons, .incremental-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1px;
 }
 
-/* Stilurile pentru textul din input */
-.input-bot-name .n-input__input {
-  color: #007bff; /* Albastru */
+.config-buttons .n-button, .incremental-buttons .n-button {
+  flex: 1;
+  min-width: 0;
+  font-size: 9px;
+  padding: 0;
+  white-space: nowrap;
+  height: 20px;
 }
 
-
-/* Stilizează butoanele din grupul de "BUY" cu verde */
-.strategy-buttons-buy .n-button {
-  background-color: green; /* Verde */
-  color: white;
-  border: none;
+/* ===== BOT CONFIG CARD ===== */
+.bot-config-card {
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  max-width: 320px;
 }
 
-/* Stilizează butoanele din grupul de "SELL" cu roșu */
-.strategy-buttons-sell .n-button {
-  background-color: red; /* Roșu */
-  color: white;
-  border: none;
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-/* Stil pentru hover */
-.strategy-buttons-buy .n-button:hover, 
-.strategy-buttons-sell .n-button:hover {
-  background-color: green; /* Mai închis pentru verde la hover */
-  color: white;
+.input-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.strategy-buttons-sell .n-button:hover {
-  background-color: red; /* Mai închis pentru roșu la hover */
-  color: white;
+.action-buttons {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #333;
 }
 
-
-
-.buy-button {
-  background-color: green; /* Culoare pentru butonul Buy Only */
+.buy-btn {
+  background: linear-gradient(135deg, #0a2e01 0%, #10eb04 100%) !important;
+  border: 1px solid #10eb04 !important;
+  color: white !important;
 }
 
-.sell-button {
-  background-color: red; /* Culoare pentru butonul Sell Only */
-}
-</style>
-<style scoped>
-.buy-button {
-  background-color: green;
-  color: white;
-  border: none;
+.buy-btn:hover {
+  background: linear-gradient(135deg, #10eb04 0%, #0a2e01 100%) !important;
 }
 
-.sell-button {
-  background-color: red;
-  color: white;
-  border: none;
+.buy-btn:disabled {
+  opacity: 0.5;
+  background: #2a2a2a !important;
 }
 
-.buy-button:disabled {
-  background-color: lightgreen;
-  color: white;
+.sell-btn {
+  background: linear-gradient(135deg, #2e0a01 0%, #e90a15 100%) !important;
+  border: 1px solid #e90a15 !important;
+  color: white !important;
 }
 
-.sell-button:disabled {
-  background-color: lightcoral;
-  color: white;
+.sell-btn:hover {
+  background: linear-gradient(135deg, #e90a15 0%, #2e0a01 100%) !important;
 }
 
-.strategy-buttons-buy .n-button {
-  background-color: green;
-  color: white;
+.sell-btn:disabled {
+  opacity: 0.5;
+  background: #2a2a2a !important;
 }
 
-.strategy-buttons-sell .n-button {
-  background-color: red;
-  color: white;
+/* ===== PRICE ADJUST CARD ===== */
+.price-adjust-card {
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
+  min-width: 320px;
+  max-width: 320px;
+}
+
+.price-adjust-section {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+}
+
+.lower-section {
+  background: linear-gradient(135deg, #0a2e01 0%, #0f1a0a 100%);
+  border-color: #10eb04;
+}
+
+.upper-section {
+  background: linear-gradient(135deg, #2e0a01 0%, #1a0a0a 100%);
+  border-color: #e90a15;
+}
+
+.adjust-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #d0d0d0;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.adjust-btn {
+  width: 100%;
 }
 </style>

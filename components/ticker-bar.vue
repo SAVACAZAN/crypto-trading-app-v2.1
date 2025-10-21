@@ -134,9 +134,7 @@ onUnmounted(() => {
         <div class="price-card current">
           <span class="coin">{{ selectedMarket ? selectedMarket.split('/')[0] : 'LCX' }}</span>
           <span class="price">${{ currentTicker.last ? currentTicker.last.toFixed(4) : '0.0000' }}</span>
-          <span class="change" :class="{ positive: currentTicker.percentage > 0, negative: currentTicker.percentage < 0 }">
-            {{ currentTicker.percentage > 0 ? '+' : '' }}{{ currentTicker.percentage ? currentTicker.percentage.toFixed(2) : '0.00' }}%
-          </span>
+         
         </div>
 
         <!-- BTC -->

@@ -15,7 +15,8 @@ let quote = currentSymbol.value.split('/')[1];
 
 // API Key selector - MULTIPLE SELECTION
 let availableApiKeys = ref([]);
-let selectedApiKeys = ref([]);
+// Watch store for selected API keys from navbar
+const selectedApiKeys = computed(() => app.getSelectedApiKeys);
 let loadingApiKeys = ref(false);
 let apiKeyBalances = ref({});
 let apiKeyColors = ref({});  // Colors for each API key
@@ -237,6 +238,15 @@ const closedOrdersTableColumns = [
 const closedOrdersTableData = ref([]);
 
 let orderListInterval = null;
+
+// Watch for changes in selectedApiKeys from store (navbar)
+watch(selectedApiKeys, async (newKeys) => {
+  if (newKeys && newKeys.length > 0) {
+    await fetchBalancesForApiKeys();
+    await fetchOrdersPooling();
+  }
+}, { immediate: true });
+
 onMounted(async () => {
   await loadApiKeys();
   await fetchBalancesForApiKeys();
@@ -305,11 +315,6 @@ async function loadApiKeys() {
           value: apiKey.name
         };
       });
-
-      // Select first API key by default
-      if (selectedApiKeys.value.length === 0) {
-        selectedApiKeys.value = [availableApiKeys.value[0].value];
-      }
     }
   } catch (error) {
     console.error('Failed to load API keys:', error);
@@ -371,9 +376,6 @@ async function fetchBalancesForApiKeys() {
 
   apiKeyBalances.value = newBalances;
   loadingBalances.value = false;
-
-  // Update store
-  app.setSelectedApiKeys(selectedApiKeys.value);
 }
 
 // Called when API keys selection changes
@@ -519,169 +521,284 @@ async function fetchOrdersPooling() {
 </script>
 
 <template>
-  <!-- API Key Selector and Balance Display - FANCY TABLE STYLE -->
-  <n-card style="margin-bottom: 16px; padding: 8px;">
-    <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
-      <thead>
-        <tr style="border-bottom: 1px solid #444;">
-          <th style="text-align: left; padding: 4px 8px; width: 25%;">API Keys</th>
-          <th style="text-align: left; padding: 4px 8px; width: 10%;">Coin</th>
-          <th style="text-align: right; padding: 4px 8px; color: #10eb04; width: 21.66%;">Free</th>
-          <th style="text-align: right; padding: 4px 8px; color: #f5a623; width: 21.66%;">Used</th>
-          <th style="text-align: right; padding: 4px 8px; color: #50e3c2; width: 21.66%;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- ROW 1: BASE coin (LCX) - FIXED -->
-        <tr>
-          <td rowspan="2" style="padding: 4px 8px; vertical-align: top;">
-            <n-select
-              v-model:value="selectedApiKeys"
-              :options="availableApiKeys"
-              :loading="loadingApiKeys"
-              placeholder="Select API Keys"
-              :disabled="availableApiKeys.length === 0"
-              size="small"
-              multiple
-              clearable
-              @update:value="onApiKeysChange"
-              :render-label="renderApiKeyLabel"
-            />
-          </td>
-          <td style="padding: 4px 8px; vertical-align: middle;">
-            <span style="display: inline-flex; align-items: center;">
-              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10eb04; margin-right: 6px;"></span>
-              <span style="font-weight: bold; color: #10eb04;">{{ base }}</span>
-            </span>
-          </td>
-          <!-- FREE column for BASE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`base-free-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #10eb04; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.baseFree || 0, (['BTC', 'ETH'].includes(base)) ? 8 : 2) }}
-                </span>
+  <!-- Grid Bots Table Only -->
+  <div class="gridbots-list-container">
+    <n-tabs type="segment" animated size="small" class="gridbots-tabs">
+      <n-tab-pane name="Grid Bots" tab="Active Bots">
+        <!-- Balance Display (uses API keys selected in navbar) -->
+        <div class="balance-header" v-if="selectedApiKeys.length > 0">
+          <div class="balance-cards">
+            <div
+              v-for="apiKeyName in selectedApiKeys"
+              :key="apiKeyName"
+              class="balance-card"
+              :style="{ borderLeftColor: apiKeyColors[apiKeyName] || '#666' }"
+            >
+              <div class="balance-card-header">
+                <span
+                  class="api-indicator"
+                  :style="{ background: apiKeyColors[apiKeyName] || '#666' }"
+                ></span>
+                <span class="api-name">{{ apiKeyName }}</span>
+              </div>
+              <div class="balance-row">
+                <div class="balance-item">
+                  <span class="balance-label">{{ base }}</span>
+                  <div class="balance-grid">
+                    <div class="balance-line">
+                      <span class="balance-type">Free:</span>
+                      <span class="balance-free">{{ formatNumber(apiKeyBalances[apiKeyName]?.baseFree || 0, 2) }}</span>
+                    </div>
+                    <div class="balance-line">
+                      <span class="balance-type">Used:</span>
+                      <span class="balance-used">{{ formatNumber(apiKeyBalances[apiKeyName]?.baseUsed || 0, 2) }}</span>
+                    </div>
+                    <div class="balance-line">
+                      <span class="balance-type">Total:</span>
+                      <span class="balance-total">{{ formatNumber(apiKeyBalances[apiKeyName]?.baseTotal || 0, 2) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="balance-item">
+                  <span class="balance-label">{{ quote }}</span>
+                  <div class="balance-grid">
+                    <div class="balance-line">
+                      <span class="balance-type">Free:</span>
+                      <span class="balance-free">{{ formatNumber(apiKeyBalances[apiKeyName]?.quoteFree || 0, 2) }}</span>
+                    </div>
+                    <div class="balance-line">
+                      <span class="balance-type">Used:</span>
+                      <span class="balance-used">{{ formatNumber(apiKeyBalances[apiKeyName]?.quoteUsed || 0, 2) }}</span>
+                    </div>
+                    <div class="balance-line">
+                      <span class="balance-type">Total:</span>
+                      <span class="balance-total">{{ formatNumber(apiKeyBalances[apiKeyName]?.quoteTotal || 0, 2) }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <n-spin v-else-if="loadingBalances" size="small" />
-            <n-text v-else type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-          <!-- USED column for BASE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`base-used-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #f5a623; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.baseUsed || 0, (['BTC', 'ETH'].includes(base)) ? 8 : 2) }}
-                </span>
-              </div>
-            </div>
-            <n-text v-else-if="!loadingBalances" type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-          <!-- TOTAL column for BASE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`base-total-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #50e3c2; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.baseTotal || 0, (['BTC', 'ETH'].includes(base)) ? 8 : 2) }}
-                </span>
-              </div>
-            </div>
-            <n-text v-else-if="!loadingBalances" type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-        </tr>
+          </div>
+        </div>
 
-        <!-- ROW 2: QUOTE coin (USDC) - FIXED -->
-        <tr>
-          <td style="padding: 4px 8px; vertical-align: middle;">
-            <span style="display: inline-flex; align-items: center;">
-              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #05f5ed; margin-right: 6px;"></span>
-              <span style="font-weight: bold; color: #05f5ed;">{{ quote }}</span>
-            </span>
-          </td>
-          <!-- FREE column for QUOTE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`quote-free-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #10eb04; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.quoteFree || 0, (['BTC', 'ETH'].includes(quote)) ? 8 : 2) }}
-                </span>
-              </div>
-            </div>
-            <n-text v-else-if="!loadingBalances" type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-          <!-- USED column for QUOTE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`quote-used-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #f5a623; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.quoteUsed || 0, (['BTC', 'ETH'].includes(quote)) ? 8 : 2) }}
-                </span>
-              </div>
-            </div>
-            <n-text v-else-if="!loadingBalances" type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-          <!-- TOTAL column for QUOTE - all API keys stacked -->
-          <td style="padding: 4px 8px; text-align: right; vertical-align: top;">
-            <div v-if="selectedApiKeys.length > 0 && !loadingBalances" style="display: flex; flex-direction: column; gap: 2px;">
-              <div v-for="apiKey in selectedApiKeys" :key="`quote-total-${apiKey}`" style="font-size: 11px; line-height: 1.4;">
-                <span :style="`color: ${apiKeyColors[apiKey]}; font-weight: 500;`">{{ apiKey }}:</span>
-                <span style="color: #50e3c2; margin-left: 4px; font-weight: 600;">
-                  {{ formatNumber(apiKeyBalances[apiKey]?.quoteTotal || 0, (['BTC', 'ETH'].includes(quote)) ? 8 : 2) }}
-                </span>
-              </div>
-            </div>
-            <n-text v-else-if="!loadingBalances" type="warning" style="font-size: 10px;">-</n-text>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </n-card>
-
-  <n-card style="font-size: 12px; max-width: 100%;">
-    <n-tabs type="line" animated style="max-width: 100%;">
-      <n-tab-pane name="Grid Bots" tab="Grid Bots">
-        <div style="max-width: 100%; overflow-x: auto;">
+        <div class="table-wrapper">
           <n-data-table
-              :columns="gridBotsTableColumns"
-              :data="gridBotsTableData"
-              :pagination="gridBotsTablePagination"
-              :max-height="150"
-              size="small"
+            :columns="gridBotsTableColumns"
+            :data="gridBotsTableData"
+            :pagination="gridBotsTablePagination"
+            :max-height="500"
+            size="small"
+            :bordered="false"
+            striped
           />
         </div>
       </n-tab-pane>
       <n-tab-pane name="Open Orders" tab="Open Orders">
-        <div style="max-width: 100%; overflow-x: auto;">
+        <div class="table-wrapper">
           <n-data-table
-              :columns="openOrdersTableColumns"
-              :data="openOrdersTableData"
-              :pagination="openOrdersTablePagination"
-              :max-height="150"
-              size="small"
+            :columns="openOrdersTableColumns"
+            :data="openOrdersTableData"
+            :pagination="openOrdersTablePagination"
+            :max-height="500"
+            size="small"
+            :bordered="false"
+            striped
           />
         </div>
       </n-tab-pane>
       <n-tab-pane name="Closed Orders" tab="Closed Orders">
-        <div style="max-width: 100%; overflow-x: auto;">
+        <div class="table-wrapper">
           <n-data-table
-              :columns="closedOrdersTableColumns"
-              :data="closedOrdersTableData"
-              :pagination="closedOrdersTablePagination"
-              :max-height="150"
-              size="small"
+            :columns="closedOrdersTableColumns"
+            :data="closedOrdersTableData"
+            :pagination="closedOrdersTablePagination"
+            :max-height="500"
+            size="small"
+            :bordered="false"
+            striped
           />
         </div>
       </n-tab-pane>
     </n-tabs>
-  </n-card>
+  </div>
 </template>
 
 
 <style scoped>
+.gridbots-list-container {
+  width: 100%;
+  height: 100%;
+}
 
+.gridbots-tabs {
+  height: 100%;
+}
+
+:deep(.n-tabs-nav) {
+  padding: 0 8px;
+}
+
+:deep(.n-tabs-tab) {
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Balance Header */
+.balance-header {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #1a1f2e;
+  border: 1px solid #2a3441;
+  border-radius: 4px;
+}
+
+/* Balance Cards */
+.balance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.balance-card {
+  background: #0f1419;
+  border: 1px solid #2a3441;
+  border-left-width: 3px;
+  border-radius: 3px;
+  padding: 8px 10px;
+}
+
+.balance-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a3441;
+}
+
+.api-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.api-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.balance-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.balance-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.balance-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.balance-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Courier New', monospace;
+}
+
+.balance-type {
+  font-size: 9px;
+  color: #666;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.balance-free {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.balance-used {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.balance-total {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.table-wrapper {
+  margin-top: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+/* Table Styling */
+:deep(.n-data-table) {
+  background: transparent;
+}
+
+:deep(.n-data-table-th) {
+  background: rgba(128, 128, 128, 0.08) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 8px 10px !important;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.2) !important;
+}
+
+:deep(.n-data-table-td) {
+  font-size: 11px !important;
+  padding: 6px 10px !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+:deep(.n-data-table-tr:hover) {
+  background: rgba(128, 128, 128, 0.05) !important;
+}
+
+/* Scrollbar */
+:deep(.n-data-table-base-table-body)::-webkit-scrollbar {
+  width: 6px;
+}
+
+:deep(.n-data-table-base-table-body)::-webkit-scrollbar-track {
+  background: rgba(128, 128, 128, 0.05);
+}
+
+:deep(.n-data-table-base-table-body)::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+:deep(.n-data-table-base-table-body)::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5);
+}
 </style>

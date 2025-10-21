@@ -223,93 +223,499 @@ function updateSellTotal(val) {
 </script>
 
 <template>
-  <n-card>
-    <!-- API Key Selector -->
-    <n-space vertical style="margin-bottom: 16px;">
-      <n-text strong>Select API Key:</n-text>
-      <n-select
-        v-model:value="selectedApiKey"
-        :options="availableApiKeys"
-        :loading="loadingApiKeys"
-        placeholder="Select API Key"
-        :disabled="availableApiKeys.length === 0"
-      />
-      <n-text v-if="availableApiKeys.length === 0 && !loadingApiKeys" type="warning" depth="3">
-        No API keys found. Please add API keys in your profile.
-      </n-text>
-    </n-space>
+  <n-card class="exchange-form-card" size="small">
+    <template #header>
+      <div class="card-header">
+        <span class="header-title">Trading Panel</span>
+      </div>
+    </template>
 
-    <n-tabs type="line" animated>
-      <n-tab-pane name="Limit Orders" tab="Limit Orders">
-        <n-grid x-gap="12" :cols="2">
-          <n-gi>
-            <n-space vertical>
-              <span>Avlb: {{ baseBalance }}</span>
-              <n-input v-model:value="buyPrice" type="text" placeholder="Price" @input="updateBuyPrice">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-input v-model:value="buySize" type="text" placeholder="Size" @input="updateBuySize">
-                <template #suffix> {{base}} </template>
-              </n-input>
-              <n-slider v-model:value="buyTotalPercent" :step="1" :format-tooltip="formatTooltip" />
-              <n-input v-model:value="buyTotal" type="text" placeholder="Total" @input="updateBuyTotal">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-button type="primary" @click="createOrder('BUY', 'limit')">BUY/LONG</n-button>
+    <!-- API Key Selector -->
+    <div class="api-key-section">
+      <n-space vertical size="small">
+        <div class="section-label">
+          <span class="label-icon">🔑</span>
+          <n-text strong style="font-size: 12px;">API Key</n-text>
+        </div>
+        <n-select
+          v-model:value="selectedApiKey"
+          :options="availableApiKeys"
+          :loading="loadingApiKeys"
+          placeholder="Select API Key"
+          :disabled="availableApiKeys.length === 0"
+          size="small"
+        />
+        <n-alert v-if="availableApiKeys.length === 0 && !loadingApiKeys" type="warning" size="small">
+          No API keys found. Please add API keys in your profile.
+        </n-alert>
+      </n-space>
+    </div>
+
+    <!-- Trading Tabs -->
+    <n-tabs type="segment" animated size="small" class="trading-tabs">
+      <n-tab-pane name="Limit Orders" tab="Limit">
+        <div class="orders-container">
+          <!-- BUY Section -->
+          <div class="order-section buy-section">
+            <div class="balance-header">
+              <span class="balance-label">Available</span>
+              <span class="balance-value">{{ baseBalance }} {{ quote }}</span>
+            </div>
+
+            <n-space vertical size="small" class="form-inputs">
+              <div class="input-wrapper">
+                <label class="input-label">Price</label>
+                <n-input
+                  v-model:value="buyPrice"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateBuyPrice"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Amount</label>
+                <n-input
+                  v-model:value="buySize"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateBuySize"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ base }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="slider-wrapper">
+                <n-slider
+                  v-model:value="buyTotalPercent"
+                  :step="1"
+                  :format-tooltip="formatTooltip"
+                  :marks="{ 0: '0%', 25: '25%', 50: '50%', 75: '75%', 100: '100%' }"
+                />
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Total</label>
+                <n-input
+                  v-model:value="buyTotal"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateBuyTotal"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <n-button
+                type="success"
+                @click="createOrder('BUY', 'limit')"
+                block
+                strong
+                class="buy-button"
+              >
+                BUY / LONG
+              </n-button>
             </n-space>
-          </n-gi>
-          <n-gi>
-            <n-space vertical>
-              <span>Avlb: {{ quoteBalance }}</span>
-              <n-input v-model:value="sellPrice" type="text" placeholder="Price" @input="updateSellPrice">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-input v-model:value="sellSize" type="text" placeholder="Size" @input="updateSellSize">
-                <template #suffix> {{base}} </template>
-              </n-input>
-              <n-slider v-model:value="sellTotalPercent" :step="1" :format-tooltip="formatTooltip" />
-              <n-input v-model:value="sellTotal" type="text" placeholder="Total" @input="updateSellTotal">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-button type="error" @click="createOrder('SELL', 'limit')">SELL/SHORT</n-button>
+          </div>
+
+          <!-- SELL Section -->
+          <div class="order-section sell-section">
+            <div class="balance-header">
+              <span class="balance-label">Available</span>
+              <span class="balance-value">{{ quoteBalance }} {{ base }}</span>
+            </div>
+
+            <n-space vertical size="small" class="form-inputs">
+              <div class="input-wrapper">
+                <label class="input-label">Price</label>
+                <n-input
+                  v-model:value="sellPrice"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateSellPrice"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Amount</label>
+                <n-input
+                  v-model:value="sellSize"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateSellSize"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ base }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="slider-wrapper">
+                <n-slider
+                  v-model:value="sellTotalPercent"
+                  :step="1"
+                  :format-tooltip="formatTooltip"
+                  :marks="{ 0: '0%', 25: '25%', 50: '50%', 75: '75%', 100: '100%' }"
+                />
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Total</label>
+                <n-input
+                  v-model:value="sellTotal"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateSellTotal"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <n-button
+                type="error"
+                @click="createOrder('SELL', 'limit')"
+                block
+                strong
+                class="sell-button"
+              >
+                SELL / SHORT
+              </n-button>
             </n-space>
-          </n-gi>
-        </n-grid>
+          </div>
+        </div>
       </n-tab-pane>
-      <n-tab-pane name="Market Orders" tab="Market Orders">
-        <n-grid x-gap="12" :cols="2">
-          <n-gi>
-            <n-space vertical>
-              <span>Avlb: {{ baseBalance }}</span>
-              <n-input v-model:value="buySize" type="text" placeholder="Size">
-                <template #suffix> {{base}} </template>
-              </n-input>
-              <n-slider v-model:value="buyTotalPercent" :step="1" :format-tooltip="formatTooltip" />
-              <n-input v-model:value="buyTotal" type="text" placeholder="Total" @input="updateBuyTotal">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-button type="primary" @click="createOrder('BUY', 'market')">BUY/LONG</n-button>
+
+      <n-tab-pane name="Market Orders" tab="Market">
+        <div class="orders-container">
+          <!-- BUY Section -->
+          <div class="order-section buy-section">
+            <div class="balance-header">
+              <span class="balance-label">Available</span>
+              <span class="balance-value">{{ baseBalance }} {{ quote }}</span>
+            </div>
+
+            <n-space vertical size="small" class="form-inputs">
+              <div class="input-wrapper">
+                <label class="input-label">Amount</label>
+                <n-input
+                  v-model:value="buySize"
+                  type="text"
+                  placeholder="0.00"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ base }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="slider-wrapper">
+                <n-slider
+                  v-model:value="buyTotalPercent"
+                  :step="1"
+                  :format-tooltip="formatTooltip"
+                  :marks="{ 0: '0%', 25: '25%', 50: '50%', 75: '75%', 100: '100%' }"
+                />
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Total</label>
+                <n-input
+                  v-model:value="buyTotal"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateBuyTotal"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <n-button
+                type="success"
+                @click="createOrder('BUY', 'market')"
+                block
+                strong
+                class="buy-button"
+              >
+                BUY / LONG
+              </n-button>
             </n-space>
-          </n-gi>
-          <n-gi>
-            <n-space vertical>
-              <span>Avlb: {{ quoteBalance }}</span>
-              <n-input v-model:value="sellSize" type="text" placeholder="Size">
-                <template #suffix> {{base}} </template>
-              </n-input>
-              <n-slider v-model:value="sellTotalPercent" :step="1" :format-tooltip="formatTooltip" />
-              <n-input v-model:value="sellTotal" type="text" placeholder="Total" @input="updateSellTotal">
-                <template #suffix> {{quote}} </template>
-              </n-input>
-              <n-button type="error" @click="createOrder('SELL', 'market')">SELL/SHORT</n-button>
+          </div>
+
+          <!-- SELL Section -->
+          <div class="order-section sell-section">
+            <div class="balance-header">
+              <span class="balance-label">Available</span>
+              <span class="balance-value">{{ quoteBalance }} {{ base }}</span>
+            </div>
+
+            <n-space vertical size="small" class="form-inputs">
+              <div class="input-wrapper">
+                <label class="input-label">Amount</label>
+                <n-input
+                  v-model:value="sellSize"
+                  type="text"
+                  placeholder="0.00"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ base }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <div class="slider-wrapper">
+                <n-slider
+                  v-model:value="sellTotalPercent"
+                  :step="1"
+                  :format-tooltip="formatTooltip"
+                  :marks="{ 0: '0%', 25: '25%', 50: '50%', 75: '75%', 100: '100%' }"
+                />
+              </div>
+
+              <div class="input-wrapper">
+                <label class="input-label">Total</label>
+                <n-input
+                  v-model:value="sellTotal"
+                  type="text"
+                  placeholder="0.00"
+                  @input="updateSellTotal"
+                  size="small"
+                >
+                  <template #suffix>
+                    <span class="input-suffix">{{ quote }}</span>
+                  </template>
+                </n-input>
+              </div>
+
+              <n-button
+                type="error"
+                @click="createOrder('SELL', 'market')"
+                block
+                strong
+                class="sell-button"
+              >
+                SELL / SHORT
+              </n-button>
             </n-space>
-          </n-gi>
-        </n-grid>
+          </div>
+        </div>
       </n-tab-pane>
     </n-tabs>
   </n-card>
 </template>
 
 <style scoped>
+/* Card Styling - Ultra Compact */
+.exchange-form-card {
+  width: 100%;
+  height: auto;
+}
 
+:deep(.n-card__content) {
+  padding: 6px !important;
+}
+
+:deep(.n-card-header) {
+  padding: 8px 12px !important;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* API Key Section */
+.api-key-section {
+  margin-bottom: 6px;
+  padding: 6px;
+  background: rgba(128, 128, 128, 0.05);
+  border-radius: 3px;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 3px;
+}
+
+.label-icon {
+  font-size: 10px;
+}
+
+/* Trading Tabs */
+.trading-tabs {
+  margin-top: 4px;
+}
+
+:deep(.n-tabs-tab) {
+  padding: 6px 12px !important;
+  font-size: 10px !important;
+}
+
+/* Orders Container */
+.orders-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Order Section */
+.order-section {
+  padding: 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  transition: all 0.2s ease;
+}
+
+.buy-section {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, rgba(16, 185, 129, 0.01) 100%);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.buy-section:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.sell-section {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.03) 0%, rgba(239, 68, 68, 0.01) 100%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.sell-section:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+}
+
+/* Balance Header */
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  padding: 4px 6px;
+  background: rgba(128, 128, 128, 0.08);
+  border-radius: 3px;
+}
+
+.balance-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.7;
+  letter-spacing: 0.3px;
+}
+
+.balance-value {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+/* Form Inputs */
+.form-inputs {
+  width: 100%;
+}
+
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.input-label {
+  font-size: 8px;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-left: 1px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.input-suffix {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
+/* Slider Wrapper */
+.slider-wrapper {
+  padding: 4px 2px;
+  margin: 2px 0;
+}
+
+:deep(.n-slider) {
+  margin: 0 !important;
+}
+
+/* Buttons */
+.buy-button,
+.sell-button {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  height: 28px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.buy-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.sell-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .orders-container {
+    grid-template-columns: 1fr;
+  }
+
+  .header-title {
+    font-size: 12px;
+  }
+
+  .order-section {
+    padding: 12px;
+  }
+}
 </style>

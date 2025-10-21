@@ -56,7 +56,9 @@ onMounted(async () => {
 
   //init chart lib
   chartInstance = $lightweightCharts.createChart('chart', {
-    autoSize: true,
+    autoSize: false,
+    width: 800,
+    height: 450,
     timeScale: {
       timeVisible: true,
     },
@@ -715,25 +717,142 @@ function checkForCrossOvers(data) {
 </script>
 
 <template>
-  <n-card style="margin-bottom: 10px">
+  <n-card class="chart-card" size="small">
+    <template #header>
+      <div class="chart-header">
+        <span class="header-title">Price Chart</span>
+      </div>
+    </template>
 
-    <n-checkbox-group v-model:value="selectedIndicators">
-      <n-space item-style="display: flex;">
-        <n-checkbox :value="indicator" :label="indicator" v-for="indicator in chartIndicators" @click="updateAvailableIndicators(indicator)"/>
-      </n-space>
-    </n-checkbox-group>
+    <!-- Indicators Section -->
+    <div class="controls-section">
+      <div class="control-group">
+        <label class="control-label">Indicators</label>
+        <n-checkbox-group v-model:value="selectedIndicators" class="checkbox-group">
+          <n-space size="small" wrap>
+            <n-checkbox
+              v-for="indicator in chartIndicators"
+              :key="indicator"
+              :value="indicator"
+              :label="indicator"
+              @click="updateAvailableIndicators(indicator)"
+              size="small"
+            />
+          </n-space>
+        </n-checkbox-group>
+      </div>
 
-    <n-checkbox-group v-model:value="selectedTimeframe">
-      <n-space item-style="display: flex;">
-        <n-checkbox :value="timeframe" :label="timeframe" v-for="timeframe in chartTimeframes" @click="updateCurrentTimeframe(timeframe)"/>
-      </n-space>
-    </n-checkbox-group>
+      <!-- Timeframe Section -->
+      <div class="control-group">
+        <label class="control-label">Timeframe</label>
+        <n-checkbox-group v-model:value="selectedTimeframe" class="checkbox-group">
+          <n-space size="small" wrap>
+            <n-checkbox
+              v-for="timeframe in chartTimeframes"
+              :key="timeframe"
+              :value="timeframe"
+              :label="timeframe"
+              @click="updateCurrentTimeframe(timeframe)"
+              size="small"
+            />
+          </n-space>
+        </n-checkbox-group>
+      </div>
+    </div>
 
-
-    <div id="chart" style="height:400px"></div>
+    <!-- Chart Container -->
+    <div class="chart-container">
+      <div id="chart" class="chart-canvas"></div>
+    </div>
   </n-card>
 </template>
 
 <style scoped>
+/* Chart Card */
+.chart-card {
+  width: 100%;
+  height: 100%;
+}
 
+:deep(.n-card__content) {
+  padding: 8px !important;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Controls Section */
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(128, 128, 128, 0.05);
+  border-radius: 4px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.checkbox-group {
+  width: 100%;
+}
+
+/* Chart Container */
+.chart-container {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #18181c;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+.chart-canvas {
+  height: 450px;
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .chart-canvas {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .controls-section {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .chart-canvas {
+    min-height: 250px;
+  }
+
+  .control-group {
+    gap: 2px;
+  }
+}
 </style>

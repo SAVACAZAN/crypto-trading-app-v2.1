@@ -8,8 +8,8 @@
       <FrontRunningBotsForm/>
     </n-gi>
     <n-gi span="12 800:4">
-      <TickerBar/>
-      <OrderBook/>
+
+      <!-- <OrderBook/> -->
       
       
     </n-gi>

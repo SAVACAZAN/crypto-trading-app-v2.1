@@ -57,17 +57,23 @@ let BalanceBaseProfit = ref(0);
 let BalanceQuoteProfit = ref(0);
 let BalanceBotProfit = ref(0);
 let BalanceBotValInitiala = ref(0);
-let TakeProfitBotSTR1 = ref(''); // Inițializare cu valoarea unei comenzi goale
-let TakeProfitBotSTR2 = ref(''); // Inițializare cu valoarea unei comenzi goale
+let TakeProfitBotSTR1 = ref('');
+let TakeProfitBotSTR2 = ref('');
 
 let BotReset = ref('');
-let   BotCancelOrders = ref('');
-let   BotX1 = ref('');
-let   BotX2 = ref('');
-let   BotX3 = ref('');
-let   BotX4 = ref('');
+let BotCancelOrders = ref('');
+let BotX1 = ref('');
+let BotX2 = ref('');
+let BotX3 = ref('');
+let BotX4 = ref('');
 
 let orderBookInterval = null;
+
+// Collapsed sections state
+let showBasicConfig = ref(true);
+let showAdvancedConfig = ref(false);
+let showPriceActions = ref(true);
+let showStrategies = ref(false);
 
 // Starea pentru a ține evidența dacă devierea inițială a fost aplicată sau nu
 let initialDeviationApplied = false;
@@ -97,7 +103,6 @@ function updateLowerPrice(deviationPercentage = 0.01) {
     const newValue = (bestBid.value * (1 - deviationPercentage)).toFixed(6).toString();
     console.log(`Update Lower Price Button Clicked. New Value with ${deviationPercentage * 100}% deviation:`, newValue);
     manualLowerPrice.value = newValue;
-    //  și lowerPrice automat
     lowerPrice.value = newValue;
   }
 }
@@ -108,7 +113,6 @@ function updateUpperPrice(deviationPercentage = 0.01) {
     const newValue = (bestAsk.value * (1 + deviationPercentage)).toFixed(6).toString();
     console.log(`Update Upper Price Button Clicked. New Value with ${deviationPercentage * 100}% deviation:`, newValue);
     manualUpperPrice.value = newValue;
-    //  și upperPrice automat
     upperPrice.value = newValue;
   }
 }
@@ -118,29 +122,9 @@ function applyInitialDeviation() {
   if (!initialDeviationApplied) {
     updateLowerPrice();
     updateUpperPrice();
-    initialDeviationApplied = true; // Marchează devierea inițială ca aplicată
+    initialDeviationApplied = true;
   }
 }
-// Funcția pentru gestionarea introducerii de date în celula pentru prețul minim
-function handleManualLowerPriceInput(event) {
-  const newValue = event.target.innerText.trim();
-  if (/^\d*\.?\d*$/.test(newValue)) {
-    manualLowerPrice.value = newValue;
-  } else {
-    event.target.innerText = manualLowerPrice.value; // Restaură valoarea anterioară
-  }
-}
-
-// Funcția pentru gestionarea introducerii de date în celula pentru prețul maxim
-function handleManualUpperPriceInput(event) {
-  const newValue = event.target.innerText.trim();
-  if (/^\d*\.?\d*$/.test(newValue)) {
-    manualUpperPrice.value = newValue;
-  } else {
-    event.target.innerText = manualUpperPrice.value; // Restaură valoarea anterioară
-  }
-}
-
 
 function generateRandomString(length = 20) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -164,8 +148,6 @@ async function selectStrategy() {
       console.log('strategy selected: ', strategiesStore[i]);
 
       name.value = strategiesStore[i].name;
-      // currentExchange.value = strategiesStore[i].currentExchange;
-      // currentSymbol.value = strategiesStore[i].currentSymbol;
       lowerPrice.value = strategiesStore[i].lowerPrice;
       upperPrice.value = strategiesStore[i].upperPrice;
       amountType.value = strategiesStore[i].amountType;
@@ -181,8 +163,6 @@ async function selectStrategy() {
       usePriceGroup.value = strategiesStore[i].usePriceGroup;
       priceGroupBuy.value = strategiesStore[i].priceGroupBuy;
       priceGroupSell.value = strategiesStore[i].priceGroupSell;
-
-
     }
   }
 }
@@ -274,7 +254,6 @@ async function editStrategy() {
 async function deleteStrategy() {
   console.log('deleting');
 
-
   let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
 
   //deleting from store
@@ -296,7 +275,7 @@ async function deleteStrategy() {
   //deleting from strategy picker
   strategyPicker.value = '';
 
-  //reset form??
+  //reset form
   lowerPrice.value = '';
   upperPrice.value = '';
   amountType.value = 'quantityPerGrid';
@@ -319,17 +298,10 @@ async function deleteStrategy() {
 async function deleteAllStrategies() {
   console.log('deleting all strategies');
 
-  // Clear the strategiesStore array and update localStorage
   let strategiesStore = [];
   localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
 
-  // Clear the strategyPickerOptions array
   strategyPickerOptions.value = [];
-
-  // Reset form values if needed
-  // ...
-
-  // Set the selected strategy to an empty string
   strategyPicker.value = '';
 }
 
@@ -354,7 +326,7 @@ async function createGridBot(){
     ordersSide: ordersSide.value,
     incrementalPercentAmountBuy:incrementalPercentAmountBuy.value,
     incrementalPercentAmountSell:incrementalPercentAmountSell.value,
-    apiKeyNames: selectedApiKeys.value,  // Changed to apiKeyNames (array)
+    apiKeyNames: selectedApiKeys.value,
       config: {
         deviationPriceBuy: deviationPriceBuy.value,
         deviationPriceSell: deviationPriceSell.value,
@@ -389,28 +361,18 @@ async function createGridBot(){
 
   };
 
-  // console.log(data);
-
   let response = await $fetch( '/api/v1/createGridBot', {
     method: 'POST',
     body: data
   } );
- // Afiseaza butoanele dupa crearea botului
+
   BotX1.value = 'ComandaX1';
   BotX2.value = 'ComandaX2';
-  // Adauga aici BotX3, BotX4 etc. daca este nevoie de ele
 }
 
-
-
-
 onMounted(async () => {
-  // API keys are loaded in grid-bots-list.vue
   orderBookInterval = setIntervalAsync(fetchOrderBookPooling, 500);
-
-  applyInitialDeviation(); // Apelați funcția applyInitialDeviation
-
-  // localStorage.setItem('test', '123');
+  applyInitialDeviation();
 
   let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
 
@@ -431,366 +393,423 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <n-card>
-    <n-grid x-gap="12" :cols="2" item-responsive>
+  <div class="gridbot-form-container">
+    <!-- Compact Header -->
+    <div class="form-header">
+      <span class="header-icon">⚙️</span>
+      <span class="header-title">Grid Bot Config</span>
+    </div>
 
-        <n-gi>
-          <n-space vertical>
-            <n-input v-model:value="name" type="text" placeholder="Bot name" />
-            <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-select v-model:value="amountType" :options="amountTypeOptions" placeholder="Amount Type"/>
-            <n-select v-model:value="ordersSide" :options="ordersSideOptions" placeholder="Orders Side"/>
-            <n-input v-model:value="incrementalPercentAmountBuy" type="text" placeholder="Inc. % Amount Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationPriceBuy" type="text" placeholder="Deviation Price Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationAmountBuy" type="text" placeholder="Deviation Amount Buy">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="priceGroupBuy" type="text" placeholder="Price Group Buy">
-              <template #suffix> {{ quote }} </template>
-            </n-input>
-            <n-button type="primary" @click="createGridBot">Create Grid bot</n-button>
-          </n-space>
-        </n-gi>
+    <!-- Current Prices Display -->
+    <div class="prices-display">
+      <div class="price-item bid">
+        <span class="price-label">BID</span>
+        <span class="price-value">{{ bestBid || '-' }}</span>
+      </div>
+      <div class="price-item ask">
+        <span class="price-label">ASK</span>
+        <span class="price-value">{{ bestAsk || '-' }}</span>
+      </div>
+    </div>
 
-        <n-gi>
-          <n-space vertical>
+    <!-- Basic Configuration -->
+    <div class="config-section">
+      <div class="section-header" @click="showBasicConfig = !showBasicConfig">
+        <span>📋 Basic</span>
+        <span class="collapse-icon">{{ showBasicConfig ? '▼' : '▶' }}</span>
+      </div>
+      <div v-show="showBasicConfig" class="section-content">
+        <div class="form-row">
+          <label>Bot Name</label>
+          <n-input v-model:value="name" size="tiny" placeholder="Bot name" />
+        </div>
+        <div class="form-row">
+          <label>Lower Price</label>
+          <n-input v-model:value="lowerPrice" size="tiny" :placeholder="quote">
+            <template #suffix>{{ quote }}</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Upper Price</label>
+          <n-input v-model:value="upperPrice" size="tiny" :placeholder="quote">
+            <template #suffix>{{ quote }}</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Amount Type</label>
+          <n-select v-model:value="amountType" :options="amountTypeOptions" size="tiny" />
+        </div>
+        <div class="form-row">
+          <label>Amount</label>
+          <n-input v-model:value="amount" size="tiny" :placeholder="quote">
+            <template #suffix>{{ quote }}</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Nr of Grids</label>
+          <n-input v-model:value="nrOfGrids" size="tiny" placeholder="10" />
+        </div>
+        <div class="form-row">
+          <label>Orders Side</label>
+          <n-select v-model:value="ordersSide" :options="ordersSideOptions" size="tiny" />
+        </div>
+      </div>
+    </div>
 
-            <n-grid x-gap="4" :cols="2">
-              <n-gi>
-                <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
-              </n-gi>
-              <n-gi>
-                <n-grid x-gap="4" :cols="4">
-                  <n-gi>
-                    <n-button @click="addStrategy">A</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="editStrategy">E</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="deleteStrategy">D</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="deleteAllStrategies">A</n-button>
-                  </n-gi>
+    <!-- Advanced Configuration -->
+    <div class="config-section">
+      <div class="section-header" @click="showAdvancedConfig = !showAdvancedConfig">
+        <span>🔧 Advanced</span>
+        <span class="collapse-icon">{{ showAdvancedConfig ? '▼' : '▶' }}</span>
+      </div>
+      <div v-show="showAdvancedConfig" class="section-content">
+        <div class="form-row">
+          <label>Inc % Buy</label>
+          <n-input v-model:value="incrementalPercentAmountBuy" size="tiny" placeholder="1.0">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Inc % Sell</label>
+          <n-input v-model:value="incrementalPercentAmountSell" size="tiny" placeholder="1.0">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Dev Price Buy</label>
+          <n-input v-model:value="deviationPriceBuy" size="tiny" placeholder="1.0">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Dev Price Sell</label>
+          <n-input v-model:value="deviationPriceSell" size="tiny" placeholder="1.0">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Dev Amt Buy</label>
+          <n-input v-model:value="deviationAmountBuy" size="tiny" placeholder="0.9">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Dev Amt Sell</label>
+          <n-input v-model:value="deviationAmountSell" size="tiny" placeholder="0.9">
+            <template #suffix>%</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Price Group Buy</label>
+          <n-input v-model:value="priceGroupBuy" size="tiny" :placeholder="quote">
+            <template #suffix>{{ quote }}</template>
+          </n-input>
+        </div>
+        <div class="form-row">
+          <label>Price Group Sell</label>
+          <n-input v-model:value="priceGroupSell" size="tiny" :placeholder="quote">
+            <template #suffix>{{ quote }}</template>
+          </n-input>
+        </div>
+        <div class="form-row checkbox-row">
+          <n-checkbox v-model:checked="usePriceGroup" size="small">
+            Use Price Group
+          </n-checkbox>
+        </div>
+      </div>
+    </div>
 
-        
-                </n-grid>
-              </n-gi>
-            </n-grid>
+    <!-- Price Actions -->
+    <div class="config-section">
+      <div class="section-header" @click="showPriceActions = !showPriceActions">
+        <span>💰 Quick Price</span>
+        <span class="collapse-icon">{{ showPriceActions ? '▼' : '▶' }}</span>
+      </div>
+      <div v-show="showPriceActions" class="section-content">
+        <div class="price-actions">
+          <div class="action-group">
+            <span class="action-label">Lower (-)</span>
+            <div class="action-buttons">
+              <n-button size="tiny" @click="updateLowerPrice(0.01)">1%</n-button>
+              <n-button size="tiny" @click="updateLowerPrice(0.02)">2%</n-button>
+              <n-button size="tiny" @click="updateLowerPrice(0.05)">5%</n-button>
+              <n-button size="tiny" @click="updateLowerPrice(0.1)">10%</n-button>
+              <n-button size="tiny" @click="updateLowerPrice(0.2)">20%</n-button>
+              <n-button size="tiny" @click="updateLowerPrice(0.5)">50%</n-button>
+            </div>
+          </div>
+          <div class="action-group">
+            <span class="action-label">Upper (+)</span>
+            <div class="action-buttons">
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.01)">1%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.02)">2%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.05)">5%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.1)">10%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.2)">20%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.5)">50%</n-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <!-- Strategies Management -->
+    <div class="config-section">
+      <div class="section-header" @click="showStrategies = !showStrategies">
+        <span>💾 Strategies</span>
+        <span class="collapse-icon">{{ showStrategies ? '▼' : '▶' }}</span>
+      </div>
+      <div v-show="showStrategies" class="section-content">
+        <div class="form-row">
+          <n-select
+            v-model:value="strategyPicker"
+            :options="strategyPickerOptions"
+            @update:value="selectStrategy"
+            size="tiny"
+            placeholder="Select strategy"
+          />
+        </div>
+        <div class="strategy-buttons">
+          <n-button size="tiny" @click="addStrategy">Add</n-button>
+          <n-button size="tiny" @click="editStrategy">Edit</n-button>
+          <n-button size="tiny" @click="deleteStrategy">Del</n-button>
+          <n-button size="tiny" @click="deleteAllStrategies">Clear</n-button>
+        </div>
+      </div>
+    </div>
 
-            <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="amount" type="text" placeholder="Amount">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids"></n-input>
-            <n-input v-model:value="incrementalPercentAmountSell" type="text" placeholder="Inc. % Amount Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationPriceSell" type="text" placeholder="Deviation Price Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="deviationAmountSell" type="text" placeholder="Deviation Amount Sell">
-              <template #suffix> % </template>
-            </n-input>
-            <n-input v-model:value="priceGroupSell" type="text" placeholder="Price Group Sell">
-              <template #suffix> {{ quote }} </template>
-            </n-input>
-            <n-checkbox v-model:checked="usePriceGroup">
-              Use Price Group
-            </n-checkbox>
-          </n-space>
-        </n-gi>
-
-
-      </n-grid>
-
-
-  </n-card>
-
-  <n-card>
-    <n-grid x-gap="0" :cols="3" item-responsive style="display: flex; flex-wrap: nowrap;">
-
-      <n-gi>
-                  <table>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.0001)">  - </n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.001)">  + </n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.005)">  - 0.5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.005)">  + 0.5%</n-button>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.01)">  - 1%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.01)">  + 1%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.02)">  - 2%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.02)">  + 2%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.03)">  - 3%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.03)">  + 3%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.05)">  - 5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.05)">  + 5%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.07)">  - 7%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.07)">  + 7%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.09)">  - 9%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.09)">  + 9%</n-button>
-                    </td>
-                  </tr>
-                </table>
-      </n-gi>
-
-      <n-gi>
-                  <table>
-
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.1)">  - 10%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.1)">  + 10%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.2)">  - 20%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.2)">  + 20%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.3)">  - 30%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.3)">  + 30%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.5)">  - 50%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.5)">  + 50%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.6)">  - 60%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.6)">  + 60%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.7)">  - 70%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.7)">  + 70%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.8)">  - 80%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.8)">  + 80%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.97)">  - 90%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.9)">  + 90%</n-button>
-                      </td>
-                    </tr>
-                  </table>
-      </n-gi>
-
-        <n-gi>
-          <!-- Empty column - API selector moved to grid-bots-list.vue -->
-        </n-gi>
-
-
-    </n-grid>
-
-
-</n-card>
+    <!-- Create Button -->
+    <div class="create-button-wrapper">
+      <n-button type="primary" size="small" block @click="createGridBot">
+        🚀 Create Grid Bot
+      </n-button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-[contenteditable="true"] {
-  /* Stiluri generale pentru elementele contenteditable */
-  padding: 2px;
-  border: 1px solid #ccc;
-  border-radius: 1px;
-  outline: none; /* Elimină conturul implicit la focalizare */
-  min-height: 10px; /* Înălțime minimă pentru a asigura vizibilitatea */
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  color: #e0bfbf;
-}
-
-[contenteditable="true"]:focus {
-  /* Stiluri pentru când elementul este focalizat */
-  border-color: blue;
-}
-
-.editable-cellLower,
-.editable-cellUpper,
-.editable-cell.amount,
-.editable-cell.numberOfGrids,
-.editable-cell.incrementalPercentAmountBuy,
-.editable-cell.incrementalPercentAmountSell,
-.editable-cell.deviationPriceBuy,
-.editable-cell.deviationPriceSell,
-.editable-cell.deviationAmountBuy,
-.editable-cell.deviationAmountSell {
-  position: relative;
-}
-
-.editable-cellLower:before {
-  content: "Preț minim manual: "; /* Textul descriptiv pentru prețul minim */
-  position: relative;
-  top: 0;
-  left: 0;
-  color: rgba(203, 235, 23, 0.5); /* Culoarea textului */
-  pointer-events: none; /* Face textul descriptiv "ne-clickabil" */
-}
-
-.editable-cellUpper:before {
-  content: "Preț maxim manual: "; /* Textul descriptiv pentru prețul maxim */
-  position: relative;
-  top: 0;
-  left: 0;
-  color: rgba(193, 224, 16, 0.5); /* Culoarea textului */
-  pointer-events: none; /* Face textul descriptiv "ne-clickabil" */
-}
-
-.editable-cell.amount:before {
-  content: "Amount:"; /* Textul descriptiv pentru Amount */
-}
-
-.editable-cell.numberOfGrids:before {
-  content: "Number of Grids:"; /* Textul descriptiv pentru Number of Grids */
-}
-
-.editable-cell.incrementalPercentAmountBuy:before {
-  content: "Incremental Percent Amount Buy:"; /* Textul descriptiv pentru Incremental Percent Amount Buy */
-  
-}
-
-.editable-cell.incrementalPercentAmountSell:before {
-  content: "Incremental Percent Amount Sell:"; /* Textul descriptiv pentru Incremental Percent Amount Sell */
-}
-
-.editable-cell.deviationPriceBuy:before {
-  content: "Deviation Price Buy:"; /* Textul descriptiv pentru Deviation Price Buy */
-}
-
-.editable-cell.deviationPriceSell:before {
-  content: "Deviation Price Sell:"; /* Textul descriptiv pentru Deviation Price Sell */
-}
-
-.editable-cell.deviationAmountBuy:before {
-  content: "Deviation Amount Buy:"; /* Textul descriptiv pentru Deviation Amount Buy */
-}
-
-.editable-cell.deviationAmountSell:before {
-  content: "Deviation Amount Sell:"; /* Textul descriptiv pentru Deviation Amount Sell */
-}
-
-
-
-.custom-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 20px;
-  background-color: rgb(36, 2, 2);
-  border: 1px solid #b7dd0b;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 999;
+.gridbot-form-container {
+  background: #1a1f2e;
+  border: 1px solid #2a3441;
+  border-radius: 4px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
 }
 
-.dialog-content {
-  flex: 1;
+/* Header */
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #0f1419;
+  border-radius: 3px;
+  border: 1px solid #2a3441;
 }
 
-.dialog-buttons {
+.header-icon {
+  font-size: 14px;
+}
+
+.header-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+/* Prices Display */
+.prices-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.price-item {
+  padding: 6px;
+  background: #0f1419;
+  border-radius: 3px;
+  border: 1px solid #2a3441;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.price-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.price-value {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+.price-item.bid .price-value {
+  color: #4ade80;
+}
+
+.price-item.ask .price-value {
+  color: #f87171;
+}
+
+/* Config Sections */
+.config-section {
+  background: #0f1419;
+  border: 1px solid #2a3441;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 6px 8px;
+  background: #1a1f2e;
+  border-bottom: 1px solid #2a3441;
+  cursor: pointer;
+  user-select: none;
   display: flex;
   justify-content: space-between;
-  margin-top: 10px; /* Adjust the margin as needed */
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  transition: background 0.2s;
 }
-  
-  .result-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    background-color: #3a14e4; /* Change the background color as needed */
-    border: 1px solid #dcf116;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-  }
-  </style>
-  
+
+.section-header:hover {
+  background: #242936;
+}
+
+.collapse-icon {
+  font-size: 9px;
+  color: #666;
+}
+
+.section-content {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Form Rows */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.form-row label {
+  font-size: 9px;
+  color: #888;
+  font-weight: 600;
+}
+
+.checkbox-row {
+  padding-top: 4px;
+}
+
+/* Price Actions */
+.price-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+/* Strategy Buttons */
+.strategy-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+/* Create Button */
+.create-button-wrapper {
+  margin-top: 4px;
+}
+
+/* Deep Overrides for Naive UI */
+:deep(.n-input) {
+  font-size: 10px;
+}
+
+:deep(.n-input__input-el) {
+  font-size: 10px;
+  padding: 4px 6px;
+}
+
+:deep(.n-input__suffix) {
+  font-size: 9px;
+  color: #888;
+}
+
+:deep(.n-select) {
+  font-size: 10px;
+}
+
+:deep(.n-base-selection) {
+  font-size: 10px;
+}
+
+:deep(.n-base-selection-label) {
+  font-size: 10px;
+}
+
+:deep(.n-button) {
+  font-size: 9px;
+  padding: 4px 6px;
+  height: auto;
+}
+
+:deep(.n-button--tiny-type) {
+  font-size: 9px;
+}
+
+:deep(.n-checkbox) {
+  font-size: 10px;
+}
+
+:deep(.n-checkbox__label) {
+  font-size: 10px;
+}
+
+/* Scrollbar */
+.gridbot-form-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gridbot-form-container::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-radius: 3px;
+}
+
+.gridbot-form-container::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+</style>

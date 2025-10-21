@@ -6,7 +6,7 @@
 
     <n-space vertical>
         <n-layout>
-            <n-layout-header bordered class="header">
+            <n-layout-header class="header">
                 <n-space justify="space-between" align="center" class="inner">
                     <!-- LEFT SIDE - LOGO + TICKER BAR + API SELECTOR -->
                     <div class="navbar-left">
@@ -25,19 +25,25 @@
                     </div>
                 </n-space>
             </n-layout-header>
+
+            <!-- NAVBAR2 - BALANCE DISPLAY ROW -->
+            <n-layout-header class="header-balance">
+                <BalanceBar />
+            </n-layout-header>
+
             <n-layout has-sider class="container">
                 <n-layout-sider
                     bordered
                     show-trigger
                     collapse-mode="width"
-                    :collapsed-width="64"
-                    :width="200"
+                    :collapsed-width="50"
+                    :width="150"
                     :native-scrollbar="false"
                     class="sidebar"
                 >
                     <n-menu
-                        :collapsed-width="64"
-                        :collapsed-icon-size="22"
+                        :collapsed-width="50"
+                        :collapsed-icon-size="18"
                         :options="sidebarOptions"
                     />
                 </n-layout-sider>
@@ -178,6 +184,20 @@ const sidebarOptions = [
                 { default: () => '📚 Grid Bot README' }
             ),
         key: 'GridBotReadme',
+        icon: renderIcon(BookIcon),
+    },
+    {
+        label: () =>
+            h(
+                NuxtLink,
+                {
+                    to: {
+                        name: 'FrontRunReadme',
+                    }
+                },
+                { default: () => '📚 FrontRun README' }
+            ),
+        key: 'FrontRunReadme',
         icon: renderIcon(BookIcon),
     },
 
@@ -490,11 +510,16 @@ const dropdownOptions = [
 </script>
 
 <style scoped>
-/* ========== COMPACT NAVBAR ========== */
+/* ========== NAVBAR ========== */
 .header {
-  height: 36px !important;
-  padding: 0 12px !important;
-  line-height: 36px !important;
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  height: 25px !important;
+  padding: 0 8px !important;
+  line-height: 15px !important;
+  border: none !important;
+  background: rgba(0, 0, 0, 0.9);
 }
 
 .inner {
@@ -502,7 +527,7 @@ const dropdownOptions = [
 }
 
 .app-title {
-  font-size: 14px !important;
+  font-size: 9px !important;
   font-weight: 900;
   background: linear-gradient(90deg, #00ffff, #ff00ff);
   -webkit-background-clip: text;
@@ -511,13 +536,13 @@ const dropdownOptions = [
 }
 
 .compact-text {
-  font-size: 9px !important;
+  font-size: 6px !important;
   opacity: 0.7;
 }
 
 /* USER ID - CYAN */
 .user-id-text {
-  font-size: 10px !important;
+  font-size: 7px !important;
   font-weight: 700 !important;
   color: #00ffff !important;
   text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
@@ -525,22 +550,22 @@ const dropdownOptions = [
 
 /* REFERRAL CODE - MAGENTA */
 .referral-text {
-  font-size: 10px !important;
+  font-size: 7px !important;
   font-weight: 700 !important;
   color: #ff00ff !important;
   text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
 }
 
 .profile-btn {
-  padding: 2px 8px !important;
-  height: 24px !important;
-  font-size: 14px !important;
+  padding: 1px 4px !important;
+  height: 14px !important;
+  font-size: 10px !important;
 }
 
 /* Footer also compact */
 .footer {
   height: 32px !important;
-  padding: 0 12px !important;
+  padding: 0 16px !important;
   line-height: 32px !important;
   font-size: 10px !important;
   opacity: 0.6;
@@ -549,24 +574,144 @@ const dropdownOptions = [
 /* Sidebar adjustment */
 .sidebar {
   margin-top: 0 !important;
+  background: rgba(0, 0, 0, 0.9) !important;
 }
 
+:deep(.n-layout-sider) {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+:deep(.n-menu) {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+:deep(.n-menu-item-content) {
+  color: #00ffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+:deep(.n-menu-item-content__icon) {
+  color: #00ffff !important;
+}
+
+:deep(.n-menu-item-content-header) {
+  color: #00ffff !important;
+}
+
+:deep(.n-menu-item-content a) {
+  color: #00ffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+:deep(.n-menu-item-content:hover) {
+  color: #ff00ff !important;
+}
+
+:deep(.n-menu-item-content:hover .n-menu-item-content__icon) {
+  color: #ff00ff !important;
+}
+
+:deep(.n-menu-item-content:hover a) {
+  color: #ff00ff !important;
+}
+
+:deep(.n-menu-item-content--selected) {
+  color: #ffff00 !important;
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+:deep(.n-menu-item-content--selected .n-menu-item-content__icon) {
+  color: #ffff00 !important;
+}
+
+:deep(.n-menu-item-content--selected a) {
+  color: #ffff00 !important;
+}
+
+/* Individual menu item colors - using nth-child */
+:deep(.n-menu-item:nth-child(1) a) { color: #FF6B6B !important; } /* Dashboard */
+:deep(.n-menu-item:nth-child(1) .n-menu-item-content__icon) { color: #FF6B6B !important; }
+
+:deep(.n-menu-item:nth-child(2) a) { color: #4ECDC4 !important; } /* Trade */
+:deep(.n-menu-item:nth-child(2) .n-menu-item-content__icon) { color: #4ECDC4 !important; }
+
+:deep(.n-menu-item:nth-child(3) a) { color: #45B7D1 !important; } /* GRID Bots Plus */
+:deep(.n-menu-item:nth-child(3) .n-menu-item-content__icon) { color: #45B7D1 !important; }
+
+:deep(.n-menu-item:nth-child(4) a) { color: #96CEB4 !important; } /* Grid Bot README */
+:deep(.n-menu-item:nth-child(4) .n-menu-item-content__icon) { color: #96CEB4 !important; }
+
+:deep(.n-menu-item:nth-child(5) a) { color: #FFEAA7 !important; } /* FrontRun README */
+:deep(.n-menu-item:nth-child(5) .n-menu-item-content__icon) { color: #FFEAA7 !important; }
+
+:deep(.n-menu-item:nth-child(6) a) { color: #DFE6E9 !important; } /* One Click Bot */
+:deep(.n-menu-item:nth-child(6) .n-menu-item-content__icon) { color: #DFE6E9 !important; }
+
+:deep(.n-menu-item:nth-child(7) a) { color: #74B9FF !important; } /* AI Toolz */
+:deep(.n-menu-item:nth-child(7) .n-menu-item-content__icon) { color: #74B9FF !important; }
+
+:deep(.n-menu-item:nth-child(8) a) { color: #A29BFE !important; } /* Open Orders */
+:deep(.n-menu-item:nth-child(8) .n-menu-item-content__icon) { color: #A29BFE !important; }
+
+:deep(.n-menu-item:nth-child(9) a) { color: #FD79A8 !important; } /* Closed Orders */
+:deep(.n-menu-item:nth-child(9) .n-menu-item-content__icon) { color: #FD79A8 !important; }
+
+:deep(.n-menu-item:nth-child(10) a) { color: #FDCB6E !important; } /* Ticker Bar */
+:deep(.n-menu-item:nth-child(10) .n-menu-item-content__icon) { color: #FDCB6E !important; }
+
+:deep(.n-menu-item:nth-child(11) a) { color: #6C5CE7 !important; } /* BalanceSAVE */
+:deep(.n-menu-item:nth-child(11) .n-menu-item-content__icon) { color: #6C5CE7 !important; }
+
+:deep(.n-menu-item:nth-child(12) a) { color: #00B894 !important; } /* OrderListDuplicate */
+:deep(.n-menu-item:nth-child(12) .n-menu-item-content__icon) { color: #00B894 !important; }
+
+:deep(.n-menu-item:nth-child(13) a) { color: #00CEC9 !important; } /* ALL-STR */
+:deep(.n-menu-item:nth-child(13) .n-menu-item-content__icon) { color: #00CEC9 !important; }
+
+:deep(.n-menu-item:nth-child(14) a) { color: #FF7675 !important; } /* ArbToolz */
+:deep(.n-menu-item:nth-child(14) .n-menu-item-content__icon) { color: #FF7675 !important; }
+
+:deep(.n-menu-item:nth-child(15) a) { color: #55EFC4 !important; } /* Referrals */
+:deep(.n-menu-item:nth-child(15) .n-menu-item-content__icon) { color: #55EFC4 !important; }
+
+:deep(.n-menu-item:nth-child(16) a) { color: #81ECEC !important; } /* Back testing */
+:deep(.n-menu-item:nth-child(16) .n-menu-item-content__icon) { color: #81ECEC !important; }
+
+:deep(.n-menu-item:nth-child(17) a) { color: #FAB1A0 !important; } /* Dev Tools */
+:deep(.n-menu-item:nth-child(17) .n-menu-item-content__icon) { color: #FAB1A0 !important; }
+
 .container {
-  height: calc(100vh - 68px) !important;
+  height: calc(100vh - 95px) !important; /* Updated: 15px header + 48px balance bar + 32px footer */
 }
 
 /* NAVBAR LEFT - LOGO + TICKER BAR */
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 6px;
 }
 
 /* NAVBAR RIGHT - USER INFO */
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+}
+
+/* ========== BALANCE BAR (NAVBAR2) ========== */
+.header-balance {
+  position: sticky;
+  top: 15px;
+  z-index: 10;
+  height: 48px !important;
+  padding: 0 16px !important;
+  line-height: 48px !important;
+  background: rgba(0, 0, 0, 0.9);
+  border: none !important;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>
 
