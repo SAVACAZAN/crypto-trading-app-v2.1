@@ -637,6 +637,23 @@ onUnmounted(() => {
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.90)">90%</n-button>
             </div>
           </div>
+
+          <!-- Upper Multiplier - 1 row -->
+          <div class="price-row">
+            <span class="price-row-label">x Upper</span>
+            <div class="price-row-buttons">
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 1).toString()">x1</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 2).toString()">x2</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 3).toString()">x3</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 4).toString()">x4</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 5).toString()">x5</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 6).toString()">x6</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 7).toString()">x7</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 8).toString()">x8</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 9).toString()">x9</n-button>
+              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 10).toString()">x10</n-button>
+            </div>
+          </div>
         </div>
 
         <!-- GRIDS AND AMOUNT QUICK ACTIONS -->
@@ -657,22 +674,6 @@ onUnmounted(() => {
               <n-button size="tiny" @click="amount = '5'">5</n-button>
               <n-button size="tiny" @click="amount = '10'">10</n-button>
               <n-button size="tiny" @click="amount = '100'">100</n-button>
-            </div>
-          </div>
-
-          <div class="quick-actions-group">
-            <span class="quick-actions-label">Upper Multiplier</span>
-            <div class="quick-buttons-inline">
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 1).toString()">x1</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 2).toString()">x2</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 3).toString()">x3</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 4).toString()">x4</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 5).toString()">x5</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 6).toString()">x6</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 7).toString()">x7</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 8).toString()">x8</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 9).toString()">x9</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 10).toString()">x10</n-button>
             </div>
           </div>
 
