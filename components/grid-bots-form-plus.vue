@@ -204,7 +204,24 @@ async function fetchBalanceForSymbol() {
 function handleStrategyApplied(appliedData) {
   if (appliedData) {
     try {
-      name.value = appliedData.name || '';
+      // Generate bot name from strategy name + symbol + timestamp
+      const strategyName = appliedData.name || 'gridBot';
+      const symbolPart = appliedData.symbol ? appliedData.symbol.replace('/', '_') : 'PAIR';
+      const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+      name.value = `${strategyName}_${symbolPart}_${timestamp}`;
+
+      console.log('📝 Generated Bot Name:', name.value);
+      console.log('💾 Applied strategy data:', {
+        exchange: appliedData.exchange,
+        symbol: appliedData.symbol,
+        lowerPrice: appliedData.lowerPrice,
+        upperPrice: appliedData.upperPrice
+      });
+
+      // NOTE: exchange and symbol are computed properties (currentExchange, currentSymbol)
+      // They are always in sync with the store, so we don't update them directly.
+      // The strategy's exchange/symbol are already captured in the generated name above.
+
       lowerPrice.value = (appliedData.lowerPrice ?? 0).toString();
       upperPrice.value = (appliedData.upperPrice ?? 0).toString();
       amount.value = (appliedData.amount ?? 0).toString();

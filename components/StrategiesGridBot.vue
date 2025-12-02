@@ -340,33 +340,66 @@ watch(() => props.userID, async (newUserID) => {
     <!-- Saved Strategies List - Grid of Small Boxes -->
     <div v-if="strategiesList.length > 0" class="strategies-list">
       <div class="strategies-buttons-grid">
-        <n-button
+        <n-popover
           v-for="strategy in strategiesList"
           :key="strategy._id"
-          :type="strategyPicker === strategy._id ? 'primary' : 'default'"
-          size="tiny"
-          @click="() => {
-            strategyPicker = strategy._id;
-            selectStrategy(formData, strategy._id);
-          }"
-          class="strategy-box"
-          :title="strategy.name"
+          trigger="hover"
+          placement="top"
+          :show-arrow="true"
         >
-          {{ strategy.name.substring(0, 3).toUpperCase() }}
-        </n-button>
+          <template #trigger>
+            <n-button
+              :type="strategyPicker === strategy._id ? 'primary' : 'default'"
+              size="tiny"
+              @click="async () => {
+                strategyPicker = strategy._id;
+                await handleApplyStrategy();
+              }"
+              class="strategy-box"
+            >
+              {{ strategy.name.substring(0, 3).toUpperCase() }}
+            </n-button>
+          </template>
+
+          <!-- Popover Content - Strategy Details (4 rows only) -->
+          <div class="strategy-tooltip">
+            <!-- <div class="tooltip-title">{{ strategy.name }}</div> -->
+            <div v-if="strategy.pairs && strategy.pairs[0]" class="tooltip-content">
+              <div class="tooltip-row">
+                <span class="tooltip-label">Lower:</span>
+                <span class="tooltip-value lower">
+                  {{
+                    strategy.pairs[0].lowerPricePercent !== undefined
+                      ? strategy.pairs[0].lowerPricePercent.toFixed(2) + '%'
+                      : 'N/A'
+                  }}
+                </span>
+              </div>
+              <div class="tooltip-row">
+                <span class="tooltip-label">Upper:</span>
+                <span class="tooltip-value upper">
+                  {{
+                    strategy.pairs[0].upperPricePercent !== undefined
+                      ? strategy.pairs[0].upperPricePercent.toFixed(2) + '%'
+                      : 'N/A'
+                  }}
+                </span>
+              </div>
+              <div class="tooltip-row">
+                <span class="tooltip-label">Grids:</span>
+                <span class="tooltip-value">{{ strategy.pairs[0].grids ?? 'N/A' }}</span>
+              </div>
+              <div class="tooltip-row">
+                <span class="tooltip-label">Amount:</span>
+                <span class="tooltip-value">{{ strategy.pairs[0].amount?.toFixed(4) ?? 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+        </n-popover>
       </div>
 
-      <!-- Strategy Action Buttons -->
+      <!-- Strategy Action Buttons - Delete Only -->
       <div class="strategy-actions">
-        <n-button
-          type="success"
-          size="small"
-          @click="handleApplyStrategy"
-          :disabled="!strategyPicker"
-          class="action-btn apply-btn"
-        >
-          ✓ Apply
-        </n-button>
         <n-button
           type="warning"
           size="small"
@@ -400,8 +433,9 @@ watch(() => props.userID, async (newUserID) => {
         size="small"
         @click="showStrategyForm = true"
         class="save-btn"
+        title="Save Current Configuration as Strategy"
       >
-        💾 Save Current as Strategy
+        💾
       </n-button>
     </div>
 
@@ -533,7 +567,7 @@ watch(() => props.userID, async (newUserID) => {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: 2px !important;
+  border-radius: 50% !important;
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -543,6 +577,7 @@ watch(() => props.userID, async (newUserID) => {
   height: 25px !important;
   min-width: 25px !important;
   min-height: 25px !important;
+  border-radius: 50% !important;
 }
 
 :deep(.strategy-box .n-button__content) {
@@ -609,12 +644,18 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 .save-btn {
-  width: 100%;
-  font-size: 11px !important;
-  height: 28px !important;
+  width: 35px !important;
+  height: 35px !important;
+  min-width: 35px !important;
+  min-height: 35px !important;
+  padding: 0 !important;
+  font-size: 16px !important;
   background: rgba(59, 130, 246, 0.2) !important;
   border-color: #3b82f6 !important;
   color: #3b82f6 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .save-btn:hover {
@@ -690,5 +731,147 @@ watch(() => props.userID, async (newUserID) => {
   font-size: 10px !important;
   height: 24px !important;
   padding: 2px 6px !important;
+}
+
+/* ==========================================
+   STRATEGY TOOLTIP STYLES
+   ========================================== */
+
+.strategy-tooltip {
+  padding: 0;
+  width: 95px;
+  height: 95px;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  background: transparent;
+}
+
+.tooltip-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 85px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7px;
+  gap: 3px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.tooltip-row:nth-child(1) .tooltip-label {
+  color: #10eb04;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(2) .tooltip-label {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(3) .tooltip-label {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(4) .tooltip-label {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.tooltip-label {
+  color: #a0a0a0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  flex: 0 0 auto;
+}
+
+.tooltip-value {
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  font-size: 8px;
+  text-align: right;
+  flex: 0 1 auto;
+}
+
+.tooltip-row:nth-child(1) .tooltip-value {
+  color: #10eb04;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(2) .tooltip-value {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(3) .tooltip-value {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.tooltip-row:nth-child(4) .tooltip-value {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.tooltip-value.lower {
+  color: #10eb04;
+}
+
+.tooltip-value.upper {
+  color: #ef4444;
+}
+
+:deep(.n-popover__content) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  width: fit-content !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  height: fit-content !important;
+}
+
+:deep(.n-popover) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep(.n-popover-shared) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep(.n-popover-shared__content-wrapper) {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep(.n-popover__arrow) {
+  border-color: rgba(59, 130, 246, 0.3) !important;
 }
 </style>

@@ -50,14 +50,21 @@ export default defineEventHandler(async (event) => {
 
     // Calculate percentage offsets from bid/ask (like OneClick)
     const calculatedPairs = pairs.map(pair => {
-      const bid = parseFloat(pair.bestBid) || 0
-      const ask = parseFloat(pair.bestAsk) || 0
-      const lowerPrice = parseFloat(pair.lowerPrice) || 0
-      const upperPrice = parseFloat(pair.upperPrice) || 0
+      const bid = parseFloat(pair.bestBid) || parseFloat(pair.referenceBid) || 0
+      const ask = parseFloat(pair.bestAsk) || parseFloat(pair.referenceAsk) || 0
 
-      // Calculate percentage deviation from bid/ask
-      const lowerPricePercent = bid > 0 ? ((lowerPrice - bid) / bid * 100) : -20
-      const upperPricePercent = ask > 0 ? ((upperPrice - ask) / ask * 100) : 1
+      // Use provided percentages if available, otherwise calculate from prices
+      let lowerPricePercent = pair.lowerPricePercent
+      let upperPricePercent = pair.upperPricePercent
+
+      if (lowerPricePercent === undefined || upperPricePercent === undefined) {
+        // Fallback: calculate from absolute prices
+        const lowerPrice = parseFloat(pair.lowerPrice) || 0
+        const upperPrice = parseFloat(pair.upperPrice) || 0
+
+        lowerPricePercent = bid > 0 ? ((lowerPrice - bid) / bid * 100) : -20
+        upperPricePercent = ask > 0 ? ((upperPrice - ask) / ask * 100) : 1
+      }
 
       return {
         symbol: pair.symbol,

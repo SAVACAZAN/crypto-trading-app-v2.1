@@ -36,9 +36,11 @@ export default defineEventHandler(async (event) => {
 
     // Calculate actual prices based on current market prices
     const calculatedPairs = strategy.pairs.map((pair, index) => {
-      const currentPrice = currentPrices.find(p => p.symbol === pair.symbol)
+      // Use the first currentPrice provided by frontend (which contains the current market prices)
+      // This allows applying strategies on ANY pair, not just the saved pair
+      const currentPrice = currentPrices[0]
 
-      if (!currentPrice) {
+      if (!currentPrice || !currentPrice.bid || !currentPrice.ask) {
         return {
           symbol: pair.symbol,
           error: 'Current price not provided'

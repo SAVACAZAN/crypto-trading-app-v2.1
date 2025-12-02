@@ -149,6 +149,9 @@ export function useStrategyGridBot() {
       console.log('  - exchange:', exchangeValue);
       console.log('  - amount:', amountValue);
       console.log('  - nrOfGrids:', nrOfGridsValue);
+      console.log('📊 Calculated percentages:');
+      console.log('  - lowerPricePercent:', lowerPricePercent.toFixed(2) + '%');
+      console.log('  - upperPricePercent:', upperPricePercent.toFixed(2) + '%');
 
       const response = await $fetch('/api/v1/Bots/saveGridBotStrategy', {
         method: 'POST',
@@ -167,13 +170,13 @@ export function useStrategyGridBot() {
             symbol: symbolValue,
             exchange: exchangeValue,
             ordersSide: ordersSideValue || 'buyOrSell',
-            lowerPrice: lowerPrice,
-            upperPrice: upperPrice,
+            lowerPricePercent: lowerPricePercent,
+            upperPricePercent: upperPricePercent,
             amount: parseFloat(amountValue) || 1.1,
             grids: parseInt(nrOfGridsValue) || 10,
             amountType: amountTypeValue || 'incrementalPercent',
-            bestBid: bid,
-            bestAsk: ask
+            referenceBid: bid,
+            referenceAsk: ask
           }]
         }
       });
@@ -260,6 +263,8 @@ export function useStrategyGridBot() {
 
         return {
           name: response.strategy.name,
+          exchange: exchangeValue,
+          symbol: symbolValue,
           lowerPrice: pair.lowerPrice ?? 0,
           upperPrice: pair.upperPrice ?? 0,
           amount: pair.amount ?? 0,
