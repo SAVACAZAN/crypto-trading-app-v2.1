@@ -201,21 +201,25 @@ async function fetchBalanceForSymbol() {
 // Handle strategy apply from StrategiesGridBot component
 function handleStrategyApplied(appliedData) {
   if (appliedData) {
-    name.value = appliedData.name;
-    lowerPrice.value = appliedData.lowerPrice.toString();
-    upperPrice.value = appliedData.upperPrice.toString();
-    amount.value = appliedData.amount.toString();
-    nrOfGrids.value = appliedData.nrOfGrids.toString();
-    ordersSide.value = appliedData.ordersSide;
-    amountType.value = appliedData.amountType;
-    incrementalPercentAmountBuy.value = appliedData.incBuy.toString();
-    incrementalPercentAmountSell.value = appliedData.incSell.toString();
-    deviationPriceBuy.value = appliedData.devPriceBuy.toString();
-    deviationPriceSell.value = appliedData.devPriceSell.toString();
-    deviationAmountBuy.value = appliedData.devAmtBuy.toString();
-    deviationAmountSell.value = appliedData.devAmtSell.toString();
-    bestBid.value = appliedData.bestBid;
-    bestAsk.value = appliedData.bestAsk;
+    try {
+      name.value = appliedData.name || '';
+      lowerPrice.value = (appliedData.lowerPrice ?? 0).toString();
+      upperPrice.value = (appliedData.upperPrice ?? 0).toString();
+      amount.value = (appliedData.amount ?? 0).toString();
+      nrOfGrids.value = (appliedData.nrOfGrids ?? 10).toString();
+      ordersSide.value = appliedData.ordersSide || 'buyOrSell';
+      amountType.value = appliedData.amountType || 'incrementalPercent';
+      incrementalPercentAmountBuy.value = (appliedData.incBuy ?? 1).toString();
+      incrementalPercentAmountSell.value = (appliedData.incSell ?? 1).toString();
+      deviationPriceBuy.value = (appliedData.devPriceBuy ?? 1).toString();
+      deviationPriceSell.value = (appliedData.devPriceSell ?? 1).toString();
+      deviationAmountBuy.value = (appliedData.devAmtBuy ?? 0.9).toString();
+      deviationAmountSell.value = (appliedData.devAmtSell ?? 0.9).toString();
+      bestBid.value = appliedData.bestBid ?? 0;
+      bestAsk.value = appliedData.bestAsk ?? 0;
+    } catch (error) {
+      console.error('Error applying strategy data:', error, appliedData);
+    }
 
     console.log('✅ Strategy applied and form updated!');
   }

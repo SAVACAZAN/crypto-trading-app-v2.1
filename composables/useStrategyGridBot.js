@@ -231,23 +231,24 @@ export function useStrategyGridBot() {
       if (response.success && response.strategy.pairs.length > 0) {
         const pair = response.strategy.pairs[0];
         console.log('✅ Strategy applied:', response.strategy.name);
+        console.log('📦 Pair data:', pair);
 
         return {
           name: response.strategy.name,
-          lowerPrice: pair.lowerPrice,
-          upperPrice: pair.upperPrice,
-          amount: pair.amount,
-          nrOfGrids: pair.grids,
-          ordersSide: pair.ordersSide,
-          amountType: pair.amountType,
-          incBuy: response.strategy.incBuy,
-          incSell: response.strategy.incSell,
-          devPriceBuy: response.strategy.devPriceBuy,
-          devPriceSell: response.strategy.devPriceSell,
-          devAmtBuy: response.strategy.devAmtBuy,
-          devAmtSell: response.strategy.devAmtSell,
-          bestBid: pair.currentBid,
-          bestAsk: pair.currentAsk
+          lowerPrice: pair.lowerPrice ?? 0,
+          upperPrice: pair.upperPrice ?? 0,
+          amount: pair.amount ?? 0,
+          nrOfGrids: pair.grids ?? 10,
+          ordersSide: pair.ordersSide ?? 'buyOrSell',
+          amountType: pair.amountType ?? 'incrementalPercent',
+          incBuy: response.strategy.incBuy ?? 1,
+          incSell: response.strategy.incSell ?? 1,
+          devPriceBuy: response.strategy.devPriceBuy ?? 1,
+          devPriceSell: response.strategy.devPriceSell ?? 1,
+          devAmtBuy: response.strategy.devAmtBuy ?? 0.9,
+          devAmtSell: response.strategy.devAmtSell ?? 0.9,
+          bestBid: pair.currentBid ?? 0,
+          bestAsk: pair.currentAsk ?? 0
         };
       } else {
         console.error('⚠️ Error applying strategy:', response.message);
