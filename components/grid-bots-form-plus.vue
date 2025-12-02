@@ -24,14 +24,16 @@ const {
 
 let userID = useCookie('userID');
 
-let currentExchange = ref(app.getUserSelectedExchange || 'coinbaseadvanced');
-let currentSymbol = ref(app.getUserSelectedMarket || 'BTC/USD');
+// Use computed to reactively track store changes - DYNAMIC UPDATES when symbol changes
+const currentExchange = computed(() => app.userSelectedExchange || 'coinbaseadvanced');
+const currentSymbol = computed(() => app.getUserSelectedMarket || 'BTC/USD');
 
 // API Keys - READ FROM STORE (set in grid-bots-list.vue)
 const selectedApiKeys = computed(() => app.getSelectedApiKeys);
 
-let base = currentSymbol.value ? currentSymbol.value.split('/')[0] : 'BTC';
-let quote = currentSymbol.value ? currentSymbol.value.split('/')[1] : 'USD';
+// Computed base/quote that update when symbol changes
+const base = computed(() => currentSymbol.value ? currentSymbol.value.split('/')[0] : 'BTC');
+const quote = computed(() => currentSymbol.value ? currentSymbol.value.split('/')[1] : 'USD');
 const bestBid = ref(null);
 const bestAsk = ref(null);
 const manualLowerPrice = ref('');
@@ -619,8 +621,8 @@ onUnmounted(() => {
     <ClientOnly>
       <StrategiesGridBot
         :userID="userID?.value"
-        :exchange="currentExchange?.value"
-        :symbol="currentSymbol?.value"
+        :exchange="currentExchange"
+        :symbol="currentSymbol"
         :bestBid="bestBid?.value"
         :bestAsk="bestAsk?.value"
         :formData="{
@@ -649,8 +651,8 @@ onUnmounted(() => {
 
     <!-- RSI Display Component -->
     <RSIDisplay
-      :exchange="currentExchange?.value || 'coinbaseadvanced'"
-      :symbol="currentSymbol?.value || 'LCX/USDC'"
+      :exchange="currentExchange"
+      :symbol="currentSymbol"
       :auto-fetch="true"
     />
 
