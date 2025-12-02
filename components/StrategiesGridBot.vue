@@ -738,15 +738,18 @@ watch(() => props.userID, async (newUserID) => {
    ========================================== */
 
 .strategy-tooltip {
-  padding: 0;
-  width: 95px;
-  height: 95px;
-  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-  background: transparent;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 95px !important;
+  height: 95px !important;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  background: #000000 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .tooltip-title {
@@ -761,12 +764,15 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 .tooltip-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  width: 85px;
-  justify-content: center;
-  align-items: flex-start;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  width: 85px !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  padding: 4px !important;
+  margin: 0 !important;
+  background: transparent !important;
 }
 
 .tooltip-row {
@@ -872,6 +878,48 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 :deep(.n-popover__arrow) {
-  border-color: rgba(59, 130, 246, 0.3) !important;
+  display: none !important;
+  visibility: hidden !important;
+}
+
+:deep(.n-popover__box) {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+}
+
+:deep(.n-popover__body) {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+}
+
+:deep(.n-popover--dark) {
+  background: transparent !important;
+  border: none !important;
+}
+
+:deep(.n-base-selection-overlay) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 </style>
