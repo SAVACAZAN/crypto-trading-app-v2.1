@@ -401,13 +401,12 @@ watch(() => props.userID, async (newUserID) => {
       <!-- Strategy Action Buttons -->
       <div class="strategy-actions">
         <n-button
-          type="primary"
+          type="error"
           size="small"
-          @click="showStrategyForm = true"
-          class="save-btn"
-          title="Save Current Configuration as Strategy"
+          @click="handleDeleteAllStrategies"
+          class="action-btn clear-all-btn"
         >
-          💾
+          ✕
         </n-button>
         <n-button
           type="warning"
@@ -419,12 +418,13 @@ watch(() => props.userID, async (newUserID) => {
           🗑️
         </n-button>
         <n-button
-          type="error"
+          type="primary"
           size="small"
-          @click="handleDeleteAllStrategies"
-          class="action-btn clear-all-btn"
+          @click="showStrategyForm = true"
+          class="save-btn"
+          title="Save Current Configuration as Strategy"
         >
-          ✕
+          💾
         </n-button>
       </div>
     </div>
