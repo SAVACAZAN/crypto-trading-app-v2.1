@@ -740,14 +740,14 @@ watch(() => props.userID, async (newUserID) => {
 .strategy-tooltip {
   padding: 0 !important;
   margin: 0 !important;
-  width: 67px !important;
-  height: 67px !important;
-  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%) !important;
+  width: auto !important;
+  height: auto !important;
+  clip-path: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  overflow: hidden !important;
-  background: #000000 !important;
+  overflow: visible !important;
+  background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   position: relative !important;
@@ -767,11 +767,11 @@ watch(() => props.userID, async (newUserID) => {
 .tooltip-content {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0px !important;
-  width: 55px !important;
+  gap: 2px !important;
+  width: auto !important;
   justify-content: center !important;
   align-items: flex-start !important;
-  padding: 3px !important;
+  padding: 0 !important;
   margin: 0 !important;
   background: transparent !important;
 }
@@ -780,9 +780,9 @@ watch(() => props.userID, async (newUserID) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 5px;
-  gap: 1px;
-  width: 100%;
+  font-size: 9px;
+  gap: 3px;
+  width: auto;
   white-space: nowrap;
 }
 
@@ -818,7 +818,7 @@ watch(() => props.userID, async (newUserID) => {
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   font-weight: 500;
-  font-size: 5px;
+  font-size: 9px;
   text-align: right;
   flex: 0 1 auto;
 }
