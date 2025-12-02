@@ -398,8 +398,17 @@ watch(() => props.userID, async (newUserID) => {
         </n-popover>
       </div>
 
-      <!-- Strategy Action Buttons - Delete Only -->
+      <!-- Strategy Action Buttons -->
       <div class="strategy-actions">
+        <n-button
+          type="primary"
+          size="small"
+          @click="showStrategyForm = true"
+          class="save-btn"
+          title="Save Current Configuration as Strategy"
+        >
+          💾
+        </n-button>
         <n-button
           type="warning"
           size="small"
@@ -407,7 +416,7 @@ watch(() => props.userID, async (newUserID) => {
           :disabled="!strategyPicker"
           class="action-btn delete-btn"
         >
-          🗑️ Delete
+          🗑️
         </n-button>
         <n-button
           type="error"
@@ -415,7 +424,7 @@ watch(() => props.userID, async (newUserID) => {
           @click="handleDeleteAllStrategies"
           class="action-btn clear-all-btn"
         >
-          Clear All
+          ✕
         </n-button>
       </div>
     </div>
@@ -424,19 +433,6 @@ watch(() => props.userID, async (newUserID) => {
     <div v-else class="empty-state">
       <p>No strategies saved yet</p>
       <p class="empty-hint">Save your current configuration as a strategy to reuse it</p>
-    </div>
-
-    <!-- Save New Strategy Button -->
-    <div v-if="!showStrategyForm" class="save-button-section">
-      <n-button
-        type="primary"
-        size="small"
-        @click="showStrategyForm = true"
-        class="save-btn"
-        title="Save Current Configuration as Strategy"
-      >
-        💾
-      </n-button>
     </div>
 
     <!-- Strategy Form -->
