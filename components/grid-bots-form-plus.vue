@@ -639,7 +639,9 @@ onUnmounted(() => {
           deviationAmountSell,
           usePriceGroup,
           priceGroupBuy,
-          priceGroupSell
+          priceGroupSell,
+          symbol: currentSymbol,
+          exchange: currentExchange
         }"
         @apply-strategy="handleStrategyApplied"
       />

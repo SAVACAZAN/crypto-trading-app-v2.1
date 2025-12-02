@@ -123,15 +123,29 @@ async function saveStrategy() {
       }
     }
 
-    // Handle null props by getting values from formData or defaults
-    const exchangeValue = props.exchange || 'coinbaseadvanced';
-    const symbolValue = props.symbol || 'BTC/USD';
+    // Handle null props by getting values from formData - NO HARDCODED DEFAULTS
+    // Priority: props > formData > REQUIRE USER INPUT
+    const formDataExchange = props.formData?.exchange?.value ?? props.formData?.exchange;
+    const formDataSymbol = props.formData?.symbol?.value ?? props.formData?.symbol;
+
+    const exchangeValue = props.exchange || formDataExchange;
+    const symbolValue = props.symbol || formDataSymbol;
+
+    // REQUIRE both exchange and symbol - refuse to save with defaults
+    if (!exchangeValue || !symbolValue) {
+      console.error('❌ Cannot save strategy: Exchange or Symbol is missing');
+      console.error('  - exchange:', exchangeValue);
+      console.error('  - symbol:', symbolValue);
+      alert('❌ Error: Exchange or Trading Pair is not available. Please select a valid pair and try again.');
+      return;
+    }
+
     const bestBidValue = props.bestBid !== null ? props.bestBid : 0;
     const bestAskValue = props.bestAsk !== null ? props.bestAsk : 0;
 
     console.log('📊 Calling addStrategy with:');
-    console.log('  - exchange:', exchangeValue);
-    console.log('  - symbol:', symbolValue);
+    console.log('  - exchange:', exchangeValue, '(from: props=' + props.exchange + ', formData=' + formDataExchange + ')');
+    console.log('  - symbol:', symbolValue, '(from: props=' + props.symbol + ', formData=' + formDataSymbol + ')');
     console.log('  - bestBid:', bestBidValue);
     console.log('  - bestAsk:', bestAskValue);
 
@@ -177,12 +191,26 @@ async function handleApplyStrategy() {
   try {
     console.log('🚀 Applying strategy with userID:', userID);
 
-    // Use defaults if props are not available
-    const exchangeValue = props.exchange || 'coinbaseadvanced';
-    const symbolValue = props.symbol || 'BTC/USD';
+    // Get values from props or formData - NO HARDCODED DEFAULTS
+    // Priority: props > formData > REQUIRE USER INPUT
+    const formDataExchange = props.formData?.exchange?.value ?? props.formData?.exchange;
+    const formDataSymbol = props.formData?.symbol?.value ?? props.formData?.symbol;
+
+    const exchangeValue = props.exchange || formDataExchange;
+    const symbolValue = props.symbol || formDataSymbol;
+
+    // REQUIRE both exchange and symbol - refuse to apply with defaults
+    if (!exchangeValue || !symbolValue) {
+      console.error('❌ Cannot apply strategy: Exchange or Symbol is missing');
+      console.error('  - exchange:', exchangeValue);
+      console.error('  - symbol:', symbolValue);
+      alert('❌ Error: Exchange or Trading Pair is not available. Please select a valid pair and try again.');
+      return;
+    }
 
     console.log('📌 Using exchange:', exchangeValue, '| symbol:', symbolValue);
     console.log('   (props.exchange:', props.exchange, '| props.symbol:', props.symbol, ')');
+    console.log('   (formData.exchange:', formDataExchange, '| formData.symbol:', formDataSymbol, ')');
 
     const appliedData = await applyStrategy(
       strategyPicker.value,
