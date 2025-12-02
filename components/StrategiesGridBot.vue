@@ -767,7 +767,7 @@ watch(() => props.userID, async (newUserID) => {
 .tooltip-content {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 1px !important;
   width: auto !important;
   justify-content: center !important;
   align-items: flex-start !important;
@@ -780,8 +780,8 @@ watch(() => props.userID, async (newUserID) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 9px;
-  gap: 3px;
+  font-size: 7px;
+  gap: 2px;
   width: auto;
   white-space: nowrap;
 }
@@ -818,7 +818,7 @@ watch(() => props.userID, async (newUserID) => {
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   font-weight: 500;
-  font-size: 9px;
+  font-size: 7px;
   text-align: right;
   flex: 0 1 auto;
 }
