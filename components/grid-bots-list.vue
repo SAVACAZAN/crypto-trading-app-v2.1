@@ -539,7 +539,11 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (orderListInterval) {
-    clearIntervalAsync(orderListInterval);
+    try {
+      clearIntervalAsync(orderListInterval);
+    } catch (error) {
+      console.warn('Error clearing interval:', error);
+    }
   }
 });
 

@@ -9,11 +9,11 @@ const props = defineProps({
   },
   exchange: {
     type: String,
-    required: true
+    default: null
   },
   symbol: {
     type: String,
-    required: true
+    default: null
   },
   bestBid: {
     type: Number,
