@@ -191,26 +191,26 @@ async function handleApplyStrategy() {
   try {
     console.log('🚀 Applying strategy with userID:', userID);
 
-    // Get values from props or formData - NO HARDCODED DEFAULTS
-    // Priority: props > formData > REQUIRE USER INPUT
+    // Get values from props or formData - ALLOW APPLYING ON ANY PAIR
+    // Priority: props > formData > fallback to stored strategy pair
     const formDataExchange = props.formData?.exchange?.value ?? props.formData?.exchange;
     const formDataSymbol = props.formData?.symbol?.value ?? props.formData?.symbol;
 
     const exchangeValue = props.exchange || formDataExchange;
     const symbolValue = props.symbol || formDataSymbol;
 
-    // REQUIRE both exchange and symbol - refuse to apply with defaults
-    if (!exchangeValue || !symbolValue) {
-      console.error('❌ Cannot apply strategy: Exchange or Symbol is missing');
-      console.error('  - exchange:', exchangeValue);
-      console.error('  - symbol:', symbolValue);
-      alert('❌ Error: Exchange or Trading Pair is not available. Please select a valid pair and try again.');
+    // Log what we found
+    console.log('📌 Applying strategy with pair:');
+    console.log('  - exchangeValue:', exchangeValue, '(from props=' + props.exchange + ' or formData=' + formDataExchange + ')');
+    console.log('  - symbolValue:', symbolValue, '(from props=' + props.symbol + ' or formData=' + formDataSymbol + ')');
+
+    // Only require exchange/symbol if we're saving - for APPLYING, we can use stored pair
+    // The applyStrategy composable will handle fallbacks
+    if (!strategyPicker.value) {
+      console.error('❌ No strategy selected');
+      alert('❌ Error: Please select a strategy first.');
       return;
     }
-
-    console.log('📌 Using exchange:', exchangeValue, '| symbol:', symbolValue);
-    console.log('   (props.exchange:', props.exchange, '| props.symbol:', props.symbol, ')');
-    console.log('   (formData.exchange:', formDataExchange, '| formData.symbol:', formDataSymbol, ')');
 
     const appliedData = await applyStrategy(
       strategyPicker.value,

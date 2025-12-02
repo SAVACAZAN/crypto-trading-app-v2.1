@@ -213,12 +213,15 @@ export function useStrategyGridBot() {
       }
 
       const strategyPair = strategy.pairs[0];
+      // ALWAYS use current symbol/exchange if provided - allows applying strategy on ANY pair
+      // Only use saved pair as fallback if current is not available
       const exchangeValue = currentExchange || strategyPair.exchange || 'coinbaseadvanced';
       const symbolValue = currentSymbol || strategyPair.symbol || 'BTC/USD';
 
       console.log('📊 Fetching order book with:');
-      console.log('  - exchange:', exchangeValue);
-      console.log('  - symbol:', symbolValue);
+      console.log('  - exchange:', exchangeValue, '(current=' + currentExchange + ', saved=' + strategyPair.exchange + ')');
+      console.log('  - symbol:', symbolValue, '(current=' + currentSymbol + ', saved=' + strategyPair.symbol + ')');
+      console.log('💡 NOTE: Strategy will use current pair prices, not saved pair prices');
 
       // Get current prices from market
       const orderBookResponse = await $fetch('/api/v1/fetchOrderBook', {
