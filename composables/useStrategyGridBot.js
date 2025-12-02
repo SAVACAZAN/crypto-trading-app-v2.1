@@ -201,18 +201,40 @@ export function useStrategyGridBot() {
   async function applyStrategy(strategyId, currentExchange, currentSymbol, userID) {
     try {
       console.log('🚀 Applying strategy...');
+      console.log('  - strategyId:', strategyId);
+      console.log('  - currentExchange:', currentExchange);
+      console.log('  - currentSymbol:', currentSymbol);
+
+      // Get the strategy to find its symbol if not provided
+      const strategy = strategiesList.value.find(s => s._id === strategyId);
+      if (!strategy || !strategy.pairs || strategy.pairs.length === 0) {
+        console.error('❌ Strategy not found or has no pairs');
+        return null;
+      }
+
+      const strategyPair = strategy.pairs[0];
+      const exchangeValue = currentExchange || strategyPair.exchange || 'coinbaseadvanced';
+      const symbolValue = currentSymbol || strategyPair.symbol || 'BTC/USD';
+
+      console.log('📊 Fetching order book with:');
+      console.log('  - exchange:', exchangeValue);
+      console.log('  - symbol:', symbolValue);
 
       // Get current prices from market
       const orderBookResponse = await $fetch('/api/v1/fetchOrderBook', {
         query: {
           userID,
-          exchange: currentExchange,
-          symbol: currentSymbol
+          exchange: exchangeValue,
+          symbol: symbolValue
         }
       });
 
+      console.log('📦 Order book response:', orderBookResponse);
+
       const bid = orderBookResponse.data?.bids?.[0]?.[0] || 0;
       const ask = orderBookResponse.data?.asks?.[0]?.[0] || 0;
+
+      console.log('💹 Extracted prices - bid:', bid, 'ask:', ask);
 
       // Apply strategy with current prices
       const response = await $fetch('/api/v1/Bots/applyGridBotStrategy', {
@@ -221,7 +243,7 @@ export function useStrategyGridBot() {
           userID,
           strategyId,
           currentPrices: [{
-            symbol: currentSymbol,
+            symbol: symbolValue,
             bid,
             ask
           }]

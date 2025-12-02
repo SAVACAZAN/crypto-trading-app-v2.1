@@ -176,10 +176,15 @@ async function handleApplyStrategy() {
 
   try {
     console.log('🚀 Applying strategy with userID:', userID);
+
+    // Use defaults if props are not available
+    const exchangeValue = props.exchange || 'coinbaseadvanced';
+    const symbolValue = props.symbol || 'BTC/USD';
+
     const appliedData = await applyStrategy(
       strategyPicker.value,
-      props.exchange,
-      props.symbol,
+      exchangeValue,
+      symbolValue,
       userID
     );
 
