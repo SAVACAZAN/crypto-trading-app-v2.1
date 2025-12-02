@@ -54,6 +54,7 @@ export function useStrategyGridBot() {
 
   /**
    * Select a strategy and load its parameters
+   * Handles both ref objects and plain values in formData
    */
   function selectStrategy(formData, selectedStrategyId) {
     const strategy = strategiesList.value.find(s => s._id === selectedStrategyId);
@@ -62,20 +63,31 @@ export function useStrategyGridBot() {
       console.log('📌 Strategy selected:', strategy.name);
       const pair = strategy.pairs[0]; // Use first pair for grid bot
 
+      // Helper to set form field values (handles both refs and plain values)
+      const setFormField = (field, value) => {
+        if (field && typeof field === 'object' && 'value' in field) {
+          // It's a ref object
+          field.value = value;
+        } else if (field !== undefined) {
+          // It's a plain value - try to update it, but this won't persist changes
+          console.warn('⚠️ Form field is not a ref, cannot update:', field);
+        }
+      };
+
       // Load configuration from strategy
-      formData.name.value = strategy.name;
-      formData.lowerPrice.value = pair.lowerPrice || '';
-      formData.upperPrice.value = pair.upperPrice || '';
-      formData.amountType.value = pair.amountType || 'incrementalPercent';
-      formData.amount.value = pair.amount || '';
-      formData.nrOfGrids.value = pair.grids || '';
-      formData.ordersSide.value = pair.ordersSide || 'buyOrSell';
-      formData.incrementalPercentAmountBuy.value = strategy.incBuy || '';
-      formData.incrementalPercentAmountSell.value = strategy.incSell || '';
-      formData.deviationPriceBuy.value = strategy.devPriceBuy || '';
-      formData.deviationPriceSell.value = strategy.devPriceSell || '';
-      formData.deviationAmountBuy.value = strategy.devAmtBuy || '';
-      formData.deviationAmountSell.value = strategy.devAmtSell || '';
+      setFormField(formData.name, strategy.name);
+      setFormField(formData.lowerPrice, pair.lowerPrice || '');
+      setFormField(formData.upperPrice, pair.upperPrice || '');
+      setFormField(formData.amountType, pair.amountType || 'incrementalPercent');
+      setFormField(formData.amount, pair.amount || '');
+      setFormField(formData.nrOfGrids, pair.grids || '');
+      setFormField(formData.ordersSide, pair.ordersSide || 'buyOrSell');
+      setFormField(formData.incrementalPercentAmountBuy, strategy.incBuy || '');
+      setFormField(formData.incrementalPercentAmountSell, strategy.incSell || '');
+      setFormField(formData.deviationPriceBuy, strategy.devPriceBuy || '');
+      setFormField(formData.deviationPriceSell, strategy.devPriceSell || '');
+      setFormField(formData.deviationAmountBuy, strategy.devAmtBuy || '');
+      setFormField(formData.deviationAmountSell, strategy.devAmtSell || '');
     }
   }
 
@@ -85,38 +97,81 @@ export function useStrategyGridBot() {
   async function addStrategy(formData, currentExchange, currentSymbol, bestBid, bestAsk, userID) {
     try {
       console.log('💾 Saving strategy...');
+      console.log('Strategy data:', { formData, currentExchange, currentSymbol, bestBid, bestAsk, userID });
 
-      // Calculate percentage offsets from bid/ask
+      // Handle both ref objects and plain values for form data fields
+      const getFormValue = (field) => field?.value ?? field;
+
+      const lowerPriceValue = getFormValue(formData.lowerPrice);
+      const upperPriceValue = getFormValue(formData.upperPrice);
+      const nameValue = getFormValue(formData.name);
+      const amountValue = getFormValue(formData.amount);
+      const nrOfGridsValue = getFormValue(formData.nrOfGrids);
+      const ordersSideValue = getFormValue(formData.ordersSide);
+      const amountTypeValue = getFormValue(formData.amountType);
+      const incBuyValue = getFormValue(formData.incrementalPercentAmountBuy);
+      const incSellValue = getFormValue(formData.incrementalPercentAmountSell);
+      const devPriceBuyValue = getFormValue(formData.deviationPriceBuy);
+      const devPriceSellValue = getFormValue(formData.deviationPriceSell);
+      const devAmtBuyValue = getFormValue(formData.deviationAmountBuy);
+      const devAmtSellValue = getFormValue(formData.deviationAmountSell);
+
+      // Validate required fields
+      if (!lowerPriceValue || !upperPriceValue) {
+        console.error('❌ Missing required fields: lowerPrice and/or upperPrice');
+        return;
+      }
+
+      // Handle both ref objects and plain values for exchange/symbol
+      const exchangeValue = currentExchange?.value || currentExchange;
+      const symbolValue = currentSymbol?.value || currentSymbol;
+
+      // Get actual market prices from bestBid/bestAsk
       const bid = parseFloat(bestBid) || 0;
       const ask = parseFloat(bestAsk) || 0;
-      const lowerPrice = parseFloat(formData.lowerPrice.value) || 0;
-      const upperPrice = parseFloat(formData.upperPrice.value) || 0;
+      const lowerPrice = parseFloat(lowerPriceValue) || 0;
+      const upperPrice = parseFloat(upperPriceValue) || 0;
 
+      console.log('💹 Market Prices from Ticker:');
+      console.log('  - bestBid:', bid);
+      console.log('  - bestAsk:', ask);
+      console.log('💹 User Configured Prices:');
+      console.log('  - lowerPrice:', lowerPrice);
+      console.log('  - upperPrice:', upperPrice);
+
+      // Calculate percentage offsets from actual market bid/ask
       const lowerPricePercent = bid > 0 ? ((lowerPrice - bid) / bid * 100) : -20;
       const upperPricePercent = ask > 0 ? ((upperPrice - ask) / ask * 100) : 1;
+
+      console.log('✍️ Form values extracted:');
+      console.log('  - name:', nameValue);
+      console.log('  - symbol:', symbolValue);
+      console.log('  - exchange:', exchangeValue);
+      console.log('  - amount:', amountValue);
+      console.log('  - nrOfGrids:', nrOfGridsValue);
 
       const response = await $fetch('/api/v1/Bots/saveGridBotStrategy', {
         method: 'POST',
         body: {
           userID,
-          name: formData.name.value,
+          name: nameValue,
           description: '',
           configName: 'Custom',
-          incBuy: parseFloat(formData.incrementalPercentAmountBuy.value) || 1,
-          incSell: parseFloat(formData.incrementalPercentAmountSell.value) || 1,
-          devPriceBuy: parseFloat(formData.deviationPriceBuy.value) || 1,
-          devPriceSell: parseFloat(formData.deviationPriceSell.value) || 1,
-          devAmtBuy: parseFloat(formData.deviationAmountBuy.value) || 0.9,
-          devAmtSell: parseFloat(formData.deviationAmountSell.value) || 0.9,
+          incBuy: parseFloat(incBuyValue) || 1,
+          incSell: parseFloat(incSellValue) || 1,
+          devPriceBuy: parseFloat(devPriceBuyValue) || 1,
+          devPriceSell: parseFloat(devPriceSellValue) || 1,
+          devAmtBuy: parseFloat(devAmtBuyValue) || 0.9,
+          devAmtSell: parseFloat(devAmtSellValue) || 0.9,
           pairs: [{
-            symbol: currentSymbol.value,
-            exchange: currentExchange.value,
-            ordersSide: formData.ordersSide.value || 'buyOrSell',
+            symbol: symbolValue,
+            exchange: exchangeValue,
+            ordersSide: ordersSideValue || 'buyOrSell',
             lowerPrice: lowerPrice,
             upperPrice: upperPrice,
-            amount: parseFloat(formData.amount.value) || 1.1,
-            grids: parseInt(formData.nrOfGrids.value) || 10,
-            amountType: formData.amountType.value || 'incrementalPercent',
+            amount: parseFloat(amountValue) || 1.1,
+            grids: parseInt(nrOfGridsValue) || 10,
+            amountType: amountTypeValue || 'incrementalPercent',
             bestBid: bid,
             bestAsk: ask
           }]
