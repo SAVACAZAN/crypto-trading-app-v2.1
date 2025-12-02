@@ -594,10 +594,12 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 .strategy-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .action-btn {
