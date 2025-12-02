@@ -181,6 +181,9 @@ async function handleApplyStrategy() {
     const exchangeValue = props.exchange || 'coinbaseadvanced';
     const symbolValue = props.symbol || 'BTC/USD';
 
+    console.log('📌 Using exchange:', exchangeValue, '| symbol:', symbolValue);
+    console.log('   (props.exchange:', props.exchange, '| props.symbol:', props.symbol, ')');
+
     const appliedData = await applyStrategy(
       strategyPicker.value,
       exchangeValue,
@@ -190,8 +193,11 @@ async function handleApplyStrategy() {
 
     if (appliedData) {
       // Emit event to parent component to update form
+      console.log('✅ Strategy applied successfully, emitting event');
       emit('apply-strategy', appliedData);
       alert(`✅ Strategy applied successfully!`);
+    } else {
+      console.warn('⚠️ Strategy application returned no data');
     }
   } catch (error) {
     console.error('Error applying strategy:', error);
