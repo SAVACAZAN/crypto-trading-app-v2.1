@@ -740,8 +740,8 @@ watch(() => props.userID, async (newUserID) => {
 .strategy-tooltip {
   padding: 0 !important;
   margin: 0 !important;
-  width: 95px !important;
-  height: 95px !important;
+  width: 48px !important;
+  height: 48px !important;
   clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%) !important;
   display: flex !important;
   align-items: center !important;
@@ -766,11 +766,11 @@ watch(() => props.userID, async (newUserID) => {
 .tooltip-content {
   display: flex !important;
   flex-direction: column !important;
-  gap: 1px !important;
-  width: 85px !important;
+  gap: 0px !important;
+  width: 40px !important;
   justify-content: center !important;
   align-items: flex-start !important;
-  padding: 4px !important;
+  padding: 2px !important;
   margin: 0 !important;
   background: transparent !important;
 }
@@ -779,8 +779,8 @@ watch(() => props.userID, async (newUserID) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 7px;
-  gap: 3px;
+  font-size: 4px;
+  gap: 1px;
   width: 100%;
   white-space: nowrap;
 }
@@ -817,7 +817,7 @@ watch(() => props.userID, async (newUserID) => {
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   font-weight: 500;
-  font-size: 8px;
+  font-size: 4px;
   text-align: right;
   flex: 0 1 auto;
 }
