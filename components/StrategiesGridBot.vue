@@ -620,6 +620,15 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 .delete-btn {
+  width: 35px !important;
+  height: 35px !important;
+  min-width: 35px !important;
+  min-height: 35px !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   background: rgba(250, 204, 21, 0.2) !important;
   border-color: #facc15 !important;
   color: #facc15 !important;
@@ -630,6 +639,15 @@ watch(() => props.userID, async (newUserID) => {
 }
 
 .clear-all-btn {
+  width: 35px !important;
+  height: 35px !important;
+  min-width: 35px !important;
+  min-height: 35px !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   background: rgba(239, 68, 68, 0.2) !important;
   border-color: #ef4444 !important;
   color: #ef4444 !important;
