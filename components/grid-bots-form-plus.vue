@@ -213,6 +213,12 @@ function generateRandomString(length = 20) {
 // Fetch balance for the selected symbol
 async function fetchBalanceForSymbol() {
   try {
+    // Guard: skip if userID is not available
+    if (!userID?.value) {
+      console.warn('⚠️ Cannot fetch balance: userID not available');
+      return;
+    }
+
     const exchange = currentExchange.value || 'coinbaseadvanced';
     const symbol = currentSymbol.value || 'LCX/USDC';
 
@@ -224,7 +230,7 @@ async function fetchBalanceForSymbol() {
       }
     });
 
-    if (response.data) {
+    if (response?.data) {
       BalanceBase.value = response.data.base || 0;
       BalanceQuote.value = response.data.quote || 0;
       BalanceBaseInUSD.value = response.data.baseInUSD || 0;
@@ -265,6 +271,12 @@ function handleStrategyApplied(appliedData) {
 }
 
 async function createGridBot(){
+  // Guard: verify userID is available
+  if (!userID?.value) {
+    console.error('❌ Cannot create bot: userID not available');
+    return;
+  }
+
   if (!selectedApiKeys.value || selectedApiKeys.value.length === 0) {
     console.error('No API Keys selected');
     return;
@@ -358,7 +370,13 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  clearIntervalAsync(orderBookInterval);
+  if (orderBookInterval) {
+    try {
+      clearIntervalAsync(orderBookInterval);
+    } catch (error) {
+      console.warn('Error clearing orderBook interval:', error);
+    }
+  }
 });
 
 </script>
@@ -655,10 +673,10 @@ onUnmounted(() => {
     <ClientOnly>
       <StrategiesGridBot
         :userID="userID?.value"
-        :exchange="currentExchange.value"
-        :symbol="currentSymbol.value"
-        :bestBid="bestBid.value"
-        :bestAsk="bestAsk.value"
+        :exchange="currentExchange?.value"
+        :symbol="currentSymbol?.value"
+        :bestBid="bestBid?.value"
+        :bestAsk="bestAsk?.value"
         :formData="{
           name,
           lowerPrice,
