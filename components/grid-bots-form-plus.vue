@@ -90,6 +90,11 @@ let initialDeviationApplied = false;
 
 async function fetchOrderBookPooling() {
   try {
+    // Guard: skip if missing required values
+    if (!userID?.value || !currentExchange?.value || !currentSymbol?.value) {
+      return;
+    }
+
     const orderBook = await $fetch('/api/v1/fetchOrderBook', {
       query: {
         userID: userID.value,
@@ -98,9 +103,9 @@ async function fetchOrderBookPooling() {
       },
     });
 
-    if (orderBook.data) {
-      bestBid.value = orderBook.data.bids.length > 0 ? orderBook.data.bids[0][0] : null;
-      bestAsk.value = orderBook.data.asks.length > 0 ? orderBook.data.asks[0][0] : null;
+    if (orderBook?.data) {
+      bestBid.value = orderBook.data.bids?.length > 0 ? orderBook.data.bids[0][0] : null;
+      bestAsk.value = orderBook.data.asks?.length > 0 ? orderBook.data.asks[0][0] : null;
 
       // Update current price from order book
       if (bestBid.value && bestAsk.value) {

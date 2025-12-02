@@ -10,7 +10,9 @@
       "Bash(awk:*)",
       "Bash(curl:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)",
+      "Bash(timeout 10 npm run dev:*)"
     ],
     "deny": [],
     "ask": []
