@@ -7,11 +7,11 @@ const app = useAppStore()
 
 let userID = useCookie('userID');
 
-let currentExchange = ref(app.getUserSelectedExchange);
-let currentSymbol = ref(app.getUserSelectedMarket);
+let currentExchange = ref(app.getUserSelectedExchange || 'coinbaseadvanced');
+let currentSymbol = ref(app.getUserSelectedMarket || 'BTC/USD');
 
-let base = currentSymbol.value.split('/')[0];
-let quote = currentSymbol.value.split('/')[1];
+let base = currentSymbol.value ? currentSymbol.value.split('/')[0] : 'BTC';
+let quote = currentSymbol.value ? currentSymbol.value.split('/')[1] : 'USD';
 
 // API Key selector - MULTIPLE SELECTION
 let availableApiKeys = ref([]);

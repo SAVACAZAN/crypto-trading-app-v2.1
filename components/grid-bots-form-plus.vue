@@ -15,14 +15,14 @@ const {
 
 let userID = useCookie('userID');
 
-let currentExchange = ref(app.getUserSelectedExchange);
-let currentSymbol = ref(app.getUserSelectedMarket);
+let currentExchange = ref(app.getUserSelectedExchange || 'coinbaseadvanced');
+let currentSymbol = ref(app.getUserSelectedMarket || 'BTC/USD');
 
 // API Keys - READ FROM STORE (set in grid-bots-list.vue)
 const selectedApiKeys = computed(() => app.getSelectedApiKeys);
 
-let base = currentSymbol.value.split('/')[0];
-let quote = currentSymbol.value.split('/')[1];
+let base = currentSymbol.value ? currentSymbol.value.split('/')[0] : 'BTC';
+let quote = currentSymbol.value ? currentSymbol.value.split('/')[1] : 'USD';
 const bestBid = ref(null);
 const bestAsk = ref(null);
 const manualLowerPrice = ref('');
