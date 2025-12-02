@@ -596,7 +596,8 @@ watch(() => props.userID, async (newUserID) => {
 .strategy-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
 }
 
 .action-btn {
