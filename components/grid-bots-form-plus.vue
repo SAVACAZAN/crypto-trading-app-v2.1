@@ -756,6 +756,8 @@ onUnmounted(() => {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 8px;
+  display: block;
+  overflow-x: auto;
 }
 
 .config-row {
