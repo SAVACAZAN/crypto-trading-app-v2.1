@@ -740,8 +740,8 @@ watch(() => props.userID, async (newUserID) => {
 .strategy-tooltip {
   padding: 0 !important;
   margin: 0 !important;
-  width: 48px !important;
-  height: 48px !important;
+  width: 67px !important;
+  height: 67px !important;
   clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%) !important;
   display: flex !important;
   align-items: center !important;
@@ -750,6 +750,7 @@ watch(() => props.userID, async (newUserID) => {
   background: #000000 !important;
   border: none !important;
   box-shadow: none !important;
+  position: relative !important;
 }
 
 .tooltip-title {
@@ -767,10 +768,10 @@ watch(() => props.userID, async (newUserID) => {
   display: flex !important;
   flex-direction: column !important;
   gap: 0px !important;
-  width: 40px !important;
+  width: 55px !important;
   justify-content: center !important;
   align-items: flex-start !important;
-  padding: 2px !important;
+  padding: 3px !important;
   margin: 0 !important;
   background: transparent !important;
 }
@@ -779,7 +780,7 @@ watch(() => props.userID, async (newUserID) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 4px;
+  font-size: 5px;
   gap: 1px;
   width: 100%;
   white-space: nowrap;
@@ -817,7 +818,7 @@ watch(() => props.userID, async (newUserID) => {
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
   font-weight: 500;
-  font-size: 4px;
+  font-size: 5px;
   text-align: right;
   flex: 0 1 auto;
 }
@@ -919,6 +920,22 @@ watch(() => props.userID, async (newUserID) => {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure no background appears around tooltip */
+:deep(.n-popover__content-wrapper) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+:deep(.n-popover__content-inner) {
+  background: transparent !important;
+  border: none !important;
   padding: 0 !important;
   margin: 0 !important;
 }
