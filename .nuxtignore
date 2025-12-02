@@ -1,0 +1,6 @@
+# Ignore backup wallet files
+server/api/v1/_BACKUP_WALLETS
+server/utils/bitcoinWalletGenerator.js
+server/utils/walletGenerators
+pages/wallet
+pages/TestNetWallet

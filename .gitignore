@@ -5,6 +5,12 @@
 .cache
 dist
 
+# Electron build outputs
+dist-electron
+windows-build/mongodb/bin
+windows-build/mongodb/data
+windows-build/mongodb/logs
+
 # Node dependencies
 node_modules
 

@@ -10,7 +10,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('Grid Bots Library Loaded...');
+    console.log('Dkd Bots Library Loaded...');
 
     nitroApp.DkdBotLib = {
         async createBot(data) {
@@ -128,16 +128,17 @@ export default defineNitroPlugin((nitroApp) => {
         
                         console.log(`▶️ \x1b[34m==> ${exchange}   \x1b[33m${bot.symbol}\x1b[37m-->${priceColor}${price}🛡️->${sideColor}${side} ${amountColor}${amount}\x1b[37m 👽 --->${newSideColor}${newSide}${newPriceColor}${newPrice}✨<--<-✒️->${newAmountColor}${newAmount}\x1b[37m<-✒️->---->limit false`);
         
+                        // Save the ORIGINAL filled order (with original side) to filledOrders FIRST
                         let filledOrders = bot.filledOrders;
-        
-                        // Adăugăm orderul în lista de ordine finalizate
-                        filledOrders.push(bot.activeOrders[gridOrdersIndex]);
-        
-                        // Actualizăm informațiile despre order
+                        const originalFilledOrder = { ...bot.activeOrders[gridOrdersIndex] };
+                        filledOrders.push(originalFilledOrder);
+
+                        // THEN update the active order with the NEW inverse order data
+                        // Use the calculated values (newPrice, newAmount, newSide) instead of response data
                         bot.activeOrders[gridOrdersIndex].id = newOrderResponse.data.id;
-                        bot.activeOrders[gridOrdersIndex].price = newOrderResponse.data.price;
-                        bot.activeOrders[gridOrdersIndex].side = newOrderResponse.data.side;
-                        bot.activeOrders[gridOrdersIndex].amount = newOrderResponse.data.amount;
+                        bot.activeOrders[gridOrdersIndex].price = newPrice;
+                        bot.activeOrders[gridOrdersIndex].side = newSide;
+                        bot.activeOrders[gridOrdersIndex].amount = newAmount;
         
                         // Actualizăm schema din baza de date cu ordinele active și cele finalizate
                         await DkdBotSchema.updateOne({ _id: bot._id }, { activeOrders: bot.activeOrders, filledOrders: filledOrders });

@@ -503,77 +503,79 @@ onMounted(() => {
 
       <n-gi>
                   <table>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.0001)">  - </n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.001)">  + </n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.005)">  - 0.5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.005)">  + 0.5%</n-button>
-                    </td>
-                  </tr>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.0001)">  - </n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.001)">  + </n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.005)">  - 0.5%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.005)">  + 0.5%</n-button>
+                        </td>
+                      </tr>
 
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.01)">  - 1%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.01)">  + 1%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.02)">  - 2%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.02)">  + 2%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.03)">  - 3%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.03)">  + 3%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.05)">  - 5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.05)">  + 5%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.07)">  - 7%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.07)">  + 7%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.09)">  - 9%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.09)">  + 9%</n-button>
-                    </td>
-                  </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.01)">  - 1%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.01)">  + 1%</n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.02)">  - 2%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.02)">  + 2%</n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.03)">  - 3%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.03)">  + 3%</n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.05)">  - 5%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.05)">  + 5%</n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.07)">  - 7%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.07)">  + 7%</n-button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <n-button @click="updateLowerPrice(0.09)">  - 9%</n-button>
+                        </td>
+                        <td>
+                          <n-button @click="updateUpperPrice(0.09)">  + 9%</n-button>
+                        </td>
+                      </tr>
+                    </tbody>
                 </table>
       </n-gi>
 
       <n-gi>
                   <table>
-
+                    <tbody>
                     <tr>
                       <td>
                         <n-button @click="updateLowerPrice(0.1)">  - 10%</n-button>
@@ -638,6 +640,7 @@ onMounted(() => {
                         <n-button @click="updateUpperPrice(0.9)">  + 90%</n-button>
                       </td>
                     </tr>
+                    </tbody>
                   </table>
       </n-gi>
 

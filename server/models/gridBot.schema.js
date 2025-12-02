@@ -91,6 +91,7 @@ export const gridBotSchema = defineMongooseModel({
             }
         },
         BalanceBot: {
+            // Balances in grid bot orders (current)
             BalanceBase: {
                 type: String,
                 required: false
@@ -107,6 +108,24 @@ export const gridBotSchema = defineMongooseModel({
                 type: String,
                 required: false
             },
+            // Total balance snapshot at bot creation (free + used)
+            BalanceBaseTotalAtStart: {
+                type: String,
+                required: false
+            },
+            BalanceQuoteTotalAtStart: {
+                type: String,
+                required: false
+            },
+            BalanceBaseFreeAtStart: {
+                type: String,
+                required: false
+            },
+            BalanceQuoteFreeAtStart: {
+                type: String,
+                required: false
+            },
+            // Profit tracking
             BalanceBaseProfit: {
                 type: String,
                 required: false
@@ -167,6 +186,39 @@ export const gridBotSchema = defineMongooseModel({
         filledOrders: {
             type: Array,
             required: true
+        },
+        // Grid statistics - tracks fills per price level
+        gridStats: {
+            type: Array,
+            required: false,
+            default: []
+            // Structure: [
+            //   {
+            //     price: 0.03,
+            //     side: 'buy',
+            //     fillCount: 50,
+            //     totalVolume: 5000,
+            //     totalProfit: 25.50,
+            //     lastFilledAt: Date,
+            //     firstFilledAt: Date
+            //   }
+            // ]
+        },
+        // RSI values at bot creation time (multi-timeframe)
+        rsiAtCreation: {
+            '1m': { type: Number, required: false },
+            '5m': { type: Number, required: false },
+            '15m': { type: Number, required: false },
+            '30m': { type: Number, required: false },
+            '1h': { type: Number, required: false },
+            '2h': { type: Number, required: false },
+            '6h': { type: Number, required: false },
+            '1d': { type: Number, required: false }
+        },
+        // Current price at bot creation
+        priceAtCreation: {
+            type: Number,
+            required: false
         }
     }
 });

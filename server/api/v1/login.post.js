@@ -17,8 +17,9 @@ export default defineEventHandler(async (event) => {
 
     setCookie(event, 'token', token);
     setCookie(event, 'userID', user._id);
+    setCookie(event, 'username', user.username);
     setCookie(event, 'referralCode', user.referralCode);
-    setCookie(event, 'referredBy', user.referredBy);
+    setCookie(event, 'referredBy', user.referredBy || 'Direct');
 
 
     return {

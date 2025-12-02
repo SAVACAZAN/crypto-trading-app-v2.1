@@ -1,661 +1,708 @@
 <script setup>
+import { ref, onMounted, computed } from 'vue';
 import { useAppStore } from '~/stores/app.store';
-import {ref} from "vue";
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
-const app = useAppStore()
 
+const app = useAppStore();
 let userID = useCookie('userID');
 
-let currentExchange = ref(app.getUserSelectedExchange);
-let currentSymbol = ref(app.getUserSelectedMarket);
-
-let base = currentSymbol.value.split('/')[0];
-let quote = currentSymbol.value.split('/')[1];
-const bestBid = ref(null);
-const bestAsk = ref(null);
-const manualLowerPrice = ref('');
-const manualUpperPrice = ref('');
-
-let name = ref(`machinelearning_${generateRandomString(5)}`);
-let strategyPicker = ref();
-let strategyPickerOptions = ref([]);
-let lowerPrice = ref('');
-let upperPrice = ref('');
-let PriceStart = ref('');
-let amountPriceStart = ref('');
-let amountType = ref('incrementalPercent');
-let amountTypeOptions = [
- 
-  { value: 'totalAmount', label:'Total Amount'},
-  { value: 'incrementalPercent', label:'Incremental Amount'}
-];
-let amount = ref('');
-let nrOfGrids = ref('');
-let ordersSide = ref('buyOrSell');
-let ordersSideOptions = [
-  { value: 'buyOnly', label: 'Buy Only' },
-  { value: 'sellOnly', label: 'Sell Only' },
-];
-let incrementalPercentAmountBuy = ref('');
-let incrementalPercentAmountSell = ref('');
-
-let ActiveRANGE = ref(false);
-
-
-
-let orderBookInterval = null;
-
-// Starea pentru a ține evidența dacă devierea inițială a fost aplicată sau nu
-let initialDeviationApplied = false;
-
-onMounted(() => {
-  orderBookInterval = setIntervalAsync(fetchOrderBookPooling, 500);
+// Bot Collections State
+const botCollections = ref({
+  gridBots: [],
+  frontRunBots: [],
+  scalpingBots: [],
+  oneClickBots: [],
+  fibBots: [],
+  aiBots: [],
+  coPilotBots: [],
+  oneYearBots: [],
+  grinderBots: [],
+  orderBookBots: [],
+  pumpDumpBots: []
 });
 
-onUnmounted(() => {
-  clearIntervalAsync(orderBookInterval);
+// Bot Stats
+const botStats = ref({
+  total: 0,
+  running: 0,
+  paused: 0,
+  stopped: 0,
+  profit: 0,
+  loss: 0
 });
 
-async function fetchOrderBookPooling() {
+// Selected Bot Type Filter
+const selectedBotType = ref('all');
+const botTypeOptions = [
+  { value: 'all', label: '🎯 All Bots', icon: '🎯' },
+  { value: 'gridBots', label: '📊 GridBot', icon: '📊', color: '#00ff88' },
+  { value: 'frontRunBots', label: '🏃 FrontRun', icon: '🏃', color: '#ff6b6b' },
+  { value: 'scalpingBots', label: '⚡ Scalping', icon: '⚡', color: '#ffd700' },
+  { value: 'oneClickBots', label: '🖱️ OneClick', icon: '🖱️', color: '#4ecdc4' },
+  { value: 'fibBots', label: '📈 FibBot', icon: '📈', color: '#95e1d3' },
+  { value: 'aiBots', label: '🧠 AI Bot', icon: '🧠', color: '#a8e6cf' },
+  { value: 'coPilotBots', label: '✈️ Co-Pilot', icon: '✈️', color: '#ffa07a' },
+  { value: 'oneYearBots', label: '📅 1YearBot', icon: '📅', color: '#dda0dd' },
+  { value: 'grinderBots', label: '⚙️ Grinder', icon: '⚙️', color: '#87ceeb' },
+  { value: 'orderBookBots', label: '📖 OrderBook', icon: '📖', color: '#98d8c8' },
+  { value: 'pumpDumpBots', label: '💥 Pump&Dump', icon: '💥', color: '#ff1744' }
+];
+
+// Command States
+const isExecutingCommand = ref(false);
+const lastCommand = ref('');
+
+// Correlation & Distribution Analysis
+const correlationData = ref({
+  volumeSpike: 0,
+  priceDeviation: 0,
+  orderBookImbalance: 0,
+  suspiciousActivity: false
+});
+
+// Real-time monitoring
+const monitoringActive = ref(false);
+let monitoringInterval = null;
+
+// Fetch all bots from all collections
+async function fetchAllBots() {
   try {
-    const orderBook = await $fetch('/api/v1/fetchOrderBook', {
-      query: {
-        userID: userID.value,
-        exchange: currentExchange.value,
-        symbol: currentSymbol.value,
-      },
+    // Fetch GridBots
+    const gridBotsRes = await $fetch('/api/v1/fetchGridBots', {
+      query: { userID: userID.value }
     });
+    botCollections.value.gridBots = gridBotsRes.data || [];
 
-    if (orderBook.data) {
-      bestBid.value = orderBook.data.bids.length > 0 ? orderBook.data.bids[0][0] : null;
-      bestAsk.value = orderBook.data.asks.length > 0 ? orderBook.data.asks[0][0] : null;
-    }
+    // Fetch FrontRun Bots
+    const frontRunRes = await $fetch('/api/v1/fetchFrontRunBots', {
+      query: { userID: userID.value }
+    });
+    botCollections.value.frontRunBots = frontRunRes.data || [];
+
+    // Fetch OneClick Bots
+    const oneClickRes = await $fetch('/api/v1/fetchOneClickBots', {
+      query: { userID: userID.value }
+    });
+    botCollections.value.oneClickBots = oneClickRes.data || [];
+
+    // Fetch FibBots
+    const fibBotsRes = await $fetch('/api/v1/fetchFibBots', {
+      query: { userID: userID.value }
+    });
+    botCollections.value.fibBots = fibBotsRes.data || [];
+
+    // Calculate stats
+    calculateBotStats();
   } catch (error) {
-    console.error('Error fetching order book:', error);
+    console.error('Error fetching bots:', error);
   }
 }
 
-// Funcția pentru actualizarea prețului minim
-function updateLowerPrice(deviationPercentage = 0.01) {
-  if (bestBid.value) {
-    const newValue = (bestBid.value * (1 - deviationPercentage)).toFixed(3).toString();
-    console.log(`Update Lower Price Button Clicked. New Value with ${deviationPercentage * 100}% deviation:`, newValue);
-    manualLowerPrice.value = newValue;
-    //  și lowerPrice automat
-    lowerPrice.value = newValue;
-    PriceStart.value = newValue;
-  }
-}
+// Calculate bot statistics
+function calculateBotStats() {
+  let total = 0;
+  let running = 0;
+  let totalProfit = 0;
 
-// Funcția pentru actualizarea prețului maxim
-function updateUpperPrice(deviationPercentage = 0.01) {
-  if (bestAsk.value) {
-    const newValue = (bestAsk.value * (1 + deviationPercentage)).toFixed(3).toString();
-    console.log(`Update Upper Price Button Clicked. New Value with ${deviationPercentage * 100}% deviation:`, newValue);
-    manualUpperPrice.value = newValue;
-    //  și upperPrice automat
-    upperPrice.value = newValue;
-    PriceStart.value = newValue;
-  }
-}
-
-// Funcția pentru aplicarea devierii inițiale la încărcarea paginii
-function applyInitialDeviation() {
-  if (!initialDeviationApplied) {
-    updateLowerPrice();
-    updateUpperPrice();
-    initialDeviationApplied = true; // Marchează devierea inițială ca aplicată
-  }
-}
-// Funcția pentru gestionarea introducerii de date în celula pentru prețul minim
-function handleManualLowerPriceInput(event) {
-  const newValue = event.target.innerText.trim();
-  if (/^\d*\.?\d*$/.test(newValue)) {
-    manualLowerPrice.value = newValue;
-  } else {
-    event.target.innerText = manualLowerPrice.value; // Restaură valoarea anterioară
-  }
-}
-
-// Funcția pentru gestionarea introducerii de date în celula pentru prețul maxim
-function handleManualUpperPriceInput(event) {
-  const newValue = event.target.innerText.trim();
-  if (/^\d*\.?\d*$/.test(newValue)) {
-    manualUpperPrice.value = newValue;
-  } else {
-    event.target.innerText = manualUpperPrice.value; // Restaură valoarea anterioară
-  }
-}
-
-
-
-function generateRandomString(length = 20) {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let randomString = '';
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    randomString += characters[randomIndex];
-  }
-
-  return randomString;
-}
-
-
-async function selectStrategy() {
-  console.log('selecting');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStoreFibBot'));
-
-  for (let i = 0; i < strategiesStore.length; i++) {
-    if (strategiesStore[i].name === strategyPicker.value) {
-      console.log('strategy selected: ', strategiesStore[i]);
-
-      name.value = strategiesStore[i].name;
-      // currentExchange.value = strategiesStore[i].currentExchange;
-      // currentSymbol.value = strategiesStore[i].currentSymbol;
-      PriceStart.value = strategiesStore[i].PriceStart;
-      amountPriceStart.value = strategiesStore[i].amountPriceStart;
-
-      lowerPrice.value = strategiesStore[i].lowerPrice;
-      upperPrice.value = strategiesStore[i].upperPrice;
-      amountType.value = strategiesStore[i].amountType;
-      amount.value = strategiesStore[i].amount;
-      nrOfGrids.value = strategiesStore[i].nrOfGrids;
-      ordersSide.value = strategiesStore[i].ordersSide;
-      incrementalPercentAmountBuy.value = strategiesStore[i].incrementalPercentAmountBuy;
-      incrementalPercentAmountSell.value = strategiesStore[i].incrementalPercentAmountSell;
-
-
-    }
-  }
-}
-
-async function addStrategy() {
-  console.log('adding');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStoreFibBot'));
-
-  let newStrategy = {
-    name: name.value,
-    exchange: currentExchange.value,
-    symbol: currentSymbol.value,
-    PriceStart: PriceStart.value,
-    amountPriceStart:amountPriceStart.value,
-    lowerPrice: lowerPrice.value,
-    upperPrice: upperPrice.value,
-    amountType: amountType.value,
-    amount: amount.value,
-    nrOfGrids: nrOfGrids.value,
-    ordersSide: ordersSide.value,
-    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
-    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
-
-  };
-
-  //push in store
-  if (strategiesStore !== null) {
-    if (strategiesStore.length > 0) {
-      for (let i = 0; i < strategiesStore.length ; i++) {
-        console.log('?????: ', strategiesStore[i].name,  newStrategy.name);
-        if (strategiesStore[i].name !== newStrategy.name) {
-          strategiesStore.push(newStrategy);
-        }
+  Object.values(botCollections.value).forEach(collection => {
+    total += collection.length;
+    collection.forEach(bot => {
+      if (bot.status === 'running') running++;
+      if (bot.BalanceBot?.BalanceBotProfit) {
+        totalProfit += parseFloat(bot.BalanceBot.BalanceBotProfit) || 0;
       }
-    } else {
-      strategiesStore.push(newStrategy);
-    }
-  } else {
-    strategiesStore = [newStrategy];
-  }
-
-  localStorage.setItem('strategiesStoreFibBot', JSON.stringify(strategiesStore));
-
-  //push in options list
-  strategyPickerOptions.value.push({
-    value: newStrategy.name,
-    label: newStrategy.name
+    });
   });
 
-  //set in select
-  strategyPicker.value = newStrategy.name;
+  botStats.value.total = total;
+  botStats.value.running = running;
+  botStats.value.paused = 0;
+  botStats.value.stopped = total - running;
+  botStats.value.profit = totalProfit > 0 ? totalProfit : 0;
+  botStats.value.loss = totalProfit < 0 ? Math.abs(totalProfit) : 0;
 }
 
-async function editStrategy() {
-  console.log('editing');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStoreFibBot'));
-
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length ; i++) {
-      if (strategiesStore[i].name === strategyPicker.value) {
-        strategiesStore[i]. PriceStart = PriceStart.value;
-        strategiesStore[i]. amountPriceStart = amountPriceStart.value;
-        
-        strategiesStore[i].lowerPrice = lowerPrice.value;
-        strategiesStore[i].upperPrice = upperPrice.value;
-        strategiesStore[i].amountType = amountType.value;
-        strategiesStore[i].amount = amount.value;
-        strategiesStore[i].nrOfGrids = nrOfGrids.value;
-        strategiesStore[i].ordersSide = ordersSide.value;
-        strategiesStore[i].incrementalPercentAmountBuy = incrementalPercentAmountBuy.value;
-        strategiesStore[i].incrementalPercentAmountSell = incrementalPercentAmountSell.value;
-  
-      }
-    }
+// Get all bots or filtered by type
+const displayedBots = computed(() => {
+  if (selectedBotType.value === 'all') {
+    return Object.entries(botCollections.value).flatMap(([type, bots]) =>
+      bots.map(bot => ({ ...bot, botType: type }))
+    );
   }
-
-  localStorage.setItem('strategiesStoreFibBot', JSON.stringify(strategiesStore));
-}
-
-async function deleteStrategy() {
-  console.log('deleting');
-
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStoreFibBot'));
-
-  //deleting from store
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length ; i++) {
-      if (strategiesStore[i].name === strategyPicker.value) {
-        strategiesStore.splice(i, 1);
-      }
-    }
-  }
-
-  //deleting from strategy picker options
-  for (let i = 0; i < strategyPickerOptions.value.length ; i++) {
-    if (strategyPickerOptions.value[i].label === strategyPicker.value) {
-      strategyPickerOptions.value.splice(i, 1);
-    }
-  }
-
-  //deleting from strategy picker
-  strategyPicker.value = '';
-
-  //reset form??
-  PriceStart.value = '';
-  amountPriceStart.value = '';
-  lowerPrice.value = '';
-  upperPrice.value = '';
-  amountType.value = 'quantityPerGrid';
-  amount.value = '';
-  nrOfGrids.value = '';
-  ordersSide.value = 'buyOrSell';
-  incrementalPercentAmountBuy.value = '';
-  incrementalPercentAmountSell.value = '';
-
-
-  localStorage.setItem('strategiesStoreFibBot', JSON.stringify(strategiesStore));
-}
-
-async function deleteAllStrategies() {
-  console.log('deleting all strategies');
-
-  // Clear the strategiesStore array and update localStorage
-  let strategiesStore = [];
-  localStorage.setItem('strategiesStoreFibBot', JSON.stringify(strategiesStore));
-
-  // Clear the strategyPickerOptions array
-  strategyPickerOptions.value = [];
-
-  // Reset form values if needed
-  // ...
-
-  // Set the selected strategy to an empty string
-  strategyPicker.value = '';
-}
-
-
-
-async function createBuyOnlyBot() {
-  await createBot('buyOnly');
-}
-
-async function createSellOnlyBot() {
-  await createBot('sellOnly');
-}
-
-async function createBot(action) {
-  console.log('Creating front run bot with action:', action);
-
-  try {
-    ordersSide.value = action === 'buyOnly' ? 'buyOnly' : 'sellOnly'; // Set ordersSide based on the action
-
-  let data = {
-    userID: userID.value,
-    name: name.value,
-    exchange: currentExchange.value,
-    symbol: currentSymbol.value,
-    PriceStart: PriceStart.value,
-    amountPriceStart:amountPriceStart.value,
-    lowerPrice: lowerPrice.value,
-    upperPrice: upperPrice.value,
-    amountType: amountType.value,
-    amount: amount.value,
-    nrOfGrids: nrOfGrids.value,
-    ordersSide: ordersSide.value,
-    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
-    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
-   
-  };
-
-  // console.log(data);
-
-  let response = await $fetch( '/api/v1/Bots/createFibBot', {
-    method: 'POST',
-    body: data
-  } );
-  console.log('Response from server:', response);
-  } catch (error) {
-    console.error('Error creating front run bot:', error);
-  }
-}
-
-
-
-onMounted(() => {
-  applyInitialDeviation(); // Apelați funcția applyInitialDeviation
-  fetchOrderBookPooling(); // Inițializare pentru lowerPrice și upperPrice
-
-  // localStorage.setItem('test', '123');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
-
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length; i++) {
-      strategyPickerOptions.value.push({
-        value: strategiesStore[i].name,
-        label: strategiesStore[i].name
-      });
-    }
-  }
-  
-  // Restul codului pe care l-ați furnizat înainte poate rămâne aici
-  return {
-    bestBid,
-    bestAsk,
-    manualLowerPrice,
-    manualUpperPrice,
-    lowerPrice,
-    upperPrice,
-    amountType,
-    amountTypeOptions,
-    amount,
-    nrOfGrids,
-    ordersSide,
-    ordersSideOptions,
-    incrementalPercentAmountBuy,
-    incrementalPercentAmountSell,
-
-    updateLowerPrice,
-    updateUpperPrice,
-    handleManualLowerPriceInput,
-    handleManualUpperPriceInput,
-  };
+  return botCollections.value[selectedBotType.value].map(bot => ({
+    ...bot,
+    botType: selectedBotType.value
+  }));
 });
 
+// Global Commands for ALL Bots
+async function executeGlobalCommand(command) {
+  isExecutingCommand.value = true;
+  lastCommand.value = command;
 
+  try {
+    const response = await $fetch('/api/v1/Bots/globalCommand', {
+      method: 'POST',
+      body: {
+        userID: userID.value,
+        command: command,
+        botType: selectedBotType.value
+      }
+    });
+
+    console.log(`Global command ${command} executed:`, response);
+
+    // Refresh bots after command
+    await fetchAllBots();
+  } catch (error) {
+    console.error(`Error executing global command ${command}:`, error);
+  } finally {
+    isExecutingCommand.value = false;
+  }
+}
+
+// Individual Bot Commands
+async function executeBotCommand(bot, command) {
+  try {
+    const response = await $fetch('/api/v1/Bots/botCommand', {
+      method: 'POST',
+      body: {
+        userID: userID.value,
+        botId: bot._id,
+        botType: bot.botType,
+        command: command
+      }
+    });
+
+    console.log(`Bot command ${command} executed for ${bot.name}:`, response);
+    await fetchAllBots();
+  } catch (error) {
+    console.error(`Error executing bot command ${command}:`, error);
+  }
+}
+
+// Pump & Dump Detection Analysis
+async function analyzePumpDump() {
+  try {
+    const response = await $fetch('/api/v1/ML/analyzePumpDump', {
+      method: 'POST',
+      body: {
+        userID: userID.value,
+        symbol: app.getUserSelectedMarket,
+        exchange: app.getUserSelectedExchange
+      }
+    });
+
+    correlationData.value = response.data;
+  } catch (error) {
+    console.error('Error analyzing pump & dump:', error);
+  }
+}
+
+// Start/Stop Real-time Monitoring
+function toggleMonitoring() {
+  monitoringActive.value = !monitoringActive.value;
+
+  if (monitoringActive.value) {
+    monitoringInterval = setInterval(() => {
+      fetchAllBots();
+      analyzePumpDump();
+    }, 3000); // Update every 3 seconds
+  } else {
+    clearInterval(monitoringInterval);
+  }
+}
+
+// Get bot status badge color
+function getBotStatusColor(bot) {
+  if (bot.activeOrders && bot.activeOrders.length > 0) return '#00ff88';
+  if (bot.filledOrders && bot.filledOrders.length > 0) return '#ffd700';
+  return '#6c757d';
+}
+
+// Get bot type icon
+function getBotTypeIcon(botType) {
+  const typeConfig = botTypeOptions.find(opt => opt.value === botType);
+  return typeConfig ? typeConfig.icon : '🤖';
+}
+
+// Get bot type color
+function getBotTypeColor(botType) {
+  const typeConfig = botTypeOptions.find(opt => opt.value === botType);
+  return typeConfig ? typeConfig.color : '#6c757d';
+}
+
+// Format profit/loss
+function formatProfit(value) {
+  const num = parseFloat(value) || 0;
+  return num.toFixed(2);
+}
+
+onMounted(() => {
+  fetchAllBots();
+});
 </script>
 
 <template>
+  <div class="ml-command-center">
+    <!-- Header Section -->
+    <n-card class="header-card" title="🧠 ML Bot Command Center">
+      <template #header-extra>
+        <n-button
+          :type="monitoringActive ? 'error' : 'success'"
+          @click="toggleMonitoring"
+          size="small"
+        >
+          {{ monitoringActive ? '⏸ Stop Monitoring' : '▶ Start Monitoring' }}
+        </n-button>
+      </template>
 
-  <n-card>
-
-    
-      <n-grid x-gap="12" :cols="2">
+      <!-- Stats Dashboard -->
+      <n-grid :cols="6" x-gap="12" class="stats-grid">
         <n-gi>
-          <n-space vertical>
-          
-            <n-grid x-gap="4" :cols="2">
-              <n-gi>
-                <n-select v-model:value="strategyPicker" :options="strategyPickerOptions" @update:value="selectStrategy" placeholder="Select strategy"/>
-              </n-gi>
-              <n-gi>
-                <n-grid x-gap="4" :cols="4">
-                  <n-gi>
-                    <n-button @click="addStrategy">A</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="editStrategy">E</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="deleteStrategy">D</n-button>
-                  </n-gi>
-                  <n-gi>
-                    <n-button @click="deleteAllStrategies">A</n-button>
-                  </n-gi>
-
-        
-                </n-grid>
-              </n-gi>
-            </n-grid>
-
-
-
-            <n-input v-model:value="name" type="text" placeholder="Bot name" />
-
-            <n-input v-model:value="PriceStart" type="text" placeholder="PriceStart">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="amountPriceStart" type="text" placeholder="AmountPriceStart">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-
-            <n-input v-model:value="amount" type="text" placeholder="Amount">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-
-
-            
-
-            <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price">
-             <template #suffix> {{quote}} </template>
-              </n-input>
-              
-            <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
-              <template #suffix> {{quote}} </template>
-            </n-input>
-            <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids"></n-input>
-              
-            
-            <n-select v-model:value="amountType" :options="amountTypeOptions" placeholder="Amount Type"/>
-           
-            <n-input v-model:value="incrementalPercentAmountBuy" type="text" placeholder="Inc. % Amount Buy">
-              <template #suffix> % </template>
-            </n-input>
-           
-         
-        
-     
-        
-          
-     
-           
-
-     
-
-            <n-input v-model:value="incrementalPercentAmountSell" type="text" placeholder="Inc. % Amount Sell">
-              <template #suffix> % </template>
-            </n-input>
-         
-            <n-checkbox v-model:checked="ActiveRANGE">
-              Active RANGE
-            </n-checkbox>
-          </n-space>
+          <div class="stat-card total">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-value">{{ botStats.total }}</div>
+            <div class="stat-label">Total Bots</div>
+          </div>
         </n-gi>
-        
+        <n-gi>
+          <div class="stat-card running">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-value">{{ botStats.running }}</div>
+            <div class="stat-label">Running</div>
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="stat-card paused">
+            <div class="stat-icon">⏸</div>
+            <div class="stat-value">{{ botStats.paused }}</div>
+            <div class="stat-label">Paused</div>
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="stat-card stopped">
+            <div class="stat-icon">🔴</div>
+            <div class="stat-value">{{ botStats.stopped }}</div>
+            <div class="stat-label">Stopped</div>
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="stat-card profit">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value">+${{ formatProfit(botStats.profit) }}</div>
+            <div class="stat-label">Profit</div>
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="stat-card loss">
+            <div class="stat-icon">📉</div>
+            <div class="stat-value">-${{ formatProfit(botStats.loss) }}</div>
+            <div class="stat-label">Loss</div>
+          </div>
+        </n-gi>
       </n-grid>
-      
-      <n-button-group>
-      <n-button class="buy-button" type="primary" @click="createBuyOnlyBot">Buy Only</n-button>
-      <n-button class="sell-button" type="primary" @click="createSellOnlyBot">Sell Only</n-button>
-    </n-button-group>
+    </n-card>
 
-    <span style="margin-right: 10px;"></span>
-      
+    <!-- Global Control Panel -->
+    <n-card class="control-panel" title="🎮 Global Commands">
+      <n-space vertical>
+        <!-- Bot Type Filter -->
+        <n-select
+          v-model:value="selectedBotType"
+          :options="botTypeOptions"
+          placeholder="Select Bot Type"
+          size="large"
+        />
 
-  </n-card>
+        <!-- Command Buttons -->
+        <n-grid :cols="6" x-gap="8">
+          <n-gi>
+            <n-button
+              type="success"
+              block
+              @click="executeGlobalCommand('start')"
+              :loading="isExecutingCommand && lastCommand === 'start'"
+            >
+              ▶ Run All
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              type="warning"
+              block
+              @click="executeGlobalCommand('pause')"
+              :loading="isExecutingCommand && lastCommand === 'pause'"
+            >
+              ⏸ Pause All
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              type="error"
+              block
+              @click="executeGlobalCommand('stop')"
+              :loading="isExecutingCommand && lastCommand === 'stop'"
+            >
+              ⏹ Stop All
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              type="info"
+              block
+              @click="executeGlobalCommand('buyAll')"
+              :loading="isExecutingCommand && lastCommand === 'buyAll'"
+            >
+              💰 Buy All
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              type="info"
+              block
+              @click="executeGlobalCommand('sellAll')"
+              :loading="isExecutingCommand && lastCommand === 'sellAll'"
+            >
+              💸 Sell All
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              type="default"
+              block
+              @click="executeGlobalCommand('close')"
+              :loading="isExecutingCommand && lastCommand === 'close'"
+            >
+              🔒 Close All
+            </n-button>
+          </n-gi>
+        </n-grid>
 
-    
-  <n-card>
-    <n-grid x-gap="0" :cols="3" item-responsive style="display: flex; flex-wrap: nowrap;">
+        <!-- Advanced Commands -->
+        <n-grid :cols="3" x-gap="8">
+          <n-gi>
+            <n-button
+              block
+              @click="executeGlobalCommand('regroup')"
+              :loading="isExecutingCommand && lastCommand === 'regroup'"
+            >
+              🔄 Regroup
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              block
+              @click="executeGlobalCommand('rebalance')"
+              :loading="isExecutingCommand && lastCommand === 'rebalance'"
+            >
+              ⚖️ Rebalance
+            </n-button>
+          </n-gi>
+          <n-gi>
+            <n-button
+              block
+              type="error"
+              @click="executeGlobalCommand('cancelAll')"
+              :loading="isExecutingCommand && lastCommand === 'cancelAll'"
+            >
+              ❌ Cancel Orders
+            </n-button>
+          </n-gi>
+        </n-grid>
+      </n-space>
+    </n-card>
 
-      <n-gi>
-                  <table>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.0001)">  - </n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.001)">  + </n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.005)">  - 0.5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.005)">  + 0.5%</n-button>
-                    </td>
-                  </tr>
+    <!-- Pump & Dump Detection -->
+    <n-card class="pump-dump-card" title="💥 Pump & Dump Detection">
+      <n-grid :cols="4" x-gap="12">
+        <n-gi>
+          <div class="correlation-stat">
+            <div class="correlation-label">Volume Spike</div>
+            <n-progress
+              type="line"
+              :percentage="correlationData.volumeSpike"
+              :color="correlationData.volumeSpike > 70 ? '#ff1744' : '#00ff88'"
+            />
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="correlation-stat">
+            <div class="correlation-label">Price Deviation</div>
+            <n-progress
+              type="line"
+              :percentage="correlationData.priceDeviation"
+              :color="correlationData.priceDeviation > 70 ? '#ff1744' : '#00ff88'"
+            />
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="correlation-stat">
+            <div class="correlation-label">OrderBook Imbalance</div>
+            <n-progress
+              type="line"
+              :percentage="correlationData.orderBookImbalance"
+              :color="correlationData.orderBookImbalance > 70 ? '#ff1744' : '#00ff88'"
+            />
+          </div>
+        </n-gi>
+        <n-gi>
+          <div class="correlation-stat">
+            <div class="correlation-label">Suspicious Activity</div>
+            <n-tag
+              :type="correlationData.suspiciousActivity ? 'error' : 'success'"
+              size="large"
+            >
+              {{ correlationData.suspiciousActivity ? '⚠ ALERT' : '✓ Clear' }}
+            </n-tag>
+          </div>
+        </n-gi>
+      </n-grid>
+      <n-button block type="primary" @click="analyzePumpDump" style="margin-top: 12px;">
+        🔍 Analyze Now
+      </n-button>
+    </n-card>
 
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.01)">  - 1%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.01)">  + 1%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.02)">  - 2%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.02)">  + 2%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.03)">  - 3%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.03)">  + 3%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.05)">  - 5%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.05)">  + 5%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.07)">  - 7%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.07)">  + 7%</n-button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <n-button @click="updateLowerPrice(0.09)">  - 9%</n-button>
-                    </td>
-                    <td>
-                      <n-button @click="updateUpperPrice(0.09)">  + 9%</n-button>
-                    </td>
-                  </tr>
-                </table>
-      </n-gi>
+    <!-- Bots List -->
+    <n-card class="bots-list-card" title="🤖 Active Bots">
+      <n-scrollbar style="max-height: 600px;">
+        <div class="bots-grid">
+          <div
+            v-for="bot in displayedBots"
+            :key="bot._id"
+            class="bot-item"
+            :style="{ borderLeft: `4px solid ${getBotTypeColor(bot.botType)}` }"
+          >
+            <!-- Bot Header -->
+            <div class="bot-header">
+              <div class="bot-icon">{{ getBotTypeIcon(bot.botType) }}</div>
+              <div class="bot-info">
+                <div class="bot-name">{{ bot.name }}</div>
+                <div class="bot-symbol">{{ bot.symbol }} @ {{ bot.exchange }}</div>
+              </div>
+              <div class="bot-status-badge" :style="{ backgroundColor: getBotStatusColor(bot) }">
+                ●
+              </div>
+            </div>
 
-      <n-gi>
-                  <table>
+            <!-- Bot Stats -->
+            <div class="bot-stats">
+              <div class="bot-stat">
+                <span class="label">Active Orders:</span>
+                <span class="value">{{ bot.activeOrders?.length || 0 }}</span>
+              </div>
+              <div class="bot-stat">
+                <span class="label">Filled Orders:</span>
+                <span class="value">{{ bot.filledOrders?.length || 0 }}</span>
+              </div>
+              <div class="bot-stat">
+                <span class="label">Profit:</span>
+                <span
+                  class="value profit"
+                  :class="{
+                    positive: parseFloat(bot.BalanceBot?.BalanceBotProfit || 0) > 0,
+                    negative: parseFloat(bot.BalanceBot?.BalanceBotProfit || 0) < 0
+                  }"
+                >
+                  {{ formatProfit(bot.BalanceBot?.BalanceBotProfit || 0) }} USD
+                </span>
+              </div>
+            </div>
 
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.1)">  - 10%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.1)">  + 10%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.2)">  - 20%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.2)">  + 20%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.3)">  - 30%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.3)">  + 30%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.5)">  - 50%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.5)">  + 50%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.6)">  - 60%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.6)">  + 60%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.7)">  - 70%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.7)">  + 70%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.8)">  - 80%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.8)">  + 80%</n-button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <n-button @click="updateLowerPrice(0.97)">  - 90%</n-button>
-                      </td>
-                      <td>
-                        <n-button @click="updateUpperPrice(0.9)">  + 90%</n-button>
-                      </td>
-                    </tr>
-                  </table>
-      </n-gi>
-
-     
-
-    </n-grid>
-
-
-</n-card>
+            <!-- Bot Controls -->
+            <div class="bot-controls">
+              <n-button-group size="small">
+                <n-button type="success" @click="executeBotCommand(bot, 'start')">▶</n-button>
+                <n-button type="warning" @click="executeBotCommand(bot, 'pause')">⏸</n-button>
+                <n-button type="error" @click="executeBotCommand(bot, 'stop')">⏹</n-button>
+                <n-button @click="executeBotCommand(bot, 'close')">🔒</n-button>
+              </n-button-group>
+            </div>
+          </div>
+        </div>
+      </n-scrollbar>
+    </n-card>
+  </div>
 </template>
 
-
 <style scoped>
-.buy-button {
-  background-color: green; /* culoarea pentru butonul Buy Only */
+.ml-command-center {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  min-height: 100vh;
 }
 
-.sell-button {
-  background-color: red; /* culoarea pentru butonul Sell Only */
+.header-card {
+  background: rgba(15, 20, 40, 0.9);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.stats-grid {
+  margin-top: 12px;
+}
+
+.stat-card {
+  background: rgba(20, 25, 45, 0.8);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 255, 136, 0.2);
+}
+
+.stat-card.total { border-color: #6c757d; }
+.stat-card.running { border-color: #00ff88; }
+.stat-card.paused { border-color: #ffd700; }
+.stat-card.stopped { border-color: #ff6b6b; }
+.stat-card.profit { border-color: #00ff88; }
+.stat-card.loss { border-color: #ff1744; }
+
+.stat-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.control-panel {
+  background: rgba(15, 20, 40, 0.9);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.pump-dump-card {
+  background: rgba(15, 20, 40, 0.9);
+  border: 1px solid rgba(255, 23, 68, 0.3);
+}
+
+.correlation-stat {
+  padding: 12px;
+  background: rgba(20, 25, 45, 0.6);
+  border-radius: 8px;
+}
+
+.correlation-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.bots-list-card {
+  background: rgba(15, 20, 40, 0.9);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.bots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 16px;
+  padding: 8px;
+}
+
+.bot-item {
+  background: rgba(20, 25, 45, 0.8);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.bot-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 255, 136, 0.15);
+  background: rgba(25, 30, 50, 0.9);
+}
+
+.bot-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bot-icon {
+  font-size: 32px;
+}
+
+.bot-info {
+  flex: 1;
+}
+
+.bot-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.bot-symbol {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bot-status-badge {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.bot-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(10, 15, 30, 0.6);
+  border-radius: 8px;
+}
+
+.bot-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.bot-stat .label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bot-stat .value {
+  color: #fff;
+  font-weight: bold;
+}
+
+.bot-stat .value.profit.positive {
+  color: #00ff88;
+}
+
+.bot-stat .value.profit.negative {
+  color: #ff1744;
+}
+
+.bot-controls {
+  margin-top: 12px;
 }
 </style>

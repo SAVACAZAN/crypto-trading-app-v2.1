@@ -6,8 +6,11 @@ const userID = useCookie('userID');
 const currentExchange = computed(() => app.getUserSelectedExchange);
 const currentSymbol = computed(() => app.getUserSelectedMarket);
 
-// Get selected API keys from store
-const selectedApiKeys = computed(() => app.getSelectedApiKeys || []);
+// Get selected API keys from store - REMOVE DUPLICATES
+const selectedApiKeys = computed(() => {
+  const keys = app.getSelectedApiKeys || [];
+  return [...new Set(keys)]; // Remove duplicates
+});
 
 // Balance data for each API key
 const balancesData = ref({});
@@ -120,40 +123,46 @@ onMounted(() => {
       <span class="empty-text">🔑 Select API keys to view balances</span>
     </div>
 
-    <div v-else class="balance-content">
+    <div v-else class="balance-grid">
       <!-- Individual API Balances -->
-      <div v-for="(apiKey, index) in selectedApiKeys" :key="apiKey" class="api-balance-section">
-        <span class="api-name-badge">{{ apiKey }}</span>
-        <span class="mini-dot base-dot"></span>
-        <span class="mini-currency">{{ base }}</span>
-        <span class="mini-value free">F:{{ (balancesData[apiKey]?.baseFree || 0).toFixed(2) }}</span>
-        <span class="mini-value used">U:{{ (balancesData[apiKey]?.baseUsed || 0).toFixed(2) }}</span>
-        <span class="mini-value total">T:{{ (balancesData[apiKey]?.baseTotal || 0).toFixed(2) }}</span>
-        <span class="currency-separator">|</span>
-        <span class="mini-dot quote-dot"></span>
-        <span class="mini-currency">{{ quote }}</span>
-        <span class="mini-value free">F:{{ (balancesData[apiKey]?.quoteFree || 0).toFixed(2) }}</span>
-        <span class="mini-value used">U:{{ (balancesData[apiKey]?.quoteUsed || 0).toFixed(2) }}</span>
-        <span class="mini-value total">T:{{ (balancesData[apiKey]?.quoteTotal || 0).toFixed(2) }}</span>
-        <div v-if="index < selectedApiKeys.length - 1" class="api-separator"></div>
+      <div v-for="(apiKey, index) in selectedApiKeys" :key="apiKey" class="api-balance-item">
+        <div class="api-balance-section">
+          <span class="api-name-badge">{{ apiKey }}</span>
+          <span class="mini-dot base-dot"></span>
+          <span class="mini-currency">{{ base }}</span>
+          <span class="mini-value free">F:{{ (balancesData[apiKey]?.baseFree || 0).toFixed(2) }}</span>
+          <span class="mini-value used">U:{{ (balancesData[apiKey]?.baseUsed || 0).toFixed(2) }}</span>
+          <span class="mini-value total">T:{{ (balancesData[apiKey]?.baseTotal || 0).toFixed(2) }}</span>
+          <span class="currency-separator">|</span>
+          <span class="mini-dot quote-dot"></span>
+          <span class="mini-currency">{{ quote }}</span>
+          <span class="mini-value free">F:{{ (balancesData[apiKey]?.quoteFree || 0).toFixed(2) }}</span>
+          <span class="mini-value used">U:{{ (balancesData[apiKey]?.quoteUsed || 0).toFixed(2) }}</span>
+          <span class="mini-value total">T:{{ (balancesData[apiKey]?.quoteTotal || 0).toFixed(2) }}</span>
+        </div>
       </div>
 
-      <div class="separator-big"></div>
+      <!-- Separator - only show if multiple API keys -->
+      <div v-if="selectedApiKeys.length > 1" class="separator-item">
+        <div class="separator-big"></div>
+      </div>
 
-      <!-- GLOBAL TOTALS -->
-      <div class="global-totals-section">
-        <span class="global-label">🌐</span>
-        <span class="mini-dot base-dot"></span>
-        <span class="currency-name">{{ base }}</span>
-        <span class="balance-value free">F:{{ totalBalances.baseFree.toFixed(2) }}</span>
-        <span class="balance-value used">U:{{ totalBalances.baseUsed.toFixed(2) }}</span>
-        <span class="balance-value total">T:{{ totalBalances.baseTotal.toFixed(2) }}</span>
-        <span class="currency-separator">|</span>
-        <span class="mini-dot quote-dot"></span>
-        <span class="currency-name">{{ quote }}</span>
-        <span class="balance-value free">F:{{ totalBalances.quoteFree.toFixed(2) }}</span>
-        <span class="balance-value used">U:{{ totalBalances.quoteUsed.toFixed(2) }}</span>
-        <span class="balance-value total">T:{{ totalBalances.quoteTotal.toFixed(2) }}</span>
+      <!-- GLOBAL TOTALS - only show if multiple API keys -->
+      <div v-if="selectedApiKeys.length > 1" class="global-totals-item">
+        <div class="global-totals-section">
+          <span class="global-label">🌐</span>
+          <span class="mini-dot base-dot"></span>
+          <span class="currency-name">{{ base }}</span>
+          <span class="balance-value free">F:{{ totalBalances.baseFree.toFixed(2) }}</span>
+          <span class="balance-value used">U:{{ totalBalances.baseUsed.toFixed(2) }}</span>
+          <span class="balance-value total">T:{{ totalBalances.baseTotal.toFixed(2) }}</span>
+          <span class="currency-separator">|</span>
+          <span class="mini-dot quote-dot"></span>
+          <span class="currency-name">{{ quote }}</span>
+          <span class="balance-value free">F:{{ totalBalances.quoteFree.toFixed(2) }}</span>
+          <span class="balance-value used">U:{{ totalBalances.quoteUsed.toFixed(2) }}</span>
+          <span class="balance-value total">T:{{ totalBalances.quoteTotal.toFixed(2) }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -165,6 +174,27 @@ onMounted(() => {
   align-items: center;
   height: 100%;
   width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 235, 4, 0.3) transparent;
+}
+
+.balance-bar-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.balance-bar-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.balance-bar-container::-webkit-scrollbar-thumb {
+  background: rgba(16, 235, 4, 0.3);
+  border-radius: 2px;
+}
+
+.balance-bar-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 235, 4, 0.5);
 }
 
 /* Loading State */
@@ -193,15 +223,37 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* Balance Content - Single Line Horizontal Layout */
-.balance-content {
+/* Balance Grid Layout - Flexbox with Wrapping */
+.balance-grid {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: 6px;
   width: 100%;
+  max-height: 48px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.api-balance-item,
+.separator-item,
+.global-totals-item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
   white-space: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
+}
+
+.api-balance-item {
+  /* No extra styling needed - uses api-balance-section inside */
+}
+
+.separator-item {
+  padding: 0 4px;
+}
+
+.global-totals-item {
+  /* No extra styling needed - uses global-totals-section inside */
 }
 
 /* ===== INDIVIDUAL API BALANCE ===== */
@@ -259,14 +311,6 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.3);
   font-size: 10px;
   margin: 0 3px;
-}
-
-.api-separator {
-  width: 1px;
-  height: 30px;
-  background: rgba(16, 235, 4, 0.3);
-  margin: 0 6px;
-  flex-shrink: 0;
 }
 
 /* ===== GLOBAL TOTALS SECTION ===== */

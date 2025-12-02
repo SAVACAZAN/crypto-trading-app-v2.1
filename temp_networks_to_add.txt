@@ -1,0 +1,53 @@
+# Networks to add batch
+
+## Internet Computer (ICP)
+Network: Internet Computer
+Symbol: ICP
+Icon: ∞
+Color: #29ABE2
+Page: /InternetComputerNetwork
+API: generateInternetComputerWallet
+Load: loadInternetComputerWallets
+Variable: internetComputerWallets
+Generating: generatingIcp
+Computed: totalIcpWallets, totalIcpAddresses
+Explorer: https://dashboard.internetcomputer.org
+
+## Mina Protocol (MINA)
+Network: Mina Protocol
+Symbol: MINA
+Icon: M
+Color: #FF603B
+Page: /MinaNetwork
+API: generateMinaWallet
+Load: loadMinaWallets
+Variable: minaWallets
+Generating: generatingMina
+Computed: totalMinaWallets, totalMinaAddresses
+Explorer: https://minascan.io
+
+## IOTA (MIOTA)
+Network: IOTA
+Symbol: MIOTA
+Icon: ⟠
+Color: #131F37
+Page: /IOTANetwork
+API: generateIOTAWallet
+Load: loadIOTAWallets
+Variable: iotaWallets
+Generating: generatingIota
+Computed: totalIotaWallets, totalIotaAddresses
+Explorer: https://explorer.iota.org
+
+## Chia (XCH)
+Network: Chia
+Symbol: XCH
+Icon: 🌱
+Color: #3AAC59
+Page: /ChiaNetwork
+API: generateChiaWallet
+Load: loadChiaWallets
+Variable: chiaWallets
+Generating: generatingXch
+Computed: totalXchWallets, totalXchAddresses
+Explorer: https://www.chiaexplorer.com

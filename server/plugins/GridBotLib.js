@@ -34,6 +34,42 @@ export default defineNitroPlugin((nitroApp) => {
 
             console.log('   📋 API Keys to use:', apiKeyNamesArray);
 
+            // Fetch balance BEFORE creating orders to get snapshot
+            const [baseToken, quoteToken] = data.symbol.split('/');
+            let balanceSnapshot = {
+                baseFree: 0,
+                baseTotal: 0,
+                quoteFree: 0,
+                quoteTotal: 0
+            };
+
+            try {
+                const balanceResponse = await nitroApp.ccxtw.fetchBalance(
+                    data.userID,
+                    data.exchange,
+                    apiKeyNamesArray[0] // Use first API key for balance
+                );
+
+                if (balanceResponse.success && balanceResponse.data) {
+                    const balances = balanceResponse.data;
+
+                    if (balances[baseToken]) {
+                        balanceSnapshot.baseFree = parseFloat(balances[baseToken].free || 0);
+                        balanceSnapshot.baseTotal = parseFloat(balances[baseToken].total || 0);
+                    }
+
+                    if (balances[quoteToken]) {
+                        balanceSnapshot.quoteFree = parseFloat(balances[quoteToken].free || 0);
+                        balanceSnapshot.quoteTotal = parseFloat(balances[quoteToken].total || 0);
+                    }
+
+                    console.log('💰 Balance snapshot BEFORE creating orders:', balanceSnapshot);
+                }
+            } catch (error) {
+                console.error('⚠️ Error fetching balance snapshot:', error);
+                // Continue even if balance fetch fails
+            }
+
             let prices = [];
             let gridWidth;
             
@@ -61,6 +97,11 @@ export default defineNitroPlugin((nitroApp) => {
 
             let lastPrice = tickerStatus.data.last;
 
+            console.log('🔍 [DEBUG] Grid prices calculation:');
+            console.log('   Current market price:', lastPrice);
+            console.log('   Grid price range:', data.lowerPrice, '-', data.upperPrice);
+            console.log('   All grid prices:', prices);
+
             let sellPrices = [];
             for (let i = 0; i < prices.length; i++) {
                 if (prices[i] > lastPrice) {
@@ -75,6 +116,9 @@ export default defineNitroPlugin((nitroApp) => {
                 }
             }
 
+            console.log('🔍 [DEBUG] Prices split by current market price:');
+            console.log('   Buy prices (below market):', buyPrices);
+            console.log('   Sell prices (above market):', sellPrices);
 
             let orders = [];
 
@@ -127,9 +171,55 @@ export default defineNitroPlugin((nitroApp) => {
                 data['apiKeyName'] = apiKeyNamesArray[0];
             }
 
+            // Debug: Check orders before calculating balance
+            console.log('🔍 [DEBUG] About to calculate balance from orders:');
+            console.log('   Orders count:', orders ? orders.length : 'NULL');
+            if (orders && orders.length > 0) {
+                console.log('   First order:', JSON.stringify(orders[0], null, 2));
+                console.log('   Last order:', JSON.stringify(orders[orders.length - 1], null, 2));
+            }
+
+            // Calculate balance in bot from active orders
+            const balanceInOrders = this.calculateBalanceInOrders(orders);
+            console.log('💰 Balance in active orders:', balanceInOrders);
+
+            // Get USD prices for base and quote tokens
+            const basePriceUSD = await this.getTokenPriceInUSD(data.userID, data.exchange, baseToken);
+            const quotePriceUSD = await this.getTokenPriceInUSD(data.userID, data.exchange, quoteToken);
+
+            console.log('💵 USD Prices:', {
+                baseToken,
+                basePriceUSD,
+                quoteToken,
+                quotePriceUSD
+            });
+
+            // Calculate USD values
+            const balanceBaseInUSD = balanceInOrders.baseInOrders * basePriceUSD;
+            const balanceQuoteInUSD = balanceInOrders.quoteInOrders * quotePriceUSD;
+
+            // Update BalanceBot with actual amounts in orders, USD values, and balance snapshot
+            if (data.BalanceBot) {
+                // Current balances in grid bot orders
+                data.BalanceBot.BalanceBase = balanceInOrders.baseInOrders.toString();
+                data.BalanceBot.BalanceQuote = balanceInOrders.quoteInOrders.toString();
+                data.BalanceBot.BalanceBaseInUSD = balanceBaseInUSD.toString();
+                data.BalanceBot.BalanceQuoteInUSD = balanceQuoteInUSD.toString();
+
+                // Balance snapshot at bot creation (before orders were placed)
+                data.BalanceBot.BalanceBaseTotalAtStart = balanceSnapshot.baseTotal.toString();
+                data.BalanceBot.BalanceQuoteTotalAtStart = balanceSnapshot.quoteTotal.toString();
+                data.BalanceBot.BalanceBaseFreeAtStart = balanceSnapshot.baseFree.toString();
+                data.BalanceBot.BalanceQuoteFreeAtStart = balanceSnapshot.quoteFree.toString();
+            }
+
             console.log('💾 Saving to database with:');
             console.log('   apiKeyName:', data['apiKeyName']);
             console.log('   apiKeyNames:', data['apiKeyNames']);
+            console.log('   BalanceBot.BalanceBase (in orders):', data.BalanceBot?.BalanceBase);
+            console.log('   BalanceBot.BalanceQuote (in orders):', data.BalanceBot?.BalanceQuote);
+            console.log('   BalanceBot.BalanceBaseInUSD:', data.BalanceBot?.BalanceBaseInUSD);
+            console.log('   BalanceBot.BalanceQuoteInUSD:', data.BalanceBot?.BalanceQuoteInUSD);
 
             await new gridBotSchema(data).save()
         },
@@ -149,13 +239,12 @@ export default defineNitroPlugin((nitroApp) => {
                 let orderResponse = await nitroApp.ccxtw.createOrder(userID, exchange, symbol, 'limit', 'buy', quantityPerGrid, price, {}, apiKeyName);
 
                 if (orderResponse.success) {
-
                     orders.push({
-                        id:orderResponse.data.id,
-                        price:orderResponse.data.price,
-                        side:orderResponse.data.side,
-                        size:orderResponse.data.size,
-                        amount:orderResponse.data.amount,
+                        id: orderResponse.data.id,
+                        price: price, // Use our calculated price
+                        side: 'buy',
+                        size: quantityPerGrid, // Use our calculated amount
+                        amount: quantityPerGrid, // Use our calculated amount
                     });
                     log =`${this.getCurrentTime()}: ${symbol}- OWN THIS ==>\x1b[33m - Side: \x1b[32mbuy, \x1b[33mAmount:\x1b[32m ${quantityPerGrid}, \x1b[33mPrice:\x1b[32m   ${price}`;
                 }
@@ -193,11 +282,11 @@ export default defineNitroPlugin((nitroApp) => {
 
                 if (orderResponse.success) {
                     orders.push({
-                        id:orderResponse.data.id,
-                        price: orderResponse.data.price,
-                        side: orderResponse.data.side,
-                        size:orderResponse.data.size,
-                        amount:orderResponse.data.amount,
+                        id: orderResponse.data.id,
+                        price: price, // Use our calculated price
+                        side: 'sell',
+                        size: quantityPerGrid, // Use our calculated amount
+                        amount: quantityPerGrid, // Use our calculated amount
                     });
                     log =`${this.getCurrentTime()}: ${symbol} - OWN THIS ==> - Side: \x1B[31msell, \x1b[33mAmount:\x1B[31m ${quantityPerGrid}, \x1b[33mPrice:\x1B[31m ${price}\x1b[33m`;
                 }
@@ -321,16 +410,70 @@ export default defineNitroPlugin((nitroApp) => {
                     }
 
 
+                    // Save the ORIGINAL filled order (with original side) to filledOrders FIRST
                     let filledOrders = bot.filledOrders;
+                    const originalFilledOrder = { ...bot.activeOrders[gridOrdersIndex] };
 
-                    filledOrders.push(bot.activeOrders[gridOrdersIndex]);
+                    console.log('[GridBotLib] ===== ORDER UPDATE DEBUG =====');
+                    console.log('[GridBotLib] Original filled order:', {
+                        id: originalFilledOrder.id,
+                        side: originalFilledOrder.side,
+                        price: originalFilledOrder.price,
+                        amount: originalFilledOrder.amount
+                    });
+                    console.log('[GridBotLib] newOrderResponse.data:', JSON.stringify(newOrderResponse.data, null, 2));
+                    console.log('[GridBotLib] Calculated newPrice:', newPrice);
+                    console.log('[GridBotLib] Calculated newAmount:', newAmount);
+                    console.log('[GridBotLib] Calculated newSide:', newSide);
 
+                    filledOrders.push(originalFilledOrder);
+
+                    // THEN update the active order with the NEW inverse order data
+                    // Use the calculated values (newPrice, newAmount, newSide) instead of response data
+                    // because CCXT response may not contain these fields consistently
                     bot.activeOrders[gridOrdersIndex].id = newOrderResponse.data.id;
-                    bot.activeOrders[gridOrdersIndex].price = newOrderResponse.data.price;
-                    bot.activeOrders[gridOrdersIndex].side = newOrderResponse.data.side;
-                    bot.activeOrders[gridOrdersIndex].amount = newOrderResponse.data.amount;
+                    bot.activeOrders[gridOrdersIndex].price = newPrice;
+                    bot.activeOrders[gridOrdersIndex].side = newSide;
+                    bot.activeOrders[gridOrdersIndex].amount = newAmount;
 
-                    await gridBotSchema.updateOne({ _id: bot._id }, { activeOrders: bot.activeOrders, filledOrders: filledOrders });
+                    console.log('[GridBotLib] Updated activeOrder:', {
+                        id: bot.activeOrders[gridOrdersIndex].id,
+                        side: bot.activeOrders[gridOrdersIndex].side,
+                        price: bot.activeOrders[gridOrdersIndex].price,
+                        amount: bot.activeOrders[gridOrdersIndex].amount
+                    });
+                    console.log('[GridBotLib] ===== END DEBUG =====');
+
+                    // Recalculate balance in orders after order update
+                    const balanceInOrders = this.calculateBalanceInOrders(bot.activeOrders);
+
+                    // Extract base and quote tokens from symbol
+                    const [baseToken, quoteToken] = bot.symbol.split('/');
+
+                    // Get current USD prices
+                    const basePriceUSD = await this.getTokenPriceInUSD(bot.userID, bot.exchange, baseToken);
+                    const quotePriceUSD = await this.getTokenPriceInUSD(bot.userID, bot.exchange, quoteToken);
+
+                    // Calculate USD values
+                    const balanceBaseInUSD = balanceInOrders.baseInOrders * basePriceUSD;
+                    const balanceQuoteInUSD = balanceInOrders.quoteInOrders * quotePriceUSD;
+
+                    const updatedBalanceBot = {
+                        ...bot.BalanceBot,
+                        BalanceBase: balanceInOrders.baseInOrders.toString(),
+                        BalanceQuote: balanceInOrders.quoteInOrders.toString(),
+                        BalanceBaseInUSD: balanceBaseInUSD.toString(),
+                        BalanceQuoteInUSD: balanceQuoteInUSD.toString()
+                    };
+
+                    await gridBotSchema.updateOne(
+                        { _id: bot._id },
+                        {
+                            activeOrders: bot.activeOrders,
+                            filledOrders: filledOrders,
+                            BalanceBot: updatedBalanceBot
+                        }
+                    );
                 } else {
                     console.log(newOrderResponse.log);
                 }
@@ -344,7 +487,7 @@ export default defineNitroPlugin((nitroApp) => {
         async fetchGridBots(userID, exchange, symbol) {
             let bots = await gridBotSchema.find({userID: userID});
             return bots;
-        }
+        },
 
         // getBots: async function(){
         //     let bots = await dcaBotSchema.find({});
@@ -366,6 +509,98 @@ export default defineNitroPlugin((nitroApp) => {
         //     }
         //     return formattedBots;
         // },
+
+        /**
+         * Calculate total base and quote amounts locked in active orders
+         * @param {Array} orders - Array of active orders
+         * @returns {Object} - { baseInOrders, quoteInOrders }
+         */
+        calculateBalanceInOrders: function(orders) {
+            console.log('🔍 [calculateBalanceInOrders] Called with orders:', orders ? orders.length : 'NULL');
+
+            let baseInOrders = 0;  // Total base currency in SELL orders
+            let quoteInOrders = 0; // Total quote currency in BUY orders
+
+            if (!orders || orders.length === 0) {
+                console.log('⚠️ [calculateBalanceInOrders] Orders array is empty or null');
+                return {
+                    baseInOrders: 0,
+                    quoteInOrders: 0
+                };
+            }
+
+            console.log('🔍 [calculateBalanceInOrders] First order sample:', JSON.stringify(orders[0], null, 2));
+
+            for (const order of orders) {
+                if (order.side === 'sell') {
+                    // SELL orders lock BASE currency (amount)
+                    const amount = parseFloat(order.amount || 0);
+                    console.log(`🔍 [SELL] amount: ${amount}`);
+                    baseInOrders += amount;
+                } else if (order.side === 'buy') {
+                    // BUY orders lock QUOTE currency (price * amount)
+                    const price = parseFloat(order.price || 0);
+                    const amount = parseFloat(order.amount || 0);
+                    const total = price * amount;
+                    console.log(`🔍 [BUY] price: ${price}, amount: ${amount}, total: ${total}`);
+                    quoteInOrders += total;
+                }
+            }
+
+            console.log('💰 [calculateBalanceInOrders] Results:', {
+                baseInOrders,
+                quoteInOrders
+            });
+
+            return {
+                baseInOrders: baseInOrders,
+                quoteInOrders: quoteInOrders
+            };
+        },
+
+        /**
+         * Get USD price for a token
+         * @param {string} userID - User ID
+         * @param {string} exchange - Exchange name
+         * @param {string} token - Token symbol (e.g., 'LCX', 'BTC', 'ETH', 'USDC')
+         * @returns {Promise<number>} - Price in USD
+         */
+        getTokenPriceInUSD: async function(userID, exchange, token) {
+            try {
+                // USDC, USDT, USD are already in USD
+                if (['USDC', 'USDT', 'USD', 'BUSD', 'DAI'].includes(token.toUpperCase())) {
+                    return 1.0;
+                }
+
+                // Try to fetch token/USDC price first
+                let symbol = `${token}/USDC`;
+                try {
+                    const tickerResponse = await nitroApp.ccxtw.fetchTicker(userID, exchange, symbol);
+                    if (tickerResponse.success && tickerResponse.data && tickerResponse.data.last) {
+                        return parseFloat(tickerResponse.data.last);
+                    }
+                } catch (err) {
+                    console.log(`⚠️ Could not fetch ${symbol}, trying ${token}/USDT...`);
+                }
+
+                // Try token/USDT if token/USDC failed
+                symbol = `${token}/USDT`;
+                try {
+                    const tickerResponse = await nitroApp.ccxtw.fetchTicker(userID, exchange, symbol);
+                    if (tickerResponse.success && tickerResponse.data && tickerResponse.data.last) {
+                        return parseFloat(tickerResponse.data.last);
+                    }
+                } catch (err) {
+                    console.log(`⚠️ Could not fetch ${symbol}`);
+                }
+
+                console.warn(`⚠️ Could not fetch USD price for ${token}, returning 0`);
+                return 0;
+            } catch (error) {
+                console.error(`Error fetching USD price for ${token}:`, error);
+                return 0;
+            }
+        },
     };
 
 })

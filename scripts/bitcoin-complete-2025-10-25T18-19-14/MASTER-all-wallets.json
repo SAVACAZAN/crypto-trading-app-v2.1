@@ -1,0 +1,602 @@
+{
+  "generatedAt": "2025-10-25T18:19:14.481Z",
+  "version": "complete-v1.0",
+  "mnemonic": "tomato rate decade retire tip couch feed inflict kick curtain opera rookie",
+  "wordCount": 12,
+  "masterSeed": "089785a4b52e73d765a8fa18f3c77bcc3e4c7fbb27fe56125601eb0cf064f3c2ae5dfb8e3c55a6d9bd85a397f1ab8be012eaae1736d5b56eba08b2017fb8f57b",
+  "masterPrivateKey": "xprv9s21ZrQH143K29Z2cEh9ZcfizyBb5pLxcN7z16EYB2rxzshjHXkfdFXyu92yAszJdBxErsxqEB7Z5NCX3thusSoKBTmYpnPsPS4TXrSRmKT",
+  "masterPublicKey": "xpub661MyMwAqRbcEddViGE9vkcTZ125VH4oyb3aoUe9jNPwsg2sq54vB3rTkP7Z5GzPM7cseBDoH2Ut6ZN7gsLBWXUznWgwTjnU4A9ajc7ye63",
+  "totalWallets": 10,
+  "wallets": [
+    {
+      "index": 0,
+      "name": "SAVACAZAN",
+      "emoji": "💰",
+      "description": "Pentru economii",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/0'/0/0",
+          "address": "12qfoiTVbNiWGib8wG6dUG5bSWXV6S2QX9",
+          "privateKeyWIF": "Ky6aNFLLTgKnzLZmEyJyaMfNtvxiTBQnJvV2yzUk9FKz2GuGnPUB",
+          "privateKeyHex": "56,1,31,189,181,224,13,84,152,60,45,242,180,23,103,71,221,23,66,211,187,192,145,88,104,56,187,24,63,140,67,137",
+          "publicKey": "2,95,113,15,72,36,5,58,0,127,0,183,98,72,2,97,154,137,26,85,177,49,55,53,45,64,113,238,108,221,219,70,233",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/0'/0/0",
+          "address": "3MgEvu5SNjWb9vibLZ6Kpzsjt58mgRjyax",
+          "privateKeyWIF": "L1hQ8hxwSNVAibcVrSBBwWw3wA6fMqHDHAiFbYAcjxzeu3kQ2keT",
+          "privateKeyHex": "133,151,255,128,86,189,137,221,14,27,65,26,147,124,44,37,67,117,253,92,127,61,247,186,83,0,253,93,124,235,95,202",
+          "publicKey": "3,113,228,152,184,169,10,142,29,111,204,86,30,227,91,24,222,3,132,39,254,106,112,112,118,196,53,202,50,225,29,213,92",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/0'/0/0",
+          "address": "37rWYPbAXhutfyDRsBVLbCRJ48qnYAorZZ",
+          "privateKeyWIF": "L1hQ8hxwSNVAibcVrSBBwWw3wA6fMqHDHAiFbYAcjxzeu3kQ2keT",
+          "privateKeyHex": "133,151,255,128,86,189,137,221,14,27,65,26,147,124,44,37,67,117,253,92,127,61,247,186,83,0,253,93,124,235,95,202",
+          "publicKey": "3,113,228,152,184,169,10,142,29,111,204,86,30,227,91,24,222,3,132,39,254,106,112,112,118,196,53,202,50,225,29,213,92",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/0'/0/0",
+          "address": "bc1qw9acesl3feqf2494zhtpxta38r7fel088pznlk",
+          "privateKeyWIF": "L5LV515HAMa57BbExZTi1YZqsaPrLfvEeKkgfrHVt4zjTo88ncnz",
+          "privateKeyHex": "242,47,21,12,248,230,3,113,201,62,59,142,223,204,19,247,55,93,45,42,173,29,246,245,111,131,148,74,175,195,51,26",
+          "publicKey": "2,86,226,135,165,164,1,26,36,218,234,210,214,60,64,102,157,214,117,105,92,208,80,113,51,147,94,113,122,212,228,51,237",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/0'/0/0",
+          "address": "bc1p4ajl5z5amzat0202hrz62wunyf8g9p0tv5yw9s2kxds6yk02qysqvs08ss",
+          "privateKeyWIF": "KyFbpFn1D3kHZhauagkYVrVdpsGtKDEZzs8Eb6zTDunn2ctQcryi",
+          "privateKeyHex": "60,165,173,121,84,33,32,200,38,41,185,50,57,220,178,72,47,61,194,158,170,122,33,123,131,63,76,78,121,121,7,255",
+          "publicKey": "3,239,47,146,210,135,187,255,70,160,1,191,202,203,51,46,0,193,209,199,105,68,98,192,140,235,110,254,220,181,150,129,67",
+          "internalPubkey": "239,47,146,210,135,187,255,70,160,1,191,202,203,51,46,0,193,209,199,105,68,98,192,140,235,110,254,220,181,150,129,67",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 1,
+      "name": "ALEX",
+      "emoji": "👨",
+      "description": "Wallet personal Alex",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/1'/0/0",
+          "address": "16UEduRuy4sHkHfQtGpuCP8Yi1T1fgunv",
+          "privateKeyWIF": "KyyVUp7MoodmumWcuaBfRyYGGc4UsBxEARYwqJLkkhPVbB8sbjgp",
+          "privateKeyHex": "82,50,135,92,93,217,180,137,18,117,142,42,127,224,39,205,77,44,164,170,140,15,109,74,223,112,166,90,192,219,107,198",
+          "publicKey": "3,176,38,89,34,237,127,27,135,44,151,60,219,127,98,142,69,208,223,36,192,253,197,70,166,158,224,199,224,159,181,115,199",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/1'/0/0",
+          "address": "3LYyuPUcSpfLJsaZfWS1XhZaSTBzD5HG8L",
+          "privateKeyWIF": "KxTZdabW8Uq3Zxgmr1oST3NfMWiEZJ7nwuP5WBryGJP2xkmDgKMg",
+          "privateKeyHex": "36,246,178,180,190,161,243,97,92,115,2,207,13,60,130,150,200,49,71,130,188,128,226,43,225,135,132,152,216,62,184,217",
+          "publicKey": "3,114,190,152,93,15,198,147,168,194,27,48,62,250,4,12,63,204,88,83,66,194,14,69,5,60,99,40,27,218,100,162,169",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/1'/0/0",
+          "address": "33zVPAZe9frUv9zdwBa4JXQozujcZgKieE",
+          "privateKeyWIF": "KxTZdabW8Uq3Zxgmr1oST3NfMWiEZJ7nwuP5WBryGJP2xkmDgKMg",
+          "privateKeyHex": "36,246,178,180,190,161,243,97,92,115,2,207,13,60,130,150,200,49,71,130,188,128,226,43,225,135,132,152,216,62,184,217",
+          "publicKey": "3,114,190,152,93,15,198,147,168,194,27,48,62,250,4,12,63,204,88,83,66,194,14,69,5,60,99,40,27,218,100,162,169",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/1'/0/0",
+          "address": "bc1qh465jrgu6apu9d086u2p2ayutx02e2s0nvdkhm",
+          "privateKeyWIF": "KzkfGbinjRRajdVQDr6V47RkpUeZ6WBTaYNjUPq256JeqXVNt7JA",
+          "privateKeyHex": "105,111,20,196,61,174,80,93,217,16,84,246,125,243,95,123,68,123,251,47,45,67,201,34,240,106,79,58,219,122,98,191",
+          "publicKey": "3,7,193,174,91,41,134,207,198,114,255,153,207,208,45,191,221,3,29,124,141,94,140,15,68,153,69,65,112,12,15,70,39",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/1'/0/0",
+          "address": "bc1phwruvu5jdaex9gfjfrza7as3xxt5adfj4agj49tfskecm9cvkkgsymq7hp",
+          "privateKeyWIF": "L2pPboe1t1kpaicGg5td9Fc9qtrAHdSsnXVp2uPUy7zygC1NL8ow",
+          "privateKeyHex": "167,7,8,210,241,188,129,173,55,73,22,85,200,117,91,17,140,93,127,76,178,190,27,251,235,140,27,86,255,36,197,11",
+          "publicKey": "3,126,244,232,139,198,110,236,69,105,254,216,69,243,125,135,222,183,123,41,200,26,114,3,147,253,208,87,117,197,95,210,62",
+          "internalPubkey": "126,244,232,139,198,110,236,69,105,254,216,69,243,125,135,222,183,123,41,200,26,114,3,147,253,208,87,117,197,95,210,62",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 2,
+      "name": "MIRUNA",
+      "emoji": "👧",
+      "description": "Wallet personal Miruna",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/2'/0/0",
+          "address": "1JCHWQUS4TbB4M5hqVdLS4r4LpUGvW4AWq",
+          "privateKeyWIF": "KxYkmotCAcdNvmUwpRdYhsCK8a3NYojd97ndPTp2CxTeWmjSpwyc",
+          "privateKeyHex": "39,162,122,64,198,198,88,95,28,29,250,225,226,175,154,101,72,35,8,225,119,2,210,119,236,202,131,185,165,221,150,156",
+          "publicKey": "2,136,51,181,207,206,141,155,85,179,79,140,187,124,109,74,86,68,40,162,20,142,118,217,7,148,201,62,196,128,10,55,120",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/2'/0/0",
+          "address": "3JF5tZ9CcUCdYy69su2sdAP14jQMyvVeN4",
+          "privateKeyWIF": "L2KnQEnAWbMKNBxha1qYXB6vzCdHn4QU7o5iGSgSrNfVUGM3pV8p",
+          "privateKeyHex": "152,79,158,132,31,249,195,189,72,113,195,243,90,57,125,112,141,39,174,199,72,5,57,71,31,84,129,45,138,39,63,33",
+          "publicKey": "3,178,150,204,248,177,9,107,173,12,189,204,116,115,35,115,24,97,194,42,171,193,159,63,232,67,2,221,99,237,169,251,184",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/2'/0/0",
+          "address": "3C1qXA4ANRfgXfWcaRpQvFT1wjaxwY8yP8",
+          "privateKeyWIF": "L2KnQEnAWbMKNBxha1qYXB6vzCdHn4QU7o5iGSgSrNfVUGM3pV8p",
+          "privateKeyHex": "152,79,158,132,31,249,195,189,72,113,195,243,90,57,125,112,141,39,174,199,72,5,57,71,31,84,129,45,138,39,63,33",
+          "publicKey": "3,178,150,204,248,177,9,107,173,12,189,204,116,115,35,115,24,97,194,42,171,193,159,63,232,67,2,221,99,237,169,251,184",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/2'/0/0",
+          "address": "bc1qzvtxeu4y4763c0yrvdfrws88lcaujrgqglq7u2",
+          "privateKeyWIF": "L2gzyJpsS1vbZ9kqFsvWzv35NhFFrF9jN582dipEFNJJ8fUVwTTc",
+          "privateKeyHex": "163,57,199,128,227,11,88,59,46,2,48,53,216,94,207,93,149,217,123,164,106,22,72,164,14,247,9,78,87,191,112,201",
+          "publicKey": "3,138,175,73,239,7,94,255,254,103,254,147,221,251,20,24,135,185,24,126,206,151,196,33,80,142,3,29,71,179,204,112,137",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/2'/0/0",
+          "address": "bc1pctttadxqr4zh68nmq67f9kmrtejaxdy4s0ac3w5u783jlwnlld7scakqzw",
+          "privateKeyWIF": "L1yGuAtqLWoSyhW9VuZjD9iSRsraH7xJFd7zyBjgnxaUrUE2touH",
+          "privateKeyHex": "141,194,182,24,208,64,228,207,101,56,34,26,99,239,95,245,213,12,111,216,131,191,38,214,235,168,255,246,31,158,139,43",
+          "publicKey": "3,74,22,59,171,67,181,97,215,116,167,233,76,19,116,55,161,25,212,170,199,110,44,174,14,72,59,105,241,229,223,207,29",
+          "internalPubkey": "74,22,59,171,67,181,97,215,116,167,233,76,19,116,55,161,25,212,170,199,110,44,174,14,72,59,105,241,229,223,207,29",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 3,
+      "name": "INGRID",
+      "emoji": "👩",
+      "description": "Wallet personal Ingrid",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/3'/0/0",
+          "address": "1Mz85VWoS3fPfiHpefi7AC7mjwb8WjuoBk",
+          "privateKeyWIF": "KxJq1s7ZWHnQFh6mVrapoR6NZsXEeXBHoJZ1wMCkd3J9JhEZX5s6",
+          "privateKeyHex": "32,120,93,110,131,183,235,53,211,194,240,35,203,223,103,234,129,92,22,202,184,236,246,179,42,15,202,170,143,82,97,142",
+          "publicKey": "3,173,125,227,48,5,104,109,53,142,114,76,9,167,199,78,169,159,225,7,224,18,106,198,163,122,93,71,30,131,50,171,64",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/3'/0/0",
+          "address": "3HsLapQUNfskdizvrVWHuiuYBumGwhZ2N6",
+          "privateKeyWIF": "KydaKgg3VEhv8zNwCp5eo7XEbRgV311BhrmKKgFzHwZSN1BokmHm",
+          "privateKeyHex": "71,243,154,68,16,172,7,55,147,138,64,165,2,107,107,51,81,205,113,211,12,94,180,0,43,150,99,220,16,44,143,2",
+          "publicKey": "3,115,59,145,104,149,78,165,82,2,33,233,239,91,85,186,93,116,255,194,112,69,82,154,43,12,28,58,69,226,63,197,203",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/3'/0/0",
+          "address": "3FNb41tKMBY3hNHNmi2tqRNQDDwXUmxidE",
+          "privateKeyWIF": "KydaKgg3VEhv8zNwCp5eo7XEbRgV311BhrmKKgFzHwZSN1BokmHm",
+          "privateKeyHex": "71,243,154,68,16,172,7,55,147,138,64,165,2,107,107,51,81,205,113,211,12,94,180,0,43,150,99,220,16,44,143,2",
+          "publicKey": "3,115,59,145,104,149,78,165,82,2,33,233,239,91,85,186,93,116,255,194,112,69,82,154,43,12,28,58,69,226,63,197,203",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/3'/0/0",
+          "address": "bc1qt6vvzqcudu6n57at04ehhqkddw4q046mujn69m",
+          "privateKeyWIF": "KyGHUs131wtdpz4PVAxh1tBcYWp7ReA8fs1jRy9vVefEerHMHtot",
+          "privateKeyHex": "60,255,190,74,199,52,207,60,55,224,227,7,196,71,212,169,27,132,117,253,28,196,119,21,102,75,136,103,34,145,143,161",
+          "publicKey": "2,29,181,203,38,24,135,57,36,0,9,62,223,125,148,217,91,240,16,132,194,166,175,86,184,226,91,21,63,75,77,55,59",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/3'/0/0",
+          "address": "bc1plrzg2826nu03zg6hdn9v9y2edekxwx42xxq2wn7pllare25c53dss6gxm3",
+          "privateKeyWIF": "KzS6FsecE5jdJQvrkpCktRgB2sF96zmNAc2gYFZ8N1Mz4G5Xsf4j",
+          "privateKeyHex": "95,225,151,172,12,216,212,114,67,107,217,17,105,152,29,112,60,53,253,148,225,236,228,225,221,227,87,40,42,98,104,79",
+          "publicKey": "3,148,213,212,38,148,202,25,29,39,215,17,48,70,11,119,131,63,212,166,76,59,127,245,65,209,95,126,178,141,238,156,108",
+          "internalPubkey": "148,213,212,38,148,202,25,29,39,215,17,48,70,11,119,131,63,212,166,76,59,127,245,65,209,95,126,178,141,238,156,108",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 4,
+      "name": "ADI",
+      "emoji": "👨‍💼",
+      "description": "Wallet personal Adi",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/4'/0/0",
+          "address": "12mVeuE7mi1poPNBT3Ruki5zawxVxHdZ2g",
+          "privateKeyWIF": "KzpbaqFi5P5b986XNPkB8pa5P7FMXLCpDkTSSnmRri4zpQxsVASP",
+          "privateKeyHex": "107,117,127,47,181,241,94,166,192,221,30,241,195,149,126,223,93,123,245,226,8,35,181,90,211,103,93,165,214,99,35,238",
+          "publicKey": "2,230,139,197,66,247,16,171,206,139,4,59,45,54,212,123,111,114,211,166,229,5,29,246,36,68,114,63,159,87,71,109,111",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/4'/0/0",
+          "address": "3NAMBrvhu1DvxwEqVqyGsQqpVr4hdam2CT",
+          "privateKeyWIF": "L5ZaWA6XfmoSSJEWBKyxbkUgdWPDhG3x1q5KaqTk1KzaqKX8j4Z7",
+          "privateKeyHex": "248,235,120,41,171,122,34,73,171,130,238,121,22,127,84,126,189,49,225,43,126,198,243,83,26,106,31,93,70,27,16,98",
+          "publicKey": "3,20,12,253,181,94,13,12,42,234,24,253,250,95,233,135,51,78,144,155,41,66,133,17,11,97,214,100,112,45,91,23,86",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/4'/0/0",
+          "address": "3HjaDk4yWZhJFSnkCsTMJEZNQatkXZPeck",
+          "privateKeyWIF": "L5ZaWA6XfmoSSJEWBKyxbkUgdWPDhG3x1q5KaqTk1KzaqKX8j4Z7",
+          "privateKeyHex": "248,235,120,41,171,122,34,73,171,130,238,121,22,127,84,126,189,49,225,43,126,198,243,83,26,106,31,93,70,27,16,98",
+          "publicKey": "3,20,12,253,181,94,13,12,42,234,24,253,250,95,233,135,51,78,144,155,41,66,133,17,11,97,214,100,112,45,91,23,86",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/4'/0/0",
+          "address": "bc1qfwty0txzx30hrcrmdzrr62xtl7cgvk85dljutx",
+          "privateKeyWIF": "L5bu4gY5HPN7x56ch42CLYnHWecA71MhP8kGNgAGjSSWyidLddhR",
+          "privateKeyHex": "250,29,1,142,154,83,187,149,164,95,24,209,167,9,126,21,39,193,55,15,223,255,217,55,145,207,58,203,41,106,203,234",
+          "publicKey": "2,136,82,125,102,221,48,225,84,65,245,188,70,20,33,243,11,221,91,104,222,137,35,155,216,72,202,204,254,22,47,182,31",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/4'/0/0",
+          "address": "bc1pre2xcwwmjd5f6prwzh53ty2mwphx8gktaverxcx0pnwtwenpzd8sa7gsl5",
+          "privateKeyWIF": "KweNrXPEyDWBUCgX7nAChLw6ihTVT2mTSAL6DGeRGz6R8nRWoyft",
+          "privateKeyHex": "12,176,130,242,79,212,192,251,148,197,67,137,208,196,174,235,187,55,255,133,158,43,95,176,11,222,55,39,153,145,208,160",
+          "publicKey": "3,245,212,21,152,183,186,50,98,72,21,232,49,229,164,7,222,191,171,207,78,125,194,25,82,172,15,184,253,182,119,144,209",
+          "internalPubkey": "245,212,21,152,183,186,50,98,72,21,232,49,229,164,7,222,191,171,207,78,125,194,25,82,172,15,184,253,182,119,144,209",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 5,
+      "name": "MAMA",
+      "emoji": "👵",
+      "description": "Wallet pentru mamă",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/5'/0/0",
+          "address": "198J2nouLcYrBFCBQQybWyNzaUbQFLPPAe",
+          "privateKeyWIF": "L1jDV7wDbCJF4mreMr67HMSLcpjABjv4kM7vGQWK88emN1UVWLw8",
+          "privateKeyHex": "134,135,54,105,167,74,211,83,88,212,42,105,27,213,59,56,76,52,2,22,230,68,221,42,106,133,239,116,145,240,16,39",
+          "publicKey": "3,84,76,228,16,84,241,44,215,64,236,105,175,121,183,117,143,72,200,148,241,46,81,22,128,160,217,149,198,76,240,243,221",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/5'/0/0",
+          "address": "39tgteLg1DxdKQRxKzmPkBJyyqr8xSb5Vz",
+          "privateKeyWIF": "KzW5zNAzGfUSQYghHuNAhhD5AFYyTB5yUofNWB9cDMdCTFM2hN8Q",
+          "privateKeyHex": "97,239,197,12,172,56,136,98,187,86,107,79,38,139,204,99,229,126,169,188,135,199,74,233,50,148,80,74,250,178,55,220",
+          "publicKey": "2,114,142,206,29,8,45,25,8,40,120,249,102,192,30,95,149,10,233,202,173,150,210,189,118,36,141,73,50,178,11,125,3",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/5'/0/0",
+          "address": "3PjCJ9ZLgaLWTAeL8vJ719jf3XSiyjaL25",
+          "privateKeyWIF": "KzW5zNAzGfUSQYghHuNAhhD5AFYyTB5yUofNWB9cDMdCTFM2hN8Q",
+          "privateKeyHex": "97,239,197,12,172,56,136,98,187,86,107,79,38,139,204,99,229,126,169,188,135,199,74,233,50,148,80,74,250,178,55,220",
+          "publicKey": "2,114,142,206,29,8,45,25,8,40,120,249,102,192,30,95,149,10,233,202,173,150,210,189,118,36,141,73,50,178,11,125,3",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/5'/0/0",
+          "address": "bc1qtrn2jac3neypcqxym53m2wm49hygry7m0z36g6",
+          "privateKeyWIF": "L3m5uAssrD56YYJ7FvHFgiBAJCGXe4ofA2yz7nbcpsRE5CsisRbF",
+          "privateKeyHex": "195,42,32,221,0,116,105,0,67,49,233,4,228,189,59,44,64,162,216,107,0,97,248,155,172,203,198,215,121,106,134,197",
+          "publicKey": "3,16,43,28,168,177,79,39,153,73,205,135,206,233,65,129,227,188,180,24,117,252,15,137,214,28,198,191,174,139,49,215,207",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/5'/0/0",
+          "address": "bc1pdwgwyyn8zcn8r7e4s74fvm54tcsnxcl60ynnz86fjx48vewh6x9qdm55a9",
+          "privateKeyWIF": "Kzdf7txQ8qxyUcL3AEvJ8xkNGGVDmdKDVVMPrD5h5aFLcjJS8ERL",
+          "privateKeyHex": "101,212,222,36,174,208,47,210,177,210,134,141,116,100,155,91,40,76,235,167,96,176,225,174,203,125,83,194,115,2,126,123",
+          "publicKey": "2,121,159,150,229,224,48,20,126,110,200,189,155,94,143,220,239,198,72,107,188,68,211,194,141,35,151,168,14,176,197,84,155",
+          "internalPubkey": "121,159,150,229,224,48,20,126,110,200,189,155,94,143,220,239,198,72,107,188,68,211,194,141,35,151,168,14,176,197,84,155",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 6,
+      "name": "TATA",
+      "emoji": "👴",
+      "description": "Wallet pentru tată",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/6'/0/0",
+          "address": "1N2CFCKHYw1KB4Ca7SYV7bEUcZU5spUjio",
+          "privateKeyWIF": "L4uM8NzmSRtbkWV2cVDEWL46u6pEoXDaQ4p2mVVqucn2G44Ay9gD",
+          "privateKeyHex": "229,64,165,169,9,252,211,128,115,133,86,178,239,100,203,25,78,26,208,9,14,83,223,216,133,208,134,221,248,221,2,194",
+          "publicKey": "3,19,11,146,55,193,230,5,250,74,100,174,82,45,74,20,110,134,235,209,204,64,172,159,41,242,251,183,103,66,184,67,15",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/6'/0/0",
+          "address": "355LeCghyKHFFVg3TsKXCngnBmcSZgDCQJ",
+          "privateKeyWIF": "KzngdwMUjmYfER57ZbvkodP6fS482NcHj8Cc8UKqy8mxc5W26J4a",
+          "privateKeyHex": "106,121,148,77,98,66,159,60,220,157,207,197,237,51,215,199,174,21,175,26,76,139,52,146,103,136,111,30,144,178,178,90",
+          "publicKey": "2,141,111,214,38,18,122,38,255,229,55,213,228,191,11,162,79,222,108,238,65,232,226,83,211,51,232,228,61,13,94,26,102",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/6'/0/0",
+          "address": "3FRsvoVSFRjoqLSReu6Pas13sAVReACwxy",
+          "privateKeyWIF": "KzngdwMUjmYfER57ZbvkodP6fS482NcHj8Cc8UKqy8mxc5W26J4a",
+          "privateKeyHex": "106,121,148,77,98,66,159,60,220,157,207,197,237,51,215,199,174,21,175,26,76,139,52,146,103,136,111,30,144,178,178,90",
+          "publicKey": "2,141,111,214,38,18,122,38,255,229,55,213,228,191,11,162,79,222,108,238,65,232,226,83,211,51,232,228,61,13,94,26,102",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/6'/0/0",
+          "address": "bc1q4c7y58etpzdtahzfh68qrfck25y0cw30p62006",
+          "privateKeyWIF": "KzAzNhF8dTdduTZmNTGj3R9wQtaGfgoTwkpYWCfARguVMu9V1gkT",
+          "privateKeyHex": "88,28,203,88,191,145,202,190,124,2,144,49,100,66,38,193,150,18,5,25,197,207,87,81,35,10,251,3,231,101,248,37",
+          "publicKey": "3,78,220,209,144,54,149,254,150,175,187,51,75,16,184,101,7,226,72,51,154,198,150,88,64,239,70,255,72,48,185,211,191",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/6'/0/0",
+          "address": "bc1pytzzsg5j264ufa257mp90ppr2lxrf44xzxq36t42ls960u7jsayq53xk3g",
+          "privateKeyWIF": "L3ZrYNvJg4iysPuoaeCzVCvM9scGSNbfUeDyAgpCTWi1uCZvfFf9",
+          "privateKeyHex": "189,99,35,165,51,89,100,114,87,48,72,200,162,238,129,230,130,67,231,133,94,201,244,57,220,53,80,153,79,10,97,210",
+          "publicKey": "3,149,200,85,90,163,239,62,197,245,187,31,236,132,196,142,191,23,112,196,33,167,79,9,192,128,158,180,224,10,157,10,122",
+          "internalPubkey": "149,200,85,90,163,239,62,197,245,187,31,236,132,196,142,191,23,112,196,33,167,79,9,192,128,158,180,224,10,157,10,122",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 7,
+      "name": "BANK",
+      "emoji": "🏦",
+      "description": "Rezervă bancară",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/7'/0/0",
+          "address": "1LBMkUKxvRpnuMo3tCr7AvSieNixXoK5pP",
+          "privateKeyWIF": "KzZgBASH5P2AsBkAe8SmQ4GZhwYcVryLfuQtRA24XkHhzMNVHzeV",
+          "privateKeyHex": "99,200,123,92,181,119,131,245,133,254,156,243,96,254,174,242,90,23,142,31,14,34,227,130,196,13,208,199,162,92,239,96",
+          "publicKey": "3,230,216,241,142,173,151,52,9,106,13,99,19,217,197,33,86,197,128,146,225,231,131,11,124,112,247,135,43,191,93,65,94",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/7'/0/0",
+          "address": "3GnWHVu3aU399nLyTyGDXCoaBmve1rBNFV",
+          "privateKeyWIF": "KyFHWQ64mGyNDpDUYRB5HbFpBQF6JT3hFeiGMcG9YSaWGyvjZhPS",
+          "privateKeyHex": "60,124,27,124,64,157,46,65,210,217,62,198,40,182,234,187,86,126,40,196,167,218,147,166,249,37,221,197,151,162,249,65",
+          "publicKey": "2,160,15,72,131,203,203,48,53,10,174,22,157,47,154,1,139,165,140,114,226,118,254,207,206,249,169,136,211,152,182,83,203",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/7'/0/0",
+          "address": "35iu5Xhs65iZY1M4fnMG9fGihTLoVTvTzx",
+          "privateKeyWIF": "KyFHWQ64mGyNDpDUYRB5HbFpBQF6JT3hFeiGMcG9YSaWGyvjZhPS",
+          "privateKeyHex": "60,124,27,124,64,157,46,65,210,217,62,198,40,182,234,187,86,126,40,196,167,218,147,166,249,37,221,197,151,162,249,65",
+          "publicKey": "2,160,15,72,131,203,203,48,53,10,174,22,157,47,154,1,139,165,140,114,226,118,254,207,206,249,169,136,211,152,182,83,203",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/7'/0/0",
+          "address": "bc1qhtmq755ahfp2y4hfgndqtwpgjwaa552cnq2hdm",
+          "privateKeyWIF": "L4zmSmruJrsF22T5284M69fPjjDJVEirMUfXRDEVuKhfo3GsgN3n",
+          "privateKeyHex": "232,10,87,182,187,14,230,245,196,120,66,175,101,43,23,3,23,7,11,39,119,250,187,82,94,30,230,197,222,239,196,225",
+          "publicKey": "2,214,84,111,241,131,165,96,240,215,212,221,143,204,165,64,109,35,81,120,118,37,61,241,160,152,235,106,36,122,141,219,93",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/7'/0/0",
+          "address": "bc1pl5wpsspfz2rjh4w8jvwjucqwvc8l38j22eyva5hygzrjh7ea2tasc745mn",
+          "privateKeyWIF": "L5TSESsmRckkKg2sBuew8p8Y9pMGeN2GV2rP51CpQ4XPdKK6CtLE",
+          "privateKeyHex": "245,194,131,69,187,93,96,92,179,73,194,192,111,117,59,160,210,37,225,36,162,62,88,12,180,125,209,186,20,194,130,57",
+          "publicKey": "3,233,106,101,100,51,215,246,110,10,31,206,94,10,150,68,104,139,21,2,134,111,154,81,14,242,209,176,215,25,168,71,183",
+          "internalPubkey": "233,106,101,100,51,215,246,110,10,31,206,94,10,150,68,104,139,21,2,134,111,154,81,14,242,209,176,215,25,168,71,183",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 8,
+      "name": "VAULT",
+      "emoji": "🔐",
+      "description": "Seif securizat",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/8'/0/0",
+          "address": "1LiSVzp1J8i3yfCdyGmjpX5JqkexxPRajR",
+          "privateKeyWIF": "L5CvkivW6WSfY8G2oejwmnk8qaXRGt5bah99rKXgQeffj3m9cjo1",
+          "privateKeyHex": "238,75,213,133,150,173,133,101,147,58,140,106,160,23,16,233,67,113,229,154,95,22,196,132,73,102,61,125,63,108,174,196",
+          "publicKey": "3,25,243,134,202,97,8,206,7,119,197,24,108,40,133,198,104,220,11,147,155,53,214,240,15,73,49,212,215,243,207,8,86",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/8'/0/0",
+          "address": "3DaxJfS87jYLbsyFDBam1px3kMSk2zXdvL",
+          "privateKeyWIF": "L13SRJErGA3cdcLsoMANVTCWcfWrtvyShgYTmtRVVFshqCoPDcmQ",
+          "privateKeyHex": "114,16,188,184,84,87,135,201,41,126,154,65,36,79,209,35,203,132,240,144,98,127,65,92,127,145,168,52,235,178,35,146",
+          "publicKey": "3,89,40,16,14,149,206,104,195,12,150,26,240,46,28,21,22,42,138,171,223,44,144,184,192,87,223,67,231,15,242,208,84",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/8'/0/0",
+          "address": "379yM4beXtKW78R89WDHx5pG6X6d65Wmiv",
+          "privateKeyWIF": "L13SRJErGA3cdcLsoMANVTCWcfWrtvyShgYTmtRVVFshqCoPDcmQ",
+          "privateKeyHex": "114,16,188,184,84,87,135,201,41,126,154,65,36,79,209,35,203,132,240,144,98,127,65,92,127,145,168,52,235,178,35,146",
+          "publicKey": "3,89,40,16,14,149,206,104,195,12,150,26,240,46,28,21,22,42,138,171,223,44,144,184,192,87,223,67,231,15,242,208,84",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/8'/0/0",
+          "address": "bc1qsqezkd9xzp5r2aw3nyjwnd6fczzpyweaje34fg",
+          "privateKeyWIF": "L514sw5wUH4HVmS8Xkm9Jn5FzXk32nanDiXhBfVzwAv2KjnRjLN6",
+          "privateKeyHex": "232,49,237,155,139,216,50,140,212,156,112,57,29,167,213,216,84,105,117,13,218,146,198,51,246,233,226,173,208,47,76,43",
+          "publicKey": "2,90,87,39,149,34,213,81,249,96,65,184,191,241,129,134,240,72,152,13,155,34,91,13,35,7,248,149,120,182,21,114,108",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/8'/0/0",
+          "address": "bc1p04k6skky39jvgsrv29l0fyu2e6ker7jjrg97ap67hshemz0wuvcsq5p24a",
+          "privateKeyWIF": "L4gUH5tpMorMDM8pgRZc22xG1RRgjesWus3Jjz2QK6AuNZ5a56ND",
+          "privateKeyHex": "222,160,213,64,236,97,57,226,12,194,183,110,233,16,135,76,255,231,120,40,165,115,95,19,50,180,75,158,141,136,46,149",
+          "publicKey": "2,108,162,89,27,160,205,205,159,2,146,85,93,47,219,199,82,195,151,147,145,175,44,167,17,104,17,188,17,155,242,225,189",
+          "internalPubkey": "108,162,89,27,160,205,205,159,2,146,85,93,47,219,199,82,195,151,147,145,175,44,167,17,104,17,188,17,155,242,225,189",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    },
+    {
+      "index": 9,
+      "name": "EU",
+      "emoji": "🎯",
+      "description": "Wallet principal",
+      "addresses": {
+        "legacy": {
+          "type": "Legacy (P2PKH)",
+          "path": "m/44'/0'/9'/0/0",
+          "address": "1KMaYkiKTznxdZSk43qmyA83JskWbYfJ5Y",
+          "privateKeyWIF": "L1GtnNms76dtpxEAXAMpe58D1Zu94C4bbwrv1BqG7xeR9mhASiQ2",
+          "privateKeyHex": "120,252,165,213,147,2,241,234,12,111,240,59,243,202,153,201,105,228,60,225,88,195,189,37,142,37,213,165,218,199,154,156",
+          "publicKey": "2,165,59,219,67,26,45,237,86,192,103,114,233,81,240,160,111,86,33,79,123,170,236,231,117,71,251,191,201,182,219,60,83",
+          "icon": "🔑",
+          "prefix": "1..."
+        },
+        "scriptHash": {
+          "type": "Script Hash (P2SH)",
+          "path": "m/49'/0'/9'/0/0",
+          "address": "3Nokg6YdD2z64JXgNXEMvSaUHBGzyzBu4q",
+          "privateKeyWIF": "KyNGAE6Edv8XBXvHGQe4hGxSyhjpzqHEMNGQidYjGZGBXZSs3dzv",
+          "privateKeyHex": "64,18,235,112,181,183,220,49,113,35,120,181,59,132,70,96,172,220,217,137,23,241,16,5,96,253,231,132,117,168,159,220",
+          "publicKey": "2,242,146,159,159,112,160,60,56,12,108,98,254,161,79,25,164,130,194,116,94,155,79,250,86,89,94,177,245,145,78,192,147",
+          "icon": "📜",
+          "prefix": "3..."
+        },
+        "segwit": {
+          "type": "SegWit (P2SH-P2WPKH)",
+          "path": "m/49'/0'/9'/0/0",
+          "address": "32Tii9t7TJosoMU7JqHrDyiFv5gCrYXwxQ",
+          "privateKeyWIF": "KyNGAE6Edv8XBXvHGQe4hGxSyhjpzqHEMNGQidYjGZGBXZSs3dzv",
+          "privateKeyHex": "64,18,235,112,181,183,220,49,113,35,120,181,59,132,70,96,172,220,217,137,23,241,16,5,96,253,231,132,117,168,159,220",
+          "publicKey": "2,242,146,159,159,112,160,60,56,12,108,98,254,161,79,25,164,130,194,116,94,155,79,250,86,89,94,177,245,145,78,192,147",
+          "icon": "⚡",
+          "prefix": "3..."
+        },
+        "nativeSegwit": {
+          "type": "Native SegWit (P2WPKH)",
+          "path": "m/84'/0'/9'/0/0",
+          "address": "bc1qducgyaecekstnyn55k6ncvhers6akfmddnse7j",
+          "privateKeyWIF": "KwkhmBS9dcFYxAt4PA1nCYnkKX5DVMLY76meDkMmxM67q2DdM3nF",
+          "privateKeyHex": "15,241,158,230,1,121,113,139,139,197,90,32,142,203,29,100,85,238,33,177,110,7,139,244,232,179,114,133,199,4,0,141",
+          "publicKey": "3,170,23,233,168,40,171,218,5,45,202,84,6,195,233,93,213,63,163,4,190,60,252,65,246,13,50,71,149,125,9,237,250",
+          "icon": "🚀",
+          "prefix": "bc1q..."
+        },
+        "taproot": {
+          "type": "Taproot (P2TR)",
+          "path": "m/86'/0'/9'/0/0",
+          "address": "bc1p5g9px3qs9l28rwzflqzvsvlzpk4hc95vmpd77f4vux0ftvdcqu2qymx3g2",
+          "privateKeyWIF": "L223u71JXoyKWHEL4JRui3ac5bpxnKt2K2KL796AbZKURq6F5uuG",
+          "privateKeyHex": "143,48,71,101,37,103,196,43,200,172,184,10,118,147,222,166,109,65,83,197,172,25,69,56,244,120,172,77,183,46,118,161",
+          "publicKey": "2,52,191,170,60,93,108,75,63,235,139,57,113,27,30,93,57,26,18,31,42,56,208,152,203,72,205,73,223,2,93,55,170",
+          "internalPubkey": "52,191,170,60,93,108,75,63,235,139,57,113,27,30,93,57,26,18,31,42,56,208,152,203,72,205,73,223,2,93,55,170",
+          "icon": "🌳",
+          "prefix": "bc1p..."
+        }
+      }
+    }
+  ]
+}

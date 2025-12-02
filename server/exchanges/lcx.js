@@ -407,10 +407,15 @@ export default class lcx extends Exchange {
         since = this.parse8601 (since);
         const request = {};
         await this.loadMarkets ();
-        const market = this.market (symbol);
+
+        // Only load market if symbol is provided
+        let market = undefined;
         if (symbol !== undefined) {
+            market = this.market (symbol);
             request['pair'] = market['symbol'];
         }
+        // If symbol is undefined, fetch ALL open orders (no pair parameter)
+
         request['offset'] = 1;
         const pageInParams = ('page' in params);
         if (pageInParams) {
@@ -430,10 +435,15 @@ export default class lcx extends Exchange {
     async fetchClosedOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
         const request = {};
         await this.loadMarkets ();
-        const market = this.market (symbol);
+
+        // Only load market if symbol is provided
+        let market = undefined;
         if (symbol !== undefined) {
+            market = this.market (symbol);
             request['pair'] = market['symbol'];
         }
+        // If symbol is undefined, fetch ALL closed orders (no pair parameter)
+
         request['offset'] = 1;
         const pageInParams = ('page' in params);
         if (pageInParams) {

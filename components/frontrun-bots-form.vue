@@ -1,7 +1,8 @@
 <script setup>
 import { useAppStore } from '~/stores/app.store';
-import {ref, h, watch} from "vue";
+import {ref, h, watch, computed} from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
+import DemoFrontrunGrid from '~/components/DemoFrontrunGrid.vue';
 const app = useAppStore()
 
 let userID = useCookie('userID');
@@ -15,6 +16,25 @@ const bestBid = ref(null);
 const bestAsk = ref(null);
 const manualLowerPrice = ref('');
 const manualUpperPrice = ref('');
+
+// Demo Grid Modal
+let showDemoGrid = ref(false);
+
+// Computed configuration for demo grid
+const demoGridConfig = computed(() => ({
+  lowerPrice: lowerPrice.value,
+  upperPrice: upperPrice.value,
+  PriceStart: PriceStart.value,
+  amountPriceStart: amountPriceStart.value,
+  amount: amount.value,
+  nrOfGrids: nrOfGrids.value,
+  ordersSide: ordersSide.value,
+  incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+  incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+  symbol: currentSymbol.value,
+  base: base,
+  quote: quote
+}));
 
 // API Key selector
 let availableApiKeys = ref([]);
@@ -340,6 +360,17 @@ function resetFields() {
   ActiveRANGE.value = false;
 }
 
+function openGridDemo() {
+  console.log('Opening Grid Demo with config:', demoGridConfig.value);
+  showDemoGrid.value = true;
+  console.log('showDemoGrid:', showDemoGrid.value);
+}
+
+function closeGridDemo() {
+  console.log('Closing Grid Demo');
+  showDemoGrid.value = false;
+}
+
 // Funcția de setare a valorilor implicite bazate pe strategii
 function setStrategyDefaults(strategy) {
   const strategyMapping = {
@@ -632,15 +663,22 @@ onMounted(() => {
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-          <n-space>
-            <n-button class="buy-btn" type="success" @click="createBuyOnlyBot" :disabled="isBuyDisabled">
-              🟢 Buy Only
-            </n-button>
-            <n-button class="sell-btn" type="error" @click="createSellOnlyBot" :disabled="isSellDisabled">
-              🔴 Sell Only
-            </n-button>
-            <n-button type="info" @click="enableAllButtons">Enable All</n-button>
-            <n-button type="warning" @click="resetFields">Reset All</n-button>
+          <n-space vertical size="small">
+            <n-space>
+              <n-button class="buy-btn" type="success" @click="createBuyOnlyBot" :disabled="isBuyDisabled">
+                🟢 Buy Only
+              </n-button>
+              <n-button class="sell-btn" type="error" @click="createSellOnlyBot" :disabled="isSellDisabled">
+                🔴 Sell Only
+              </n-button>
+            </n-space>
+            <n-space>
+              <n-button type="info" @click="enableAllButtons">Enable All</n-button>
+              <n-button type="warning" @click="resetFields">Reset All</n-button>
+              <n-button type="primary" @click="openGridDemo" class="demo-btn">
+                🎯 View Grid Demo
+              </n-button>
+            </n-space>
           </n-space>
           <n-checkbox v-model:checked="ActiveRANGE" style="margin-top: 8px;">
             <span style="font-size: 11px; color: #f5a623;">Active RANGE</span>
@@ -832,8 +870,12 @@ onMounted(() => {
     </n-gi>
   </n-grid>
 
-
-
+  <!-- Demo Grid Modal -->
+  <DemoFrontrunGrid
+    :config="demoGridConfig"
+    :visible="showDemoGrid"
+    @close="closeGridDemo"
+  />
 </div>
 </template>
 
@@ -1031,6 +1073,20 @@ onMounted(() => {
 .sell-btn:disabled {
   opacity: 0.5;
   background: #2a2a2a !important;
+}
+
+.demo-btn {
+  background: linear-gradient(135deg, #0a1a2e 0%, #6366f1 100%) !important;
+  border: 1px solid #6366f1 !important;
+  color: white !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.demo-btn:hover {
+  background: linear-gradient(135deg, #6366f1 0%, #0a1a2e 100%) !important;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+  transform: translateY(-2px);
 }
 
 /* ===== PRICE ADJUST CARD ===== */

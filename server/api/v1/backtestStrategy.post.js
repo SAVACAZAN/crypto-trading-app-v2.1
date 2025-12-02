@@ -1,3 +1,4 @@
+
 import { dcaBotStrategy } from "~/strategies/simpleStrategy";
 
 export default defineEventHandler(async (event) => {

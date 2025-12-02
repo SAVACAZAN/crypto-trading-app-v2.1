@@ -11,10 +11,15 @@ export default defineEventHandler(async (event) => {
 
     // Căutăm utilizatorul care a referit utilizatorul nou
     let referredBy = null;
+    let referredByEdited = false;
+
     if (data.referralCode) {
         const referringUser = await userSchema.findOne({ referralCode: data.referralCode });
         if (referringUser) {
-            referredBy = referringUser._id;
+            // Salvăm codul de referral, nu ID-ul
+            referredBy = data.referralCode;
+            // Marcăm că a venit prin link, deci nu poate edita
+            referredByEdited = true;
         }
     }
 
@@ -46,11 +51,74 @@ export default defineEventHandler(async (event) => {
     };
 
     // Creăm obiectul user cu toate informațiile
-    const user = new userSchema({ 
-        username: data.username, 
+    const now = new Date();
+    const user = new userSchema({
+        username: data.username,
         password: hashedPassword,
         referralCode: referralCode,
         referredBy: referredBy,
+        referredByEdited: referredByEdited, // Adăugăm flag-ul
+        codeEditedOnce: false, // Codul propriu nu a fost editat
+        createdAt: now, // Adăugăm explicit timestamp-ul de creare
+        updatedAt: now, // Adăugăm explicit timestamp-ul de actualizare
+
+        // NEW STRUCTURE: Welcome Bonus - $150 USD automatic pentru fiecare user nou
+        registerWelcomeBonus: {
+            amount: 150,
+            claimed: true,
+            claimedAt: now,
+            currency: 'USD'
+        },
+
+        // NEW STRUCTURE: Referral system organization
+        referrals: {
+            tree: [],
+            chain: {
+                level1: [],
+                level2: [],
+                level3: [],
+                level4: [],
+                level5: []
+            },
+            points: {
+                total: 0,
+                byTier: {
+                    level1: 0,
+                    level2: 0,
+                    level3: 0,
+                    level4: 0,
+                    level5: 0
+                },
+                breakdown: {
+                    level1: { users: 0, points: 0 },
+                    level2: { users: 0, points: 0 },
+                    level3: { users: 0, points: 0 },
+                    level4: { users: 0, points: 0 },
+                    level5: { users: 0, points: 0 },
+                    grandTotal: 0
+                },
+                lastCalculated: null
+            },
+            tierCredits: {
+                tier1: { userID: null, username: null, referralCode: null, percentage: 25 },
+                tier2: { userID: null, username: null, referralCode: null, percentage: 15 },
+                tier3: { userID: null, username: null, referralCode: null, percentage: 10 },
+                tier4: { userID: null, username: null, referralCode: null, percentage: 5 },
+                tier5: { userID: null, username: null, referralCode: null, percentage: 2 }
+            },
+            activityPoints: 100, // Give new users 100 activity points to start
+            lastUpdated: now
+        },
+
+        // NEW STRUCTURE: Referral bonus earnings
+        referralBonus: {
+            totalEarnings: 0,
+            earningsPerReferral: 100,
+            earningsHistory: [],
+            lastUpdated: null,
+            currency: 'USD'
+        },
+
         BitcoinWallet: {
             mnemonic: demoBitcoinMnemonic,
             Key: null, // Nu am generat încă o cheie Bitcoin pentru acest exemplu

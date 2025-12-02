@@ -392,46 +392,50 @@
                             <!-- BALANCES -->
                             <div style="font-size: 8px; color: #888; margin-bottom: 4px;">BALANCES:</div>
                             <table style="width: 100%; font-size: 9px; margin-bottom: 8px;">
-                              <tr>
-                                <td style="color: #888; padding: 2px;">Free {{base}}:</td>
-                                <td style="color: #10eb04; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.baseFree?.toFixed(2)) }}</td>
-                                <td style="color: #888; padding: 2px 2px 2px 12px;">Free {{quote}}:</td>
-                                <td style="color: #05f5ed; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.quoteFree?.toFixed(2)) }}</td>
-                              </tr>
-                              <tr>
-                                <td style="color: #888; padding: 2px;">Used {{base}}:</td>
-                                <td style="color: #f5a623; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.baseUsed?.toFixed(2)) }}</td>
-                                <td style="color: #888; padding: 2px 2px 2px 12px;">Used {{quote}}:</td>
-                                <td style="color: #f5a623; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.quoteUsed?.toFixed(2)) }}</td>
-                              </tr>
-                              <tr style="border-top: 1px solid #333;">
-                                <td style="color: #888; padding: 4px 2px 2px 2px; font-weight: 600;">Total {{base}}:</td>
-                                <td style="color: #10eb04; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">{{ formatNumber(balance.baseTotal?.toFixed(2)) }}</td>
-                                <td style="color: #888; padding: 4px 2px 2px 12px; font-weight: 600;">Total {{quote}}:</td>
-                                <td style="color: #05f5ed; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">{{ formatNumber(balance.quoteTotal?.toFixed(2)) }}</td>
-                              </tr>
-                              <tr style="border-top: 1px solid #444;">
-                                <td colspan="2" style="color: #888; padding: 4px 2px 2px 2px;">Value USD:</td>
-                                <td colspan="2" style="color: #f39c12; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">${{ formatNumber(((balance.baseTotal * snapshot.tickerPrice) + balance.quoteTotal).toFixed(2)) }}</td>
-                              </tr>
+                              <tbody>
+                                <tr>
+                                  <td style="color: #888; padding: 2px;">Free {{base}}:</td>
+                                  <td style="color: #10eb04; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.baseFree?.toFixed(2)) }}</td>
+                                  <td style="color: #888; padding: 2px 2px 2px 12px;">Free {{quote}}:</td>
+                                  <td style="color: #05f5ed; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.quoteFree?.toFixed(2)) }}</td>
+                                </tr>
+                                <tr>
+                                  <td style="color: #888; padding: 2px;">Used {{base}}:</td>
+                                  <td style="color: #f5a623; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.baseUsed?.toFixed(2)) }}</td>
+                                  <td style="color: #888; padding: 2px 2px 2px 12px;">Used {{quote}}:</td>
+                                  <td style="color: #f5a623; font-weight: 600; text-align: right; padding: 2px;">{{ formatNumber(balance.quoteUsed?.toFixed(2)) }}</td>
+                                </tr>
+                                <tr style="border-top: 1px solid #333;">
+                                  <td style="color: #888; padding: 4px 2px 2px 2px; font-weight: 600;">Total {{base}}:</td>
+                                  <td style="color: #10eb04; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">{{ formatNumber(balance.baseTotal?.toFixed(2)) }}</td>
+                                  <td style="color: #888; padding: 4px 2px 2px 12px; font-weight: 600;">Total {{quote}}:</td>
+                                  <td style="color: #05f5ed; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">{{ formatNumber(balance.quoteTotal?.toFixed(2)) }}</td>
+                                </tr>
+                                <tr style="border-top: 1px solid #444;">
+                                  <td colspan="2" style="color: #888; padding: 4px 2px 2px 2px;">Value USD:</td>
+                                  <td colspan="2" style="color: #f39c12; font-weight: 700; text-align: right; padding: 4px 2px 2px 2px;">${{ formatNumber(((balance.baseTotal * snapshot.tickerPrice) + balance.quoteTotal).toFixed(2)) }}</td>
+                                </tr>
+                              </tbody>
                             </table>
 
                             <!-- ORDERS (if exists) -->
                             <div v-if="snapshot.apiKeyOrders && snapshot.apiKeyOrders[apiKey]" style="border-top: 1px solid #333; padding-top: 6px;">
                               <div style="font-size: 8px; color: #888; margin-bottom: 4px;">ORDERS:</div>
                               <table style="width: 100%; font-size: 9px;">
-                                <tr style="background: #0a2e01;">
-                                  <td style="color: #46f012; padding: 2px; font-weight: 600;">BUY:</td>
-                                  <td style="color: #10eb04; text-align: right; padding: 2px;">{{ snapshot.apiKeyOrders[apiKey].buy?.count || 0 }} orders</td>
-                                  <td style="color: #10eb04; text-align: right; padding: 2px;">Avg: {{ formatNumber(snapshot.apiKeyOrders[apiKey].buy?.avgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
-                                  <td style="color: #10eb04; text-align: right; padding: 2px;">Cost: {{ formatNumber(snapshot.apiKeyOrders[apiKey].buy?.totalCost?.toFixed(2) || '0.00') }}</td>
-                                </tr>
-                                <tr style="background: #420202;">
-                                  <td style="color: #e90a15; padding: 2px; font-weight: 600;">SELL:</td>
-                                  <td style="color: #f5a623; text-align: right; padding: 2px;">{{ snapshot.apiKeyOrders[apiKey].sell?.count || 0 }} orders</td>
-                                  <td style="color: #f5a623; text-align: right; padding: 2px;">Avg: {{ formatNumber(snapshot.apiKeyOrders[apiKey].sell?.avgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
-                                  <td style="color: #f5a623; text-align: right; padding: 2px;">Cost: {{ formatNumber(snapshot.apiKeyOrders[apiKey].sell?.totalCost?.toFixed(2) || '0.00') }}</td>
-                                </tr>
+                                <tbody>
+                                  <tr style="background: #0a2e01;">
+                                    <td style="color: #46f012; padding: 2px; font-weight: 600;">BUY:</td>
+                                    <td style="color: #10eb04; text-align: right; padding: 2px;">{{ snapshot.apiKeyOrders[apiKey].buy?.count || 0 }} orders</td>
+                                    <td style="color: #10eb04; text-align: right; padding: 2px;">Avg: {{ formatNumber(snapshot.apiKeyOrders[apiKey].buy?.avgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
+                                    <td style="color: #10eb04; text-align: right; padding: 2px;">Cost: {{ formatNumber(snapshot.apiKeyOrders[apiKey].buy?.totalCost?.toFixed(2) || '0.00') }}</td>
+                                  </tr>
+                                  <tr style="background: #420202;">
+                                    <td style="color: #e90a15; padding: 2px; font-weight: 600;">SELL:</td>
+                                    <td style="color: #f5a623; text-align: right; padding: 2px;">{{ snapshot.apiKeyOrders[apiKey].sell?.count || 0 }} orders</td>
+                                    <td style="color: #f5a623; text-align: right; padding: 2px;">Avg: {{ formatNumber(snapshot.apiKeyOrders[apiKey].sell?.avgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
+                                    <td style="color: #f5a623; text-align: right; padding: 2px;">Cost: {{ formatNumber(snapshot.apiKeyOrders[apiKey].sell?.totalCost?.toFixed(2) || '0.00') }}</td>
+                                  </tr>
+                                </tbody>
                               </table>
                             </div>
                           </div>
@@ -446,35 +450,39 @@
 
                         <!-- Balances Grand Total -->
                         <table style="width: 100%; font-size: 10px; margin-bottom: 8px;">
-                          <tr>
-                            <td style="color: #888;">{{base}}:</td>
-                            <td style="color: #10eb04; font-weight: 700; text-align: right;">{{ formatNumber(snapshot.baseGrandTotal?.toFixed(2) || '0.00') }}</td>
-                            <td style="color: #888; padding-left: 12px;">{{quote}}:</td>
-                            <td style="color: #05f5ed; font-weight: 700; text-align: right;">{{ formatNumber(snapshot.quoteGrandTotal?.toFixed(2) || '0.00') }}</td>
-                          </tr>
-                          <tr style="border-top: 1px solid #444;">
-                            <td colspan="2" style="color: #888; padding-top: 4px;">Value USD:</td>
-                            <td colspan="2" style="color: #f39c12; font-weight: 700; text-align: right; padding-top: 4px;">${{ formatNumber(((snapshot.baseGrandTotal * snapshot.tickerPrice) + snapshot.quoteGrandTotal).toFixed(2)) }}</td>
-                          </tr>
+                          <tbody>
+                            <tr>
+                              <td style="color: #888;">{{base}}:</td>
+                              <td style="color: #10eb04; font-weight: 700; text-align: right;">{{ formatNumber(snapshot.baseGrandTotal?.toFixed(2) || '0.00') }}</td>
+                              <td style="color: #888; padding-left: 12px;">{{quote}}:</td>
+                              <td style="color: #05f5ed; font-weight: 700; text-align: right;">{{ formatNumber(snapshot.quoteGrandTotal?.toFixed(2) || '0.00') }}</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #444;">
+                              <td colspan="2" style="color: #888; padding-top: 4px;">Value USD:</td>
+                              <td colspan="2" style="color: #f39c12; font-weight: 700; text-align: right; padding-top: 4px;">${{ formatNumber(((snapshot.baseGrandTotal * snapshot.tickerPrice) + snapshot.quoteGrandTotal).toFixed(2)) }}</td>
+                            </tr>
+                          </tbody>
                         </table>
 
                         <!-- Orders Grand Total -->
                         <div style="border-top: 1px solid #444; padding-top: 6px;">
                           <table style="width: 100%; font-size: 9px;">
-                            <tr style="background: #0a2e01;">
-                              <td style="color: #46f012; padding: 3px; font-weight: 600;">TOTAL BUY:</td>
-                              <td style="color: #10eb04; text-align: right; padding: 3px;">{{ snapshot.buyOrdersCount || 0 }} orders</td>
-                              <td style="color: #10eb04; text-align: right; padding: 3px;">Avg: {{ formatNumber(snapshot.buyOrdersAvgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
-                              <td style="color: #10eb04; text-align: right; padding: 3px;">Qty: {{ formatNumber(snapshot.buyOrdersTotalQty?.toFixed(2) || '0.00') }}</td>
-                              <td style="color: #10eb04; text-align: right; padding: 3px;">Cost: {{ formatNumber(snapshot.buyOrdersTotalCost?.toFixed(2) || '0.00') }}</td>
-                            </tr>
-                            <tr style="background: #420202;">
-                              <td style="color: #e90a15; padding: 3px; font-weight: 600;">TOTAL SELL:</td>
-                              <td style="color: #f5a623; text-align: right; padding: 3px;">{{ snapshot.sellOrdersCount || 0 }} orders</td>
-                              <td style="color: #f5a623; text-align: right; padding: 3px;">Avg: {{ formatNumber(snapshot.sellOrdersAvgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
-                              <td style="color: #f5a623; text-align: right; padding: 3px;">Qty: {{ formatNumber(snapshot.sellOrdersTotalQty?.toFixed(2) || '0.00') }}</td>
-                              <td style="color: #f5a623; text-align: right; padding: 3px;">Cost: {{ formatNumber(snapshot.sellOrdersTotalCost?.toFixed(2) || '0.00') }}</td>
-                            </tr>
+                            <tbody>
+                              <tr style="background: #0a2e01;">
+                                <td style="color: #46f012; padding: 3px; font-weight: 600;">TOTAL BUY:</td>
+                                <td style="color: #10eb04; text-align: right; padding: 3px;">{{ snapshot.buyOrdersCount || 0 }} orders</td>
+                                <td style="color: #10eb04; text-align: right; padding: 3px;">Avg: {{ formatNumber(snapshot.buyOrdersAvgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
+                                <td style="color: #10eb04; text-align: right; padding: 3px;">Qty: {{ formatNumber(snapshot.buyOrdersTotalQty?.toFixed(2) || '0.00') }}</td>
+                                <td style="color: #10eb04; text-align: right; padding: 3px;">Cost: {{ formatNumber(snapshot.buyOrdersTotalCost?.toFixed(2) || '0.00') }}</td>
+                              </tr>
+                              <tr style="background: #420202;">
+                                <td style="color: #e90a15; padding: 3px; font-weight: 600;">TOTAL SELL:</td>
+                                <td style="color: #f5a623; text-align: right; padding: 3px;">{{ snapshot.sellOrdersCount || 0 }} orders</td>
+                                <td style="color: #f5a623; text-align: right; padding: 3px;">Avg: {{ formatNumber(snapshot.sellOrdersAvgPrice?.toFixed(4) || '0.0000', 'Price') }}</td>
+                                <td style="color: #f5a623; text-align: right; padding: 3px;">Qty: {{ formatNumber(snapshot.sellOrdersTotalQty?.toFixed(2) || '0.00') }}</td>
+                                <td style="color: #f5a623; text-align: right; padding: 3px;">Cost: {{ formatNumber(snapshot.sellOrdersTotalCost?.toFixed(2) || '0.00') }}</td>
+                              </tr>
+                            </tbody>
                           </table>
                         </div>
                       </div>
@@ -493,11 +501,113 @@
     <!-- ORDERS SECTION - FULL WIDTH BELOW -->
     <n-card style="background: #0f0f0f;">
 
+      <!-- ACTION BUTTON: FETCH ALL PAIRS -->
+      <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+        <button
+          @click="fetchAllPairsOpenOrders"
+          :disabled="loadingAllPairs || selectedApiKeys.length === 0"
+          class="balance-button"
+          style="background: linear-gradient(135deg, #10eb04, #05f5ed); color: #000; font-weight: bold; padding: 10px 24px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 235, 4, 0.3); transition: all 0.3s;"
+          @mouseover="(e) => e.target.style.transform = 'translateY(-2px)'"
+          @mouseleave="(e) => e.target.style.transform = 'translateY(0px)'">
+          <span v-if="!loadingAllPairs">🔄 Fetch ALL Open Orders (All Pairs)</span>
+          <span v-else>⏳ Loading...</span>
+        </button>
+      </div>
+
+      <!-- NO ORDERS MESSAGE (if fetch completed but no orders found) -->
+      <div v-if="allPairsFetched && Object.keys(allPairsOrders).length === 0" style="margin-bottom: 16px; background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #f39c12; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 12px;">📭</div>
+        <div style="color: #f39c12; font-weight: 700; font-size: 14px; margin-bottom: 8px;">
+          No Open Orders Found
+        </div>
+        <div style="color: #888; font-size: 11px;">
+          There are no active orders for the selected API key(s) across all trading pairs.
+        </div>
+      </div>
+
+      <!-- ALL PAIRS ORDERS DISPLAY (if exists) -->
+      <div v-if="allPairsOrders && Object.keys(allPairsOrders).length > 0" style="margin-bottom: 16px; background: #1a1a1a; padding: 12px; border-radius: 8px; border: 2px solid #05f5ed;">
+        <div style="text-align: center; color: #05f5ed; font-weight: 700; font-size: 13px; margin-bottom: 12px;">
+          📊 ALL OPEN ORDERS GROUPED BY PAIR ({{ Object.keys(allPairsOrders).length }} pairs found)
+        </div>
+
+        <!-- FILTER BUTTONS -->
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 12px;">
+          <button @click="sideFilter = 'all'"
+                  :style="`padding: 6px 16px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 2px solid ${sideFilter === 'all' ? '#05f5ed' : '#444'}; background: ${sideFilter === 'all' ? '#05f5ed' : '#0f0f0f'}; color: ${sideFilter === 'all' ? '#000' : '#888'}; cursor: pointer; transition: all 0.2s;`">
+            📋 ALL ({{ Object.values(allPairsOrders).reduce((sum, data) => sum + data.totalCount, 0) }})
+          </button>
+          <button @click="sideFilter = 'buy'"
+                  :style="`padding: 6px 16px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 2px solid ${sideFilter === 'buy' ? '#10eb04' : '#444'}; background: ${sideFilter === 'buy' ? '#10eb04' : '#0f0f0f'}; color: ${sideFilter === 'buy' ? '#000' : '#888'}; cursor: pointer; transition: all 0.2s;`">
+            📈 BUY ({{ Object.values(allPairsOrders).reduce((sum, data) => sum + data.buyCount, 0) }})
+          </button>
+          <button @click="sideFilter = 'sell'"
+                  :style="`padding: 6px 16px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 2px solid ${sideFilter === 'sell' ? '#e90a15' : '#444'}; background: ${sideFilter === 'sell' ? '#e90a15' : '#0f0f0f'}; color: ${sideFilter === 'sell' ? '#fff' : '#888'}; cursor: pointer; transition: all 0.2s;`">
+            📉 SELL ({{ Object.values(allPairsOrders).reduce((sum, data) => sum + data.sellCount, 0) }})
+          </button>
+        </div>
+
+        <!-- Loop through each symbol -->
+        <div v-for="(symbolData, symbol) in filteredAllPairsOrders" :key="symbol" style="margin-bottom: 16px; background: #0f0f0f; padding: 10px; border-radius: 6px; border: 1px solid #444;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 2px solid #444;">
+            <div style="color: #f39c12; font-weight: 700; font-size: 12px;">{{ symbol }}</div>
+            <div style="display: flex; gap: 16px; align-items: center;">
+              <span style="color: #10eb04; font-size: 10px;">BUY: {{ symbolData.buyCount }}</span>
+              <span style="color: #e90a15; font-size: 10px;">SELL: {{ symbolData.sellCount }}</span>
+              <span style="color: #888; font-size: 10px;">Total: {{ symbolData.totalCount }}</span>
+              <button @click="cancelAllForSymbol(symbol, symbolData.orders)"
+                      :disabled="cancellingSymbols[symbol]"
+                      :style="`padding: 3px 10px; font-size: 9px; font-weight: 600; border-radius: 4px; border: none; cursor: ${cancellingSymbols[symbol] ? 'not-allowed' : 'pointer'}; background: ${cancellingSymbols[symbol] ? '#666' : '#ff4444'}; color: #fff; transition: all 0.2s;`">
+                {{ cancellingSymbols[symbol] ? '⏳ Canceling...' : '🗑️ Cancel All' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Orders table per symbol -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+            <thead>
+              <tr style="background: #1a1a1a;">
+                <th style="padding: 4px 6px; text-align: left; color: #888; border-bottom: 1px solid #444;">API Key</th>
+                <th style="padding: 4px 6px; text-align: left; color: #888; border-bottom: 1px solid #444;">Side</th>
+                <th style="padding: 4px 6px; text-align: right; color: #888; border-bottom: 1px solid #444;">Price</th>
+                <th style="padding: 4px 6px; text-align: right; color: #888; border-bottom: 1px solid #444;">Amount</th>
+                <th style="padding: 4px 6px; text-align: right; color: #888; border-bottom: 1px solid #444;">Total</th>
+                <th style="padding: 4px 6px; text-align: left; color: #888; border-bottom: 1px solid #444;">Order ID</th>
+                <th style="padding: 4px 6px; text-align: center; color: #888; border-bottom: 1px solid #444;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in symbolData.orders" :key="order.id"
+                  :style="`background: ${order.side === 'buy' ? '#0a2e01' : '#420202'};`">
+                <td style="padding: 4px 6px;">
+                  <span :style="`color: ${apiKeyColors[order.apiKeyName]}; font-weight: 600;`">{{ order.apiKeyName }}</span>
+                </td>
+                <td style="padding: 4px 6px;">
+                  <span :style="`color: ${order.side === 'buy' ? '#10eb04' : '#e90a15'}; font-weight: 700;`">{{ order.side.toUpperCase() }}</span>
+                </td>
+                <td style="padding: 4px 6px; text-align: right; color: #f5a623; font-weight: 600;">{{ formatNumber(order.price?.toFixed(4) || '0.0000', 'Price') }}</td>
+                <td style="padding: 4px 6px; text-align: right; color: #05f5ed; font-weight: 600;">{{ formatNumber(order.amount?.toFixed(2) || '0.00') }}</td>
+                <td style="padding: 4px 6px; text-align: right; color: #f39c12; font-weight: 700;">{{ formatNumber((order.price * order.amount)?.toFixed(2) || '0.00') }}</td>
+                <td style="padding: 4px 6px; color: #888; font-size: 8px;">{{ order.id?.substring(0, 16) }}...</td>
+                <td style="padding: 4px 6px; text-align: center;">
+                  <button @click="cancelOrder(order.id, order.apiKeyName, symbol, order.side, order.price, order.amount)"
+                          :disabled="cancellingOrders[order.id]"
+                          :style="`padding: 2px 8px; font-size: 8px; border-radius: 3px; border: none; cursor: ${cancellingOrders[order.id] ? 'not-allowed' : 'pointer'}; background: ${cancellingOrders[order.id] ? '#666' : '#e90a15'}; color: #fff; font-weight: 600;`">
+                    {{ cancellingOrders[order.id] ? '⏳' : '🗑️ Cancel' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- TWO COLUMN HEADERS FOR ORDERS -->
       <div style="display: flex; gap: 10px; margin-bottom: 8px;">
         <!-- LEFT HEADER -->
         <div style="flex: 1; text-align: center; padding: 6px; background: #1a1a1a; border-radius: 6px; border: 1px solid #10eb04;">
-          <n-text strong style="color: #10eb04; font-size: 11px;">ORDERS PER API KEY</n-text>
+          <n-text strong style="color: #10eb04; font-size: 11px;">ORDERS PER API KEY ({{ currentSymbol }})</n-text>
         </div>
         <!-- RIGHT HEADER -->
         <div style="flex: 1; text-align: center; padding: 6px; background: #1a1a1a; border-radius: 6px; border: 1px solid #f39c12;">
@@ -609,7 +719,7 @@ import { useAppStore } from '~/stores/app.store';
 import { ref, computed, h } from "vue";
 import { clearIntervalAsync, setIntervalAsync } from "set-interval-async";
 import { reloadNuxtApp } from "nuxt/app";
-import ccxt from 'ccxt';
+// import ccxt from 'ccxt'; // REMOVED: CCXT should only run on server-side!
 
 // No more props needed - everything from store
 const app = useAppStore();
@@ -617,8 +727,10 @@ const app = useAppStore();
 let userID = useCookie('userID');
 let currentExchange = ref(app.getUserSelectedExchange);
 let currentSymbol = ref(app.getUserSelectedMarket);
-let base = currentSymbol.value.split('/')[0];
-let quote = currentSymbol.value.split('/')[1];
+
+// Make base and quote reactive computed properties
+const base = computed(() => currentSymbol.value?.split('/')[0] || 'LCX');
+const quote = computed(() => currentSymbol.value?.split('/')[1] || 'USDC');
 
 // Ticker variables (from ticker-bar.vue)
 let ticker = ref({
@@ -682,6 +794,14 @@ let selectedDateSnapshots = ref([]);
 let lastSnapshotTime = ref(0); // Track last save time for cooldown
 let expandedSnapshotId = ref(null); // Track which snapshot is expanded
 
+// ALL PAIRS ORDERS - New functionality
+let allPairsOrders = ref({}); // Store orders grouped by symbol
+let loadingAllPairs = ref(false); // Loading state
+let allPairsFetched = ref(false); // Track if fetch was attempted
+let cancellingOrders = ref({}); // Track which orders are being cancelled
+let cancellingSymbols = ref({}); // Track which symbols are being cancelled
+let sideFilter = ref('all'); // Filter: 'all', 'buy', 'sell'
+
 const currentMonthName = computed(() => {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   return `${months[currentDate.value.getMonth()]} ${currentDate.value.getFullYear()}`;
@@ -690,6 +810,29 @@ const currentMonthName = computed(() => {
 const formatSelectedDate = computed(() => {
   if (!selectedDate.value) return '';
   return new Date(selectedDate.value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+});
+
+// Filtered orders based on side filter
+const filteredAllPairsOrders = computed(() => {
+  if (sideFilter.value === 'all') {
+    return allPairsOrders.value;
+  }
+
+  const filtered = {};
+  for (const [symbol, symbolData] of Object.entries(allPairsOrders.value)) {
+    const filteredOrders = symbolData.orders.filter(order => order.side === sideFilter.value);
+
+    if (filteredOrders.length > 0) {
+      filtered[symbol] = {
+        orders: filteredOrders,
+        buyCount: filteredOrders.filter(o => o.side === 'buy').length,
+        sellCount: filteredOrders.filter(o => o.side === 'sell').length,
+        totalCount: filteredOrders.length
+      };
+    }
+  }
+
+  return filtered;
 });
 
 // Sorted snapshots (newest first)
@@ -707,7 +850,17 @@ onMounted(async () => {
   await loadApiKeys();
   userBalanceInterval = setIntervalAsync(fetchUserBalancePooling, 500);
   tickerInterval = setIntervalAsync(fetchTickerPooling, 500);
-  await fetchOrdersPooling();
+
+  // Load from cache first (faster, no API calls)
+  console.log('📦 Loading orders from cache...');
+  await loadOrdersFromCache();
+
+  // If cache is empty, fetch from API
+  if (Object.keys(allPairsOrders.value).length === 0) {
+    console.log('📭 Cache empty, fetching from API...');
+    await fetchOrdersPooling();
+  }
+
   loadBalanceLocal();
   loadSnapshots();
   generateCalendar();
@@ -718,6 +871,20 @@ onUnmounted(() => {
   clearIntervalAsync(userBalanceInterval);
   clearIntervalAsync(tickerInterval);
 });
+
+// Watch for changes in selectedApiKeys and reload orders from cache
+watch(selectedApiKeys, async (newKeys, oldKeys) => {
+  if (newKeys && newKeys.length > 0) {
+    console.log('🔄 Selected API keys changed, reloading orders from cache...', newKeys);
+    await loadOrdersFromCache();
+
+    // If cache is empty, fetch from API
+    if (Object.keys(allPairsOrders.value).length === 0) {
+      console.log('📭 Cache empty, fetching from API...');
+      await fetchOrdersPooling();
+    }
+  }
+}, { immediate: true });
 
 // Load available API keys for the current exchange
 async function loadApiKeys() {
@@ -789,9 +956,13 @@ async function fetchTickerPooling() {
 
 async function fetchTickerBTC() {
   try {
-    const binance = new ccxt.binance();
-    const tickerBTCData = await binance.fetchTicker('BTC/USDT');
-    tickerBTC.value = parseFloat(tickerBTCData.last);
+    // Use server-side API instead of direct CCXT call
+    const response = await $fetch('/api/v1/fetchBtcEthPrices');
+    if (response && response.success && response.btcPrice) {
+      tickerBTC.value = response.btcPrice;
+    } else {
+      tickerBTC.value = 0;
+    }
   } catch (error) {
     console.error('Eroare la obținerea prețului BTC/USDT:', error);
     tickerBTC.value = 0;
@@ -800,9 +971,13 @@ async function fetchTickerBTC() {
 
 async function fetchTickerETH() {
   try {
-    const binance = new ccxt.binance();
-    const tickerETHData = await binance.fetchTicker('ETH/USDT');
-    tickerETH.value = parseFloat(tickerETHData.last);
+    // Use server-side API instead of direct CCXT call
+    const response = await $fetch('/api/v1/fetchBtcEthPrices');
+    if (response && response.success && response.ethPrice) {
+      tickerETH.value = response.ethPrice;
+    } else {
+      tickerETH.value = 0;
+    }
   } catch (error) {
     console.error('Eroare la obținerea prețului ETH/USDT:', error);
     tickerETH.value = 0;
@@ -887,10 +1062,10 @@ async function fetchUserBalancePooling() {
           apiKeysToFetch.includes(cachedBalance.apiKeyName)) {
 
         const balanceData = cachedBalance.balance || {};
-        const baseFree = balanceData[base]?.free || 0;
-        const baseUsed = balanceData[base]?.used || 0;
-        const quoteFree = balanceData[quote]?.free || 0;
-        const quoteUsed = balanceData[quote]?.used || 0;
+        const baseFree = balanceData[base.value]?.free || 0;
+        const baseUsed = balanceData[base.value]?.used || 0;
+        const quoteFree = balanceData[quote.value]?.free || 0;
+        const quoteUsed = balanceData[quote.value]?.used || 0;
 
         newApiKeyBalances[cachedBalance.apiKeyName] = {
           baseFree: parseFloat(baseFree),
@@ -959,6 +1134,367 @@ async function fetchOrdersPooling() {
   // Filter orders based on selected API keys
   filterOrders();
 }
+
+// NEW FUNCTION: Fetch ALL open orders for ALL pairs for selected API keys
+// OPTIMIZED: Fetch ALL open orders using single API call per API key (no symbol specified)
+async function fetchAllPairsOpenOrders() {
+  console.log('🔘 Button clicked! fetchAllPairsOpenOrders called (OPTIMIZED v2)');
+  console.log('Selected API keys:', selectedApiKeys.value);
+
+  if (selectedApiKeys.value.length === 0) {
+    console.warn('⚠️ No API keys selected');
+    alert('Please select at least one API key from the navbar!');
+    return;
+  }
+
+  loadingAllPairs.value = true;
+  allPairsOrders.value = {}; // Reset
+
+  try {
+    console.log(`🔄 Loading ALL open orders from CACHE for ${selectedApiKeys.value.length} API keys...`);
+    console.log(`📍 Exchange: ${currentExchange.value}`);
+    console.log(`⚡ OPTIMIZED: Using cache instead of pagination (instant load)`);
+
+    // Fetch orders from CACHE for each API key
+    for (const apiKeyName of selectedApiKeys.value) {
+      console.log(`  📦 Loading cached orders for API key: ${apiKeyName}`);
+
+      try {
+        // Load orders from cache (fast - no pagination needed)
+        const cacheRes = await $fetch('/api/v1/loadOpenOrdersCache', {
+          query: {
+            userID: userID.value,
+            exchange: currentExchange.value,
+            apiKeyName: apiKeyName
+          }
+        });
+
+        console.log(`    📥 Cache response:`, cacheRes);
+
+        if (cacheRes.success && cacheRes.data) {
+          let allApiKeyOrders = [];
+
+          // Extract all orders from all symbols in cache
+          for (const symbol in cacheRes.data) {
+            const symbolData = cacheRes.data[symbol];
+            if (symbolData.orders && symbolData.orders.length > 0) {
+              allApiKeyOrders.push(...symbolData.orders);
+            }
+          }
+
+          console.log(`  ✅ ${apiKeyName}: Loaded ${allApiKeyOrders.length} orders from cache`);
+
+          // Group orders by symbol
+          allApiKeyOrders.forEach(order => {
+            const symbol = order.symbol || order.pair || 'UNKNOWN';
+
+            // Initialize symbol group if needed
+            if (!allPairsOrders.value[symbol]) {
+              allPairsOrders.value[symbol] = {
+                orders: [],
+                buyCount: 0,
+                sellCount: 0,
+                totalCount: 0
+              };
+            }
+
+            // Tag order with API key name
+            const taggedOrder = {
+              ...order,
+              apiKeyName: apiKeyName
+            };
+
+            // Add order to group
+            allPairsOrders.value[symbol].orders.push(taggedOrder);
+            allPairsOrders.value[symbol].totalCount++;
+
+            if (order.side === 'buy') {
+              allPairsOrders.value[symbol].buyCount++;
+            } else if (order.side === 'sell') {
+              allPairsOrders.value[symbol].sellCount++;
+            }
+          });
+        }
+
+        // Rate limiting: 250ms delay between API key requests
+        await new Promise(resolve => setTimeout(resolve, 250));
+
+      } catch (error) {
+        console.error(`    ❌ Error fetching orders for ${apiKeyName}:`, error.message);
+        // Rate limiting even on errors
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+    }
+
+    const symbolCount = Object.keys(allPairsOrders.value).length;
+    const totalOrders = Object.values(allPairsOrders.value).reduce((sum, data) => sum + data.totalCount, 0);
+
+    console.log(`✅ Loaded from cache: ${totalOrders} orders across ${symbolCount} pairs`);
+
+    // If cache is empty, fetch fresh orders from exchange API
+    if (symbolCount === 0) {
+      console.log('📭 Cache is empty, fetching fresh orders from exchange API...');
+
+      for (const apiKeyName of selectedApiKeys.value) {
+        console.log(`  🔄 Fetching fresh orders for API key: ${apiKeyName}`);
+
+        try {
+          // Fetch ALL open orders from exchange (no symbol = fetch all)
+          const ordersRes = await $fetch('/api/v1/fetchOpenOrders', {
+            query: {
+              userID: userID.value,
+              exchange: currentExchange.value,
+              apiKeyName: apiKeyName
+              // No symbol parameter = fetch ALL open orders
+            }
+          });
+
+          console.log(`    📥 Fetched ${ordersRes.data ? ordersRes.data.length : 0} orders from API`);
+
+          if (ordersRes.data && ordersRes.data.length > 0) {
+            // Group fetched orders by symbol
+            ordersRes.data.forEach(order => {
+              const symbol = order.symbol || order.pair || 'UNKNOWN';
+
+              // Initialize symbol group if needed
+              if (!allPairsOrders.value[symbol]) {
+                allPairsOrders.value[symbol] = {
+                  orders: [],
+                  buyCount: 0,
+                  sellCount: 0,
+                  totalCount: 0
+                };
+              }
+
+              // Tag order with API key name
+              const taggedOrder = {
+                ...order,
+                apiKeyName: apiKeyName
+              };
+
+              // Add order to group
+              allPairsOrders.value[symbol].orders.push(taggedOrder);
+              allPairsOrders.value[symbol].totalCount++;
+
+              if (order.side === 'buy') {
+                allPairsOrders.value[symbol].buyCount++;
+              } else if (order.side === 'sell') {
+                allPairsOrders.value[symbol].sellCount++;
+              }
+            });
+          }
+
+          // Rate limiting: 250ms delay between API key requests
+          await new Promise(resolve => setTimeout(resolve, 250));
+
+        } catch (error) {
+          console.error(`    ❌ Error fetching fresh orders for ${apiKeyName}:`, error.message);
+          await new Promise(resolve => setTimeout(resolve, 250));
+        }
+      }
+
+      const freshSymbolCount = Object.keys(allPairsOrders.value).length;
+      const freshTotalOrders = Object.values(allPairsOrders.value).reduce((sum, data) => sum + data.totalCount, 0);
+
+      console.log(`✅ Fetched fresh orders: ${freshTotalOrders} orders across ${freshSymbolCount} pairs`);
+
+      // Save fresh orders to cache for next time
+      if (freshSymbolCount > 0) {
+        await saveOrdersToCache();
+      } else {
+        console.log('ℹ️ No open orders found on exchange');
+      }
+    } else {
+      // Save cache updates
+      await saveOrdersToCache();
+    }
+
+  } catch (error) {
+    console.error('❌ Error fetching all pairs orders:', error);
+  } finally {
+    loadingAllPairs.value = false;
+    allPairsFetched.value = true; // Mark fetch as completed
+  }
+}
+
+// Save orders to MongoDB cache
+async function saveOrdersToCache() {
+  try {
+    console.log('💾 Saving orders to cache...');
+
+    // Group orders by API key
+    const ordersByApiKey = {};
+    for (const [symbol, symbolData] of Object.entries(allPairsOrders.value)) {
+      for (const order of symbolData.orders) {
+        const apiKeyName = order.apiKeyName;
+        if (!ordersByApiKey[apiKeyName]) {
+          ordersByApiKey[apiKeyName] = {};
+        }
+        if (!ordersByApiKey[apiKeyName][symbol]) {
+          ordersByApiKey[apiKeyName][symbol] = {
+            orders: [],
+            buyCount: 0,
+            sellCount: 0,
+            totalCount: 0
+          };
+        }
+        ordersByApiKey[apiKeyName][symbol].orders.push(order);
+        ordersByApiKey[apiKeyName][symbol].totalCount++;
+        if (order.side === 'buy') {
+          ordersByApiKey[apiKeyName][symbol].buyCount++;
+        } else if (order.side === 'sell') {
+          ordersByApiKey[apiKeyName][symbol].sellCount++;
+        }
+      }
+    }
+
+    // Save cache for each API key
+    for (const [apiKeyName, ordersData] of Object.entries(ordersByApiKey)) {
+      await $fetch('/api/v1/saveOpenOrdersCache', {
+        method: 'POST',
+        body: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          apiKeyName: apiKeyName,
+          ordersData: ordersData
+        }
+      });
+    }
+
+    console.log('✅ Orders saved to cache');
+  } catch (error) {
+    console.error('❌ Error saving orders to cache:', error);
+  }
+}
+
+// Load orders from cache
+async function loadOrdersFromCache() {
+  try {
+    console.log('📂 Loading orders from cache...');
+
+    allPairsOrders.value = {};
+
+    for (const apiKeyName of selectedApiKeys.value) {
+      const response = await $fetch('/api/v1/loadOpenOrdersCache', {
+        query: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          apiKeyName: apiKeyName
+        }
+      });
+
+      if (response.success && response.data) {
+        // Merge cache data into allPairsOrders
+        for (const [symbol, data] of Object.entries(response.data)) {
+          if (!allPairsOrders.value[symbol]) {
+            allPairsOrders.value[symbol] = {
+              orders: [],
+              buyCount: 0,
+              sellCount: 0,
+              totalCount: 0
+            };
+          }
+          allPairsOrders.value[symbol].orders.push(...data.orders);
+          allPairsOrders.value[symbol].buyCount += data.buyCount;
+          allPairsOrders.value[symbol].sellCount += data.sellCount;
+          allPairsOrders.value[symbol].totalCount += data.totalCount;
+        }
+      }
+    }
+
+    console.log('✅ Orders loaded from cache');
+  } catch (error) {
+    console.error('❌ Error loading orders from cache:', error);
+  }
+}
+
+// Cancel all orders for a specific symbol
+async function cancelAllForSymbol(symbol, orders) {
+  const confirmed = confirm(`Cancel ALL ${orders.length} orders for ${symbol}?\n\nThis will cancel ALL BUY and SELL orders for this pair.`);
+  if (!confirmed) return;
+
+  cancellingSymbols.value[symbol] = true;
+
+  try {
+    // Group orders by API key
+    const ordersByApiKey = {};
+    for (const order of orders) {
+      if (!ordersByApiKey[order.apiKeyName]) {
+        ordersByApiKey[order.apiKeyName] = [];
+      }
+      ordersByApiKey[order.apiKeyName].push(order.id);
+    }
+
+    console.log(`🚫 Canceling ${orders.length} orders for ${symbol}...`);
+
+    let totalSuccess = 0;
+    let totalFailed = 0;
+    const successfullyDeletedOrders = [];
+
+    // Cancel orders for each API key
+    for (const [apiKeyName, orderIds] of Object.entries(ordersByApiKey)) {
+      console.log(`  Canceling ${orderIds.length} orders for ${apiKeyName}...`);
+
+      const response = await $fetch('/api/v1/cancelAllOrdersBySymbol', {
+        method: 'POST',
+        body: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          symbol: symbol,
+          apiKeyName: apiKeyName,
+          orderIds: orderIds
+        }
+      });
+
+      totalSuccess += response.successCount;
+      totalFailed += response.failedCount;
+
+      console.log(`  ✅ ${response.successCount} successful, ❌ ${response.failedCount} failed`);
+
+      // Collect successfully deleted order IDs
+      if (response.successCount > 0) {
+        // Filter out the failed orders and keep only successful ones
+        const failedOrderIds = response.errors?.map(e => e.orderId) || [];
+        const successfulOrderIds = orderIds.filter(id => !failedOrderIds.includes(id));
+
+        if (successfulOrderIds.length > 0) {
+          successfullyDeletedOrders.push({
+            apiKeyName,
+            orderIds: successfulOrderIds
+          });
+        }
+      }
+    }
+
+    // Delete successfully cancelled orders from cache
+    for (const { apiKeyName, orderIds } of successfullyDeletedOrders) {
+      console.log(`💾 Deleting ${orderIds.length} orders from cache for ${apiKeyName}...`);
+
+      await $fetch('/api/v1/deleteOrdersFromCache', {
+        method: 'POST',
+        body: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          apiKeyName: apiKeyName,
+          symbol: symbol,
+          orderIds: orderIds
+        }
+      });
+    }
+
+    alert(`Cancel All Results:\n\n✅ Successful: ${totalSuccess}\n❌ Failed: ${totalFailed}\n\nCache updated.`);
+
+    // Reload orders from cache (which will show updated state)
+    await loadOrdersFromCache();
+
+  } catch (error) {
+    alert(`❌ Error canceling orders:\n${error.message}`);
+  } finally {
+    delete cancellingSymbols.value[symbol];
+  }
+}
+
+// cancelOrder function is defined at line 1378
 
 function filterOrders() {
   if (selectedApiKeys.value.length === 0) {
@@ -1118,8 +1654,84 @@ function calculateTotalValueUSD() {
   return valueUSD.toFixed(2);
 }
 
-function cancelOrder(order) {
-  // Implementarea funcționalității de anulare a comenzii
+// Cancel a single order - moved from line 1150
+async function cancelOrder(orderId, apiKeyName, symbol, side, price, amount) {
+  console.log(`🚫 Attempting to cancel order: ${orderId}`);
+  console.log(`   Symbol: ${symbol} | Side: ${side} | Price: ${price} | Amount: ${amount}`);
+  console.log(`   API Key: ${apiKeyName}`);
+
+  // Ask for confirmation
+  const confirmed = confirm(`Cancel this order?\n\nSymbol: ${symbol}\nSide: ${side.toUpperCase()}\nPrice: ${price}\nAmount: ${amount}\nAPI Key: ${apiKeyName}`);
+  if (!confirmed) {
+    console.log('❌ Cancellation aborted by user');
+    return;
+  }
+
+  // Mark order as cancelling
+  cancellingOrders.value[orderId] = true;
+
+  try {
+    const response = await $fetch('/api/v1/cancelOrder', {
+      method: 'POST',
+      body: {
+        userID: userID.value,
+        exchange: currentExchange.value,
+        orderId: orderId,
+        symbol: symbol,
+        apiKeyName: apiKeyName
+      }
+    });
+
+    if (response.success) {
+      console.log(`✅ Order ${orderId} cancelled successfully`);
+      alert(`✅ Order cancelled successfully!\n\nSymbol: ${symbol}\nSide: ${side.toUpperCase()}\nPrice: ${price}\nAmount: ${amount}`);
+
+      // Remove order from allPairsOrders
+      if (allPairsOrders.value[symbol]) {
+        const orderIndex = allPairsOrders.value[symbol].orders.findIndex(o => o.id === orderId);
+        if (orderIndex !== -1) {
+          allPairsOrders.value[symbol].orders.splice(orderIndex, 1);
+
+          // Update counts
+          if (side === 'buy') {
+            allPairsOrders.value[symbol].buyCount--;
+          } else {
+            allPairsOrders.value[symbol].sellCount--;
+          }
+          allPairsOrders.value[symbol].totalCount--;
+
+          // Remove symbol if no more orders
+          if (allPairsOrders.value[symbol].orders.length === 0) {
+            delete allPairsOrders.value[symbol];
+          }
+        }
+      }
+
+      // Delete order from cache (more efficient than re-saving all orders)
+      console.log(`💾 Deleting order ${orderId} from cache...`);
+      await $fetch('/api/v1/deleteOrdersFromCache', {
+        method: 'POST',
+        body: {
+          userID: userID.value,
+          exchange: currentExchange.value,
+          apiKeyName: apiKeyName,
+          symbol: symbol,
+          orderIds: [orderId]
+        }
+      });
+
+    } else {
+      console.error(`❌ Failed to cancel order: ${response.log || 'Unknown error'}`);
+      alert(`❌ Failed to cancel order:\n${response.log || 'Unknown error'}`);
+    }
+
+  } catch (error) {
+    console.error(`❌ Error cancelling order:`, error);
+    alert(`❌ Error cancelling order:\n${error.message || 'Unknown error'}`);
+  } finally {
+    // Remove from cancelling state
+    delete cancellingOrders.value[orderId];
+  }
 }
 
 let refreshInterval;

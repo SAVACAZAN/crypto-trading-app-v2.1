@@ -59,6 +59,53 @@ class LCXExchange {
     }
 
     /**
+     * Fetch markets (CCXT compatibility)
+     * Converts LCX format to CCXT format
+     */
+    async fetchMarkets() {
+        const markets = await this.loadMarkets();
+
+        // Convert LCX format to CCXT format
+        return markets.map(m => ({
+            id: m.symbol || `${m.base}/${m.quote}`,
+            symbol: m.symbol || `${m.base}/${m.quote}`,
+            base: m.base,
+            quote: m.quote,
+            baseId: m.base,
+            quoteId: m.quote,
+            active: m.status === true || m.status === 'true',
+            type: 'spot',
+            spot: true,
+            margin: false,
+            swap: false,
+            future: false,
+            option: false,
+            contract: false,
+            precision: {
+                amount: m.amountPrecision || m.orderPrecision?.Amount || 8,
+                price: m.pricePrecision || m.orderPrecision?.Price || 8,
+                base: m.amountPrecision || 8,
+                quote: m.pricePrecision || 8
+            },
+            limits: {
+                amount: {
+                    min: m.minBaseOrder || 0,
+                    max: m.maxBaseOrder || undefined
+                },
+                price: {
+                    min: undefined,
+                    max: undefined
+                },
+                cost: {
+                    min: m.minQuoteOrder || 0,
+                    max: m.maxQuoteOrder || undefined
+                }
+            },
+            info: m
+        }));
+    }
+
+    /**
      * Fetch balance from LCX
      */
     async fetchBalance() {
@@ -232,29 +279,26 @@ class LCXExchange {
 
         try {
             const timestamp = Date.now().toString();
-            const path = 'api/order';
+            const path = 'api/cancel';
             const method = 'DELETE';
 
-            const payload = {
-                orderId: id
-            };
-
-            if (symbol) {
-                const lcxSymbol = symbol.toLowerCase().replace('/', '_');
-                payload.symbol = lcxSymbol;
-            }
+            // LCX API requires empty body for signature, orderId goes in query params
+            const payload = {};
 
             const signature = this.generateSignature(method, path, payload);
 
-            const response = await fetch(`${this.baseURL}/${path}`, {
+            // Build URL with orderId as query parameter
+            const url = `${this.baseURL}/${path}?orderId=${encodeURIComponent(id)}`;
+
+            const response = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
                     'x-access-key': this.apiKey,
                     'x-access-timestamp': timestamp,
                     'x-access-sign': signature
-                },
-                body: JSON.stringify(payload)
+                }
+                // No body for DELETE request
             });
 
             if (!response.ok) {
@@ -316,6 +360,11 @@ class LCXExchange {
             const payload = {
                 pair: symbol
             };
+
+            // Only add limit if explicitly specified, otherwise get FULL depth
+            if (limit !== undefined) {
+                payload.limit = limit;
+            }
 
             const response = await fetch(`${this.baseURL}/order/book`, {
                 method: 'POST',
@@ -394,6 +443,97 @@ class LCXExchange {
             };
         } catch (error) {
             throw new Error(`Failed to fetch ticker: ${error.message}`);
+        }
+    }
+
+    /**
+     * Fetch open orders from LCX exchange
+     * Supports fetching ALL open orders when symbol is undefined
+     * Supports pagination via params.offset and params.limit
+     */
+    async fetchOpenOrders(symbol = undefined, since = undefined, limit = undefined, params = {}) {
+        if (!this.apiKey || !this.secret) {
+            throw new Error('API credentials required for fetchOpenOrders');
+        }
+
+        try {
+            const timestamp = Date.now().toString();
+            const path = 'api/open';
+            const method = 'POST';
+
+            // Build payload
+            const payload = {
+                offset: params.offset || 1, // Page index, first page = 1 (can be overridden by params)
+                limit: params.limit || limit || 100 // Default to 100
+            };
+
+            // Add symbol only if provided (optional for fetching ALL orders)
+            if (symbol) {
+                payload.pair = symbol;
+            }
+
+            // Handle date range if provided
+            if (since !== undefined && since !== null) {
+                payload.fromDate = new Date(since).toISOString();
+                payload.toDate = new Date().toISOString();
+            }
+
+            console.log('[LCXExchange] fetchOpenOrders payload:', payload);
+
+            const signature = this.generateSignature(method, path, payload);
+
+            const response = await fetch(`${this.baseURL}/${path}`, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-access-key': this.apiKey,
+                    'x-access-timestamp': timestamp,
+                    'x-access-sign': signature
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            const orders = data.data || [];
+
+            console.log('[LCXExchange] fetchOpenOrders response:', {
+                ordersReceived: orders.length,
+                requestedOffset: payload.offset,
+                requestedLimit: payload.limit
+            });
+
+            // Convert LCX orders to CCXT format
+            const ccxtOrders = orders.map(order => ({
+                id: order.Id || order.orderId || order.id,
+                clientOrderId: order.clientOrderId,
+                timestamp: order.CreatedAt ? new Date(order.CreatedAt).getTime() : Date.now(),
+                datetime: order.CreatedAt ? new Date(order.CreatedAt).toISOString() : new Date().toISOString(),
+                symbol: order.Pair || order.symbol,
+                type: (order.OrderType || order.type || '').toLowerCase(),
+                side: (order.Side || order.side || '').toLowerCase(),
+                price: parseFloat(order.Price || order.price || 0),
+                amount: parseFloat(order.Amount || order.amount || 0),
+                filled: parseFloat(order.Filled || order.FilledAmount || order.filled || 0),
+                remaining: parseFloat(order.RemainingAmount || order.remaining || ((order.Amount || 0) - (order.Filled || order.FilledAmount || 0)) || 0),
+                cost: parseFloat(order.Cost || order.cost || 0),
+                average: parseFloat(order.AveragePrice || order.average || 0),
+                fee: {
+                    cost: parseFloat(order.Fee || order.fee || 0),
+                    currency: order.FeeCurrency || order.feeCurrency || 'USDC',
+                    rate: parseFloat(order.FeeRate || order.feeRate || 0)
+                },
+                status: 'open', // All orders from /api/open are open
+                info: order
+            }));
+
+            return ccxtOrders;
+        } catch (error) {
+            throw new Error(`Failed to fetch open orders: ${error.message}`);
         }
     }
 
@@ -1011,12 +1151,12 @@ class CCXTW {
         };
     };
 
-    async fetchOrderBook(userID, exchange, symbol) {
+    async fetchOrderBook(userID, exchange, symbol, limit = undefined) {
         let log = null;
         let data = null;
         let success = null;
 
-        // console.log(`[CCXTW] 📖 fetchOrderBook called: exchange=${exchange}, symbol=${symbol}`);
+        console.log(`[CCXTW] 📖 fetchOrderBook called: exchange=${exchange}, symbol=${symbol}, limit=${limit || 'FULL'}`);
 
         if (!this.users.has(userID)) {
             this.users.set(userID, new Map());
@@ -1029,8 +1169,8 @@ class CCXTW {
 
         if (this.users.get(userID).get(exchange).has['fetchOrderBook']) {
             try {
-                console.log(`[CCXTW] Calling fetchOrderBook on ${exchange} for ${symbol}...`);
-                data = await this.users.get(userID).get(exchange).fetchOrderBook(symbol);
+                console.log(`[CCXTW] Calling fetchOrderBook on ${exchange} for ${symbol} with limit ${limit || 'FULL'}...`);
+                data = await this.users.get(userID).get(exchange).fetchOrderBook(symbol, limit);
 
                 // console.log(`[CCXTW] ✅ OrderBook fetched successfully:`, {
                 //     symbol: data?.symbol,
@@ -1072,34 +1212,36 @@ class CCXTW {
         let data = null;
         let success = null;
 
-        if (!this.users.has(userID)) {
-            this.users.set(userID, new Map());
-        }
-
-        if (!this.users.get(userID).has(exchange)) {
-            await this.loadInstance(userID, exchange);
-        }
-
-        // console.log('entries: ', this.users.get(userID).keys());
-
-        if(this.users.get(userID).get(exchange).has['fetchOHLCV']) {
-            try {
-                data = await this.users.get(userID).get(exchange).fetchOHLCV(symbol, timeframe, since, limit);
-                success = true;
-            } catch (e) {
-                data = null;
-                success = false;
-                if (e instanceof ccxt.NetworkError) {
-                    log =`Failed due to a network error: ${e.message}`;
-                } else if (e instanceof ccxt.ExchangeError) {
-                    log =`Failed due to a exchange error: ${e.message}`;
-                } else {
-                    log =`Failed with: ${e.message}`;
-                }
+        try {
+            if (!this.users.has(userID)) {
+                this.users.set(userID, new Map());
             }
-        } else {
-            log = `Exchange ${exchange} does not support fetchOHLCV`;
+
+            if (!this.users.get(userID).has(exchange)) {
+                console.log(`[CCXTW] Loading instance for ${exchange}...`);
+                await this.loadInstance(userID, exchange);
+            }
+
+            // Coinbase Advanced Trade has a limit of 300 candles per request
+            // If user requests more, we need to limit it to 300
+            const effectiveLimit = (exchange === 'coinbaseadvanced' && limit > 300) ? 300 : limit;
+
+            console.log(`[CCXTW] Calling fetchOHLCV on ${exchange} for ${symbol} ${timeframe} (requested: ${limit}, effective: ${effectiveLimit})...`);
+            data = await this.users.get(userID).get(exchange).fetchOHLCV(symbol, timeframe, since, effectiveLimit);
+            success = true;
+            console.log(`[CCXTW] ✅ fetchOHLCV success: ${data?.length || 0} candles`);
+        } catch (e) {
+            data = null;
             success = false;
+            if (e instanceof ccxt.NetworkError) {
+                log =`Failed due to a network error: ${e.message}`;
+            } else if (e instanceof ccxt.ExchangeError) {
+                log =`Failed due to a exchange error: ${e.message}`;
+            } else {
+                log =`Failed with: ${e.message}`;
+            }
+            console.error(`[CCXTW] ❌ fetchOHLCV error for ${exchange} ${symbol} ${timeframe}:`, e.message);
+            console.error(`[CCXTW] ❌ Full error:`, e);
         }
 
         return {
@@ -1301,26 +1443,36 @@ class CCXTW {
     };
 
     //cancelOrder
-    async cancelOrder(userID, exchange, id, symbol){
+    async cancelOrder(userID, exchange, id, symbol, apiKeyName = null){
         let log = null;
         let data = null;
         let success = null;
+
+        console.log('[CCXTW] cancelOrder called with:', { userID, exchange, id, symbol, apiKeyName });
 
         if (!this.users.has(userID)) {
             this.users.set(userID, new Map());
         }
 
-        if (!this.users.get(userID).has(exchange)) {
-            await this.loadInstance(userID, exchange);
+        // Create unique instance key
+        const instanceKey = apiKeyName ? `${exchange}_${apiKeyName}` : exchange;
+        console.log('[CCXTW] Using instance key:', instanceKey);
+
+        if (!this.users.get(userID).has(instanceKey)) {
+            console.log('[CCXTW] Loading instance for:', instanceKey);
+            await this.loadInstance(userID, exchange, apiKeyName);
         }
 
-        if(this.users.get(userID).get(exchange).has['cancelOrder']) {
+        if(this.users.get(userID).get(instanceKey).has.cancelOrder) {
             try {
-                data = await this.users.get(userID).get(exchange).cancelOrder(id, symbol);
+                console.log('[CCXTW] Calling cancelOrder on exchange instance with id:', id, 'symbol:', symbol);
+                data = await this.users.get(userID).get(instanceKey).cancelOrder(id, symbol);
                 success = true;
+                console.log('[CCXTW] ✅ Order cancelled successfully:', data);
             } catch (e) {
                 data = null;
                 success = false;
+                console.error('[CCXTW] ❌ Cancel order error:', e);
                 if (e instanceof ccxt.NetworkError) {
                     log =`Failed due to a network error: ${e.message}`;
                 } else if (e instanceof ccxt.ExchangeError) {
@@ -1332,7 +1484,10 @@ class CCXTW {
         } else {
             log = `Exchange ${exchange} does not support cancelOrder`;
             success = false;
+            console.error('[CCXTW] Exchange does not support cancelOrder');
         }
+
+        console.log('[CCXTW] Returning:', { success, log, data });
 
         return {
             data,
@@ -1423,7 +1578,7 @@ class CCXTW {
         };
     };
 
-    async fetchOpenOrders(userID, exchange, symbol, apiKeyName = null){
+    async fetchOpenOrders(userID, exchange, symbol, apiKeyName = null, params = {}){
         let log = null;
         let data = null;
         let success = null;
@@ -1441,7 +1596,8 @@ class CCXTW {
 
         if(this.users.get(userID).get(instanceKey).has['fetchOpenOrders']) {
             try {
-                data = await this.users.get(userID).get(instanceKey).fetchOpenOrders(symbol);
+                // Pass params to support pagination (offset, limit)
+                data = await this.users.get(userID).get(instanceKey).fetchOpenOrders(symbol, undefined, undefined, params);
                 success = true;
             } catch (e) {
                 data = null;

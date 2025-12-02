@@ -1,23 +1,24 @@
 <script setup>
 import { useAppStore } from '~/stores/app.store';
-import { ref, h, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
+import BidAskCalculator from '~/components/BidAskCalculator.vue';
 
 const app = useAppStore();
 
+// Collapsible state
+const configCollapsed = ref(false);
+const calculatorCollapsed = ref(false);
+
 let userID = useCookie('userID');
 
-let currentExchange = ref(app.getUserSelectedExchange);
-let currentSymbol = ref(app.getUserSelectedMarket);
+// Use global values from store
+let currentExchange = computed(() => app.getUserSelectedExchange);
+let currentSymbol = computed(() => app.getUserSelectedMarket);
+let selectedApiKey = computed(() => app.getSelectedApiKey);
 
-let base = currentSymbol.value.split('/')[0];
-let quote = currentSymbol.value.split('/')[1];
-
-// API Key selector
-let availableApiKeys = ref([]);
-let selectedApiKey = ref(null);
-let loadingApiKeys = ref(false);
-let apiKeyColors = ref({}); // Store colors for each API key
+let base = computed(() => currentSymbol.value.split('/')[0]);
+let quote = computed(() => currentSymbol.value.split('/')[1]);
 
 let name = ref(`Sc4lp1ngB0t_${generateRandomString(5)}`);
 
@@ -73,74 +74,12 @@ onMounted(async () => {
   userBalanceInterval = setIntervalAsync(fetchUserBalancePooling, 500);
   applyInitialDeviation();
   fetchOrderBookPooling();
-  await loadApiKeys();
 });
 
 onUnmounted(() => {
   clearIntervalAsync(orderBookInterval);
   clearIntervalAsync(userBalanceInterval);
 });
-
-// Load available API keys for the selected exchange
-async function loadApiKeys() {
-  loadingApiKeys.value = true;
-  try {
-    const response = await $fetch('/api/v1/fetchApiKeysList', {
-      query: {
-        userID: userID.value,
-        exchange: currentExchange.value
-      }
-    });
-
-    if (response.success && response.data && response.data.length > 0) {
-      // Color palette for API keys
-      const colors = ['#10eb04', '#05f5ed', '#f5a623', '#eb06eb', '#eadb11', '#50e3c2', '#f72c09', '#cb8d07'];
-
-      // Store colors for each API key
-      apiKeyColors.value = {};
-
-      availableApiKeys.value = response.data.map((apiKey, index) => {
-        const color = colors[index % colors.length];
-        apiKeyColors.value[apiKey.name] = color;
-
-        return {
-          label: `${apiKey.name} (${apiKey.preview})`,
-          value: apiKey.name
-        };
-      });
-      selectedApiKey.value = availableApiKeys.value[0].value;
-    } else {
-      availableApiKeys.value = [];
-      selectedApiKey.value = null;
-      apiKeyColors.value = {};
-    }
-  } catch (error) {
-    console.error('Failed to load API keys:', error);
-    availableApiKeys.value = [];
-    selectedApiKey.value = null;
-    apiKeyColors.value = {};
-  } finally {
-    loadingApiKeys.value = false;
-  }
-}
-
-// Watch for API key changes and reload balance
-watch(selectedApiKey, async (newKey) => {
-  if (newKey) {
-    await fetchUserBalancePooling();
-  }
-});
-
-// Custom render function for API key options with colored icons
-function renderApiKeyLabel(option) {
-  const color = apiKeyColors.value[option.value] || '#ffffff';
-  return h('div', { style: 'display: flex; align-items: center;' }, [
-    h('span', {
-      style: `display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color}; margin-right: 8px; flex-shrink: 0;`
-    }),
-    h('span', { style: `color: ${color}; font-weight: 500;` }, option.label)
-  ]);
-}
 
 async function fetchOrderBookPooling() {
   try {
@@ -173,12 +112,12 @@ async function fetchUserBalancePooling() {
   });
 
   if (response.data) {
-    baseBalanceFree.value = response.data.free?.[base] || 0;
-    baseBalanceUsed.value = response.data.used?.[base] || 0;
-    baseBalanceTotal.value = response.data.total?.[base] || 0;
-    quoteBalanceFree.value = response.data.free?.[quote] || 0;
-    quoteBalanceUsed.value = response.data.used?.[quote] || 0;
-    quoteBalanceTotal.value = response.data.total?.[quote] || 0;
+    baseBalanceFree.value = response.data.free?.[base.value] || 0;
+    baseBalanceUsed.value = response.data.used?.[base.value] || 0;
+    baseBalanceTotal.value = response.data.total?.[base.value] || 0;
+    quoteBalanceFree.value = response.data.free?.[quote.value] || 0;
+    quoteBalanceUsed.value = response.data.used?.[quote.value] || 0;
+    quoteBalanceTotal.value = response.data.total?.[quote.value] || 0;
   } else {
     baseBalanceFree.value = 0;
     baseBalanceUsed.value = 0;
@@ -350,175 +289,103 @@ async function createScalp1ngBot() {
 </script>
 
 <template>
-<!-- API Key Selector and Balance Display -->
-<n-card style="margin-bottom: 16px; padding: 8px;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed;">
-    <thead>
-      <tr style="border-bottom: 1px solid #444;">
-        <th style="text-align: left; padding: 4px 8px; width: 25%;">API Key</th>
-        <th style="text-align: left; padding: 4px 8px; width: 10%;">Coin</th>
-        <th style="text-align: right; padding: 4px 8px; color: #10eb04; width: 21.66%;">Free</th>
-        <th style="text-align: right; padding: 4px 8px; color: #f5a623; width: 21.66%;">Used</th>
-        <th style="text-align: right; padding: 4px 8px; color: #50e3c2; width: 21.66%;">Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td rowspan="2" style="padding: 4px 8px; vertical-align: middle;">
-          <n-select
-            v-model:value="selectedApiKey"
-            :options="availableApiKeys"
-            :loading="loadingApiKeys"
-            placeholder="Select API Key"
-            :disabled="availableApiKeys.length === 0"
-            size="small"
-            :render-label="renderApiKeyLabel"
-          />
-        </td>
-        <td v-if="selectedApiKey" style="padding: 4px 8px;">
-          <span style="display: inline-flex; align-items: center;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10eb04; margin-right: 6px;"></span>
-            <span style="font-weight: bold; color: #10eb04;">{{ base }}</span>
-          </span>
-        </td>
-        <td v-if="selectedApiKey" style="padding: 4px 8px; text-align: right; color: #10eb04;">{{ Number(baseBalanceFree).toFixed(8) }}</td>
-        <td v-if="selectedApiKey" style="padding: 4px 8px; text-align: right; color: #f5a623;">{{ Number(baseBalanceUsed).toFixed(8) }}</td>
-        <td v-if="selectedApiKey" style="padding: 4px 8px; text-align: right; color: #50e3c2;">{{ Number(baseBalanceTotal).toFixed(8) }}</td>
-        <td v-if="!selectedApiKey" colspan="4" style="padding: 4px 8px; text-align: center;">
-          <n-spin v-if="loadingApiKeys" size="small" />
-          <n-text v-else type="warning" style="font-size: 11px;">Select an API key</n-text>
-        </td>
-      </tr>
-      <tr v-if="selectedApiKey">
-        <td style="padding: 4px 8px;">
-          <span style="display: inline-flex; align-items: center;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #05f5ed; margin-right: 6px;"></span>
-            <span style="font-weight: bold; color: #05f5ed;">{{ quote }}</span>
-          </span>
-        </td>
-        <td style="padding: 4px 8px; text-align: right; color: #10eb04;">{{ Number(quoteBalanceFree).toFixed(8) }}</td>
-        <td style="padding: 4px 8px; text-align: right; color: #f5a623;">{{ Number(quoteBalanceUsed).toFixed(8) }}</td>
-        <td style="padding: 4px 8px; text-align: right; color: #50e3c2;">{{ Number(quoteBalanceTotal).toFixed(8) }}</td>
-      </tr>
-    </tbody>
-  </table>
-</n-card>
+  <!-- Bot Configuration Card - Compact & Modern -->
+  <n-card size="small" style="margin-bottom: 8px; background: linear-gradient(135deg, #1a1f2e 0%, #2a3441 100%);">
+    <template #header>
+      <div @click="configCollapsed = !configCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; font-weight: 700; color: #10eb04;">⚡ Scalp1ng Bot Configuration</span>
+        <n-icon size="16">
+          <svg v-if="!configCollapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 17l5-5-5-5v10z"/>
+          </svg>
+        </n-icon>
+      </div>
+    </template>
 
-  <n-card>
-    <n-grid x-gap="12" :cols="2" item-responsive>
-      <n-gi>
-        <n-space vertical>
-          <n-input v-model:value="name" type="text" placeholder="Bot name" />
+    <n-collapse-transition :show="!configCollapsed">
+      <n-grid x-gap="8" :cols="3" item-responsive>
+        <!-- Column 1 -->
+        <n-gi>
+          <n-space vertical :size="4">
+            <n-input v-model:value="name" type="text" placeholder="Bot name" size="small">
+              <template #prefix><span style="color: #eb06eb;">📊</span></template>
+            </n-input>
+            <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price" size="small">
+              <template #prefix><span style="color: #10eb04;">🟢</span></template>
+              <template #suffix><span style="color: #888; font-size: 10px;">{{ quote }}</span></template>
+            </n-input>
+          </n-space>
+        </n-gi>
 
-          <n-input v-model:value="BalanceBotStart" type="text" placeholder="BalanceBotStart" />
-          <n-input v-model:value="lowerPrice" type="text" placeholder="Lower Price">
-            <template #suffix> {{quote}} </template>
-          </n-input>
+        <!-- Column 2 -->
+        <n-gi>
+          <n-space vertical :size="4">
+            <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price" size="small">
+              <template #prefix><span style="color: #f52a09;">🔴</span></template>
+              <template #suffix><span style="color: #888; font-size: 10px;">{{ quote }}</span></template>
+            </n-input>
+            <n-input v-model:value="amount" type="text" placeholder="Amount" size="small">
+              <template #prefix><span style="color: #05f5ed;">💰</span></template>
+              <template #suffix><span style="color: #888; font-size: 10px;">{{ quote }}</span></template>
+            </n-input>
+          </n-space>
+        </n-gi>
 
-          <!-- New Buttons for Buy Only and Sell Only -->
-          <n-button type="primary" @click="createBuyOnlyBot">Create Buy Only Bot</n-button>
-          <n-button type="warning" @click="createSellOnlyBot">Create Sell Only Bot</n-button>
-        </n-space>
-      </n-gi>
-      <n-gi>
-        <n-space vertical>
-          <n-input v-model:value="upperPrice" type="text" placeholder="Upper Price">
-            <template #suffix> {{quote}} </template>
-          </n-input>
-          <n-input v-model:value="amount" type="text" placeholder="Amount">
-            <template #suffix> {{quote}} </template>
-          </n-input>
-          <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids"></n-input>
-        </n-space>
-      </n-gi>
-    </n-grid>
+        <!-- Column 3 -->
+        <n-gi>
+          <n-space vertical :size="4">
+            <n-input v-model:value="nrOfGrids" type="text" placeholder="Nr of grids" size="small">
+              <template #prefix><span style="color: #f5a623;">📐</span></template>
+            </n-input>
+            <n-input v-model:value="BalanceBotStart" type="text" placeholder="Balance Start" size="small">
+              <template #prefix><span style="color: #eadb11;">💵</span></template>
+            </n-input>
+          </n-space>
+        </n-gi>
+      </n-grid>
+
+      <!-- Action Buttons -->
+      <n-space :size="6" style="margin-top: 8px;">
+        <n-button type="success" @click="createBuyOnlyBot" size="small" style="flex: 1;">
+          📈 Buy Only
+        </n-button>
+        <n-button type="error" @click="createSellOnlyBot" size="small" style="flex: 1;">
+          📉 Sell Only
+        </n-button>
+      </n-space>
+    </n-collapse-transition>
   </n-card>
-  <n-card>
-    <n-grid x-gap="0" :cols="3" item-responsive style="display: flex; flex-wrap: nowrap;">
-      <n-gi>
-        <table>
-          <tr>
-            <td><n-button @click="updateLowerPrice1(0.00003)">-</n-button></td>
-            <td><n-button @click="updateUpperPrice2(0.00003)">+</n-button></td>
-          </tr>
 
+  <!-- BidAsk Calculator Card - Collapsible -->
+  <div style="margin-bottom: 12px;">
+    <n-card>
+      <template #header>
+        <div @click="calculatorCollapsed = !calculatorCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+          <span>Bid/Ask Calculator</span>
+          <n-icon>
+            <svg v-if="!calculatorCollapsed" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 17l5-5-5-5v10z"/>
+            </svg>
+          </n-icon>
+        </div>
+      </template>
 
-      
-          
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.005)">- 0.5%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.005)">+ 0.5%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.01)">- 1%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.01)">+ 1%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.02)">- 2%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.02)">+ 2%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.03)">- 3%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.03)">+ 3%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.05)">- 5%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.05)">+ 5%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.07)">- 7%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.07)">+ 7%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.09)">- 9%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.09)">+ 9%</n-button></td>
-          </tr>
-        </table>
-      </n-gi>
-
-      <n-gi>
-        
-        <table>
-          <tr>
-            <td><n-button @click="updateLowerPrice2(0.00003)">-</n-button></td>
-            <td><n-button @click="updateUpperPrice1(0.00003)">+</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.1)">- 10%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.1)">+ 10%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.2)">- 20%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.2)">+ 20%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.3)">- 30%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.3)">+ 30%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.5)">- 50%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.5)">+ 50%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.6)">- 60%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.6)">+ 60%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.7)">- 70%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.7)">+ 70%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.8)">- 80%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.8)">+ 80%</n-button></td>
-          </tr>
-          <tr>
-            <td><n-button @click="updateLowerPrice(0.97)">- 90%</n-button></td>
-            <td><n-button @click="updateUpperPrice(0.9)">+ 90%</n-button></td>
-          </tr>
-        </table>
-      </n-gi>
-    </n-grid>
-  </n-card>
+      <n-collapse-transition :show="!calculatorCollapsed">
+        <BidAskCalculator
+          :bestBid="bestBid"
+          :bestAsk="bestAsk"
+          @updateLowerPrice="updateLowerPrice"
+          @updateUpperPrice="updateUpperPrice"
+        />
+      </n-collapse-transition>
+    </n-card>
+  </div>
 </template>
 
 <style scoped>

@@ -17,6 +17,16 @@ import {darkTheme} from "naive-ui";
 
 <style>
 
+/* Hide all scrollbars globally but keep functionality */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 .header {
   text-align:center;
   display:flex;

@@ -94,5 +94,33 @@ export const CoPilotBotSchema = defineMongooseModel({
             type: Array,
             required: true
         },
+        automationRules: {
+            type: Array,
+            default: [],
+            required: false
+        },
+        ruleCounter: {
+            type: Number,
+            default: 0,
+            required: false
+        },
+        status: {
+            type: String,
+            enum: ['running', 'paused', 'stopped'],
+            default: 'running'
+        },
+        apiKeyNames: {
+            type: Array,
+            default: [],
+            required: false
+        },
+        timestamp: {
+            type: Date,
+            default: Date.now
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
     },
 })

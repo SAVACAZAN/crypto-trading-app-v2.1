@@ -11,7 +11,7 @@ const availableApiKeys = ref([]);
 const selectedApiKeys = ref([]);
 const loadingApiKeys = ref(false);
 const apiKeyColors = ref({});
-const isExpanded = ref(false);
+const isExpanded = ref(true); // Start expanded by default
 
 // Generate random color for API key
 function generateRandomColor() {
@@ -36,9 +36,17 @@ function renderApiKeyLabel(option) {
 
 // Fetch available API keys for current exchange
 async function fetchAvailableApiKeys() {
-  if (!currentExchange.value || !userID.value) return;
+  if (!currentExchange.value || !userID.value) {
+    console.log('🔑 API Selector: Missing exchange or userID', {
+      exchange: currentExchange.value,
+      userID: userID.value
+    });
+    return;
+  }
 
   loadingApiKeys.value = true;
+  console.log('🔑 API Selector: Fetching API keys for exchange:', currentExchange.value);
+
   try {
     const response = await $fetch('/api/v1/getUserApiKeys', {
       query: {
@@ -46,6 +54,8 @@ async function fetchAvailableApiKeys() {
         exchange: currentExchange.value
       }
     });
+
+    console.log('🔑 API Selector: Response:', response);
 
     if (response.success && response.data) {
       availableApiKeys.value = response.data.map(key => {
@@ -59,14 +69,17 @@ async function fetchAvailableApiKeys() {
         };
       });
 
-      // Auto-select first API key if none selected
+      console.log('🔑 API Selector: Available API keys:', availableApiKeys.value);
+
+      // Auto-select ONLY FIRST API key by default
       if (selectedApiKeys.value.length === 0 && availableApiKeys.value.length > 0) {
         selectedApiKeys.value = [availableApiKeys.value[0].value];
         updateStoreApiKeys();
+        console.log('🔑 API Selector: Auto-selected FIRST API key:', selectedApiKeys.value);
       }
     }
   } catch (error) {
-    console.error('Failed to load API keys:', error);
+    console.error('❌ API Selector: Failed to load API keys:', error);
   } finally {
     loadingApiKeys.value = false;
   }
@@ -85,6 +98,10 @@ function onApiKeysChange() {
 
 // Initialize from store if available
 onMounted(() => {
+  console.log('🔑 API Selector: Component mounted!');
+  console.log('🔑 API Selector: UserID:', userID.value);
+  console.log('🔑 API Selector: Exchange:', currentExchange.value);
+
   // Check if store has API keys already
   const storeApiKeys = app.getSelectedApiKeys;
   if (storeApiKeys && storeApiKeys.length > 0) {
@@ -95,10 +112,13 @@ onMounted(() => {
   fetchAvailableApiKeys();
 });
 
-// Watch exchange changes
-watch(currentExchange, () => {
-  fetchAvailableApiKeys();
-});
+// Watch exchange changes and fetch API keys when exchange becomes available
+watch(currentExchange, (newExchange, oldExchange) => {
+  console.log('🔑 API Selector: Exchange changed from', oldExchange, 'to', newExchange);
+  if (newExchange) {
+    fetchAvailableApiKeys();
+  }
+}, { immediate: false });
 
 // Watch for changes in local selectedApiKeys and sync to store
 watch(selectedApiKeys, (newKeys) => {

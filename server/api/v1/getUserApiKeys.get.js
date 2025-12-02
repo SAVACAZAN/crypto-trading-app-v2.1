@@ -32,9 +32,12 @@ export default defineEventHandler(async (event) => {
         // Filter active keys and format response
         const activeKeys = apiKeys
             .filter(key => key.isActive !== false)
-            .map(key => ({
+            .map((key, index) => ({
+                _id: key._id || `${userExchange._id}_${index}`,
                 name: key.name || 'default',
-                isActive: true,
+                apiKeyId: key.apiKeyId || key.name || 'default',
+                active: key.isActive !== false,
+                isActive: key.isActive !== false,
                 addedAt: key.addedAt || userExchange.createdAt
             }));
 

@@ -2,7 +2,7 @@
 import { useAppStore } from '~/stores/app.store';
 import { reloadNuxtApp } from "nuxt/app";
 import { setIntervalAsync, clearIntervalAsync } from "set-interval-async";
-import ccxt from 'ccxt';
+// import ccxt from 'ccxt';
 
 const app = useAppStore();
 let currentSymbol = ref(app.getUserSelectedMarket);

@@ -3,18 +3,12 @@
      <h2>Scalp1ng</h2>
   <n-grid x-gap="12" :cols="12" item-responsive>
     <n-gi span="12 800:8">
-      <TickerBar/>
-    
       <Scalp1ng/>
     </n-gi>
     <n-gi span="12 800:4">
-      <OrderBook/>
-      
-      
+  
     </n-gi>
   </n-grid>
-
-
 </template>
 
 

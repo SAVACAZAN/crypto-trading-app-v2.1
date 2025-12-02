@@ -2,24 +2,32 @@
 import { useAppStore } from '~/stores/app.store';
 import { reloadNuxtApp } from "nuxt/app";
 import { setIntervalAsync, clearIntervalAsync } from "set-interval-async";
-import ccxt from 'ccxt';
+// import ccxt from 'ccxt'; // REMOVED: CCXT should only run on server-side!
 
 const app = useAppStore();
 const userID = useCookie('userID');
 
-// Exchange & Market selection
-const userExchanges = app.getUserExchanges;
-const selectedExchange = ref(app.getUserSelectedExchange || 'coinbaseadvanced');
-const userExchangeMarkets = app.getUserExchangeMarkets;
+// Exchange & Market selection - Use computed for reactivity
+const userExchanges = computed(() => app.getUserExchanges);
+const selectedExchange = computed({
+  get: () => app.getUserSelectedExchange || 'coinbaseadvanced',
+  set: (value) => value // Setter handled by updateSelectedExchange
+});
+const userExchangeMarkets = computed(() => app.getUserExchangeMarkets);
 
 // selectedMarket is a STRING like "LCX/USDC" (from getter)
-const selectedMarket = ref(app.getUserSelectedMarket || 'LCX/USDC');
+const selectedMarket = computed({
+  get: () => app.getUserSelectedMarket || 'LCX/USDC',
+  set: (value) => value // Setter handled by updateSelectedMarket
+});
 
 // Ticker data - SIMPLIFIED (only selected ticker + BTC/ETH)
 const currentTicker = ref({ last: 0, percentage: 0 });
 const tickerBTC = ref(0);
 const tickerETH = ref(0);
 let tickerInterval = null;
+let saveInterval = null;
+
 
 // Toggle visibility
 const isExpanded = ref(true);
@@ -38,16 +46,28 @@ async function updateSelectedMarket(market) {
 // Fetch ONLY selected ticker + BTC/ETH (MUCH faster & safer)
 async function fetchPrices() {
   try {
+    const exchange = selectedExchange.value || 'coinbaseadvanced';
+    const market = selectedMarket.value || 'LCX/USDC';
+
+    console.log('🔄 Ticker Bar - fetchPrices:', { exchange, market });
+
     // Fetch selected market ticker
-    if (selectedExchange.value && selectedMarket.value) {
+    if (exchange && market) {
       try {
         const response = await $fetch('/api/v1/fetchTicker', {
           query: {
             userID: userID.value,
-            exchange: selectedExchange.value,
-            symbol: selectedMarket.value,
+            exchange: exchange,
+            symbol: market,
           }
         });
+
+        // Handle case where user has no API keys configured
+        if (response.noApiKeys) {
+          // Silently skip - user hasn't configured API keys yet
+          return;
+        }
+
         if (response.data) {
           currentTicker.value = {
             last: parseFloat(response.data.last) || 0,
@@ -63,14 +83,18 @@ async function fetchPrices() {
       }
     }
 
-    // Always fetch BTC & ETH from Binance
+    // Always fetch BTC & ETH from Binance via API endpoint
     try {
-      const binance = new ccxt.binance();
-      const btcData = await binance.fetchTicker('BTC/USDT');
-      const ethData = await binance.fetchTicker('ETH/USDT');
+      const btcEthResponse = await $fetch('/api/v1/fetchBtcEthPrices');
 
-      tickerBTC.value = parseFloat(btcData.last) || 0;
-      tickerETH.value = parseFloat(ethData.last) || 0;
+      if (btcEthResponse.success && btcEthResponse.data) {
+        tickerBTC.value = parseFloat(btcEthResponse.data.btcPrice) || 0;
+        tickerETH.value = parseFloat(btcEthResponse.data.ethPrice) || 0;
+
+        // ✅ UPDATE STORE WITH LIVE BTC & ETH PRICES
+        app.setBtcPrice(tickerBTC.value);
+        app.setEthPrice(tickerETH.value);
+      }
     } catch (error) {
       console.error('Error fetching BTC/ETH:', error);
     }
@@ -79,14 +103,66 @@ async function fetchPrices() {
   }
 }
 
-onMounted(() => {
+// Save ticker data to database every second
+async function saveTickerData() {
+  try {
+    if (!currentTicker.value.last || !tickerBTC.value || !tickerETH.value) {
+      return; // Skip if data is not ready
+    }
+
+    const exchange = selectedExchange.value || 'coinbaseadvanced';
+    const market = selectedMarket.value || 'LCX/USDC';
+
+    const tickerData = {
+      symbol: market, // e.g., "LCX/USDC", "EGLD/USDT"
+      exchange: exchange, // e.g., "coinbaseadvanced"
+      pairPriceUSD: currentTicker.value.last,
+      pairPriceBTC: currentTicker.value.last / tickerBTC.value,
+      pairPriceETH: currentTicker.value.last / tickerETH.value,
+      btcPriceUSD: tickerBTC.value,
+      btcPriceETH: tickerBTC.value / tickerETH.value,
+      ethPriceUSD: tickerETH.value,
+      ethPriceBTC: tickerETH.value / tickerBTC.value
+    };
+
+    await $fetch('/api/v1/saveTickerData', {
+      method: 'POST',
+      body: tickerData
+    });
+  } catch (error) {
+    console.error('Error saving ticker data:', error);
+  }
+}
+
+
+onMounted(async () => {
+  console.log('🎯 Ticker Bar mounted');
+  console.log('📍 Initial values:', {
+    exchange: selectedExchange.value,
+    market: selectedMarket.value
+  });
+
+  // Wait a bit for store to initialize from layout
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  console.log('📍 After delay:', {
+    exchange: selectedExchange.value,
+    market: selectedMarket.value
+  });
+
   fetchPrices();
   tickerInterval = setIntervalAsync(fetchPrices, 3000); // 3 sec refresh
+
+  // Save ticker data to database every second
+  saveInterval = setIntervalAsync(saveTickerData, 1000); // 1 sec save
 });
 
 onUnmounted(() => {
   if (tickerInterval) {
     clearIntervalAsync(tickerInterval);
+  }
+  if (saveInterval) {
+    clearIntervalAsync(saveInterval);
   }
 });
 </script>
@@ -130,23 +206,40 @@ onUnmounted(() => {
 
       <!-- PRICE CARDS -->
       <div class="price-cards">
-        <!-- Selected Market -->
+        <!-- Selected Market (LCX) with BTC & ETH conversion -->
         <div class="price-card current">
           <span class="coin">{{ selectedMarket ? selectedMarket.split('/')[0] : 'LCX' }}</span>
-          <span class="price">${{ currentTicker.last ? currentTicker.last.toFixed(4) : '0.0000' }}</span>
-         
+          <div class="price-line" v-if="currentTicker.last && tickerBTC && tickerETH">
+            <span class="price">${{ currentTicker.last.toFixed(4) }}</span>
+            <span class="separator">│</span>
+            <span class="conversion">₿{{ (currentTicker.last / tickerBTC).toFixed(10) }}</span>
+            <span class="separator">│</span>
+            <span class="conversion eth">Ξ{{ (currentTicker.last / tickerETH).toFixed(10) }}</span>
+          </div>
         </div>
 
         <!-- BTC -->
         <div class="price-card btc">
           <span class="coin">BTC</span>
-          <span class="price">${{ tickerBTC ? tickerBTC.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0' }}</span>
+          <div class="price-row" v-if="tickerBTC && tickerETH && currentTicker.last">
+            <span class="price">${{ tickerBTC.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
+            <span class="separator-small">│</span>
+            <span class="conversion eth">Ξ{{ (tickerBTC / tickerETH).toFixed(2) }}</span>
+            <span class="separator-small">│</span>
+            <span class="conversion lcx">{{ (tickerBTC / currentTicker.last).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }} LCX</span>
+          </div>
         </div>
 
         <!-- ETH -->
         <div class="price-card eth">
           <span class="coin">ETH</span>
-          <span class="price">${{ tickerETH ? tickerETH.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0' }}</span>
+          <div class="price-row" v-if="tickerBTC && tickerETH && currentTicker.last">
+            <span class="price">${{ tickerETH.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
+            <span class="separator-small">│</span>
+            <span class="conversion">₿{{ (tickerETH / tickerBTC).toFixed(5) }}</span>
+            <span class="separator-small">│</span>
+            <span class="conversion lcx">{{ (tickerETH / currentTicker.last).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }} LCX</span>
+          </div>
         </div>
       </div>
     </div>
@@ -303,6 +396,10 @@ onUnmounted(() => {
   min-width: 70px;
 }
 
+.price-card.current {
+  min-width: 125px;
+}
+
 .price-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
@@ -350,6 +447,71 @@ onUnmounted(() => {
 .price-card .change.negative {
   color: #e90a15;
   text-shadow: 0 0 4px rgba(233, 10, 21, 0.4);
+}
+
+.price-line {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-top: 1px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.price-line .price {
+  color: #00ffff;
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.4);
+}
+
+.price-line-small {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-top: 1px;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.price-row {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  margin-top: 1px;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.separator-small {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 7px;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 8px;
+}
+
+.price-card .conversion {
+  font-size: 8px;
+  font-weight: 600;
+  opacity: 0.95;
+  color: #ff9500;
+  text-shadow: 0 0 3px rgba(255, 149, 0, 0.3);
+  white-space: nowrap;
+}
+
+.price-card .conversion.eth {
+  color: #9d4edd;
+  text-shadow: 0 0 3px rgba(157, 78, 221, 0.3);
+}
+
+.price-card .conversion.lcx {
+  color: #00ffff;
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.3);
+  font-size: 7px;
 }
 
 .price-card.current .coin,
@@ -510,4 +672,5 @@ onUnmounted(() => {
   background: linear-gradient(to bottom, transparent, rgba(0, 255, 255, 0.3), transparent);
   flex-shrink: 0;
 }
+
 </style>

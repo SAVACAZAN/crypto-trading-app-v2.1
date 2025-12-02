@@ -14,25 +14,43 @@
         class="arbtoolz-tabs"
         tab-style="min-width: 80px; padding: 8px 12px;"
       >
+        <!-- Trading -->
+        <n-tab-pane name="trade" tab="💹 Trade">
+          <TradePage />
+        </n-tab-pane>
+
         <!-- Grid Bots -->
         <n-tab-pane name="grid-bots-plus" tab="⚡ GridBot+">
           <Page1 />
         </n-tab-pane>
-        <n-tab-pane name="grid-bots" tab="📊 GridBot">
-          <Page2 />
+
+     <n-tab-pane name="OneClick-Bot" tab="🖱️ OneClick">
+          <Page8 />
         </n-tab-pane>
 
+
+      
         <!-- Trading Bots -->
         <n-tab-pane name="FrontRun-bots" tab="🏃 FrontRun">
           <Page3 />
         </n-tab-pane>
+    <n-tab-pane name="CoPilot" tab="✈️ Co-Pilot">
+          <Page7 />
+        </n-tab-pane>
+  <n-tab-pane name="dca-grid" tab="📊 DCA + Grid">
+          <DcaIntegrationPage />
+        </n-tab-pane>
+        <n-tab-pane name="smart-dca" tab="🎯 Smart DCA">
+          <Page9 />
+        </n-tab-pane>
+          <n-tab-pane name="grid-bots" tab="📊 GridBot">
+          <Page2 />
+        </n-tab-pane>
+
         <n-tab-pane name="Scalp1ng" tab="🎯 Scalping">
           <Page11 />
         </n-tab-pane>
-        <n-tab-pane name="OneClick-Bot" tab="🖱️ OneClick">
-          <Page8 />
-        </n-tab-pane>
-
+   
         <!-- Strategy Bots -->
         <n-tab-pane name="fib-bots" tab="📈 FibBot">
           <Page5 />
@@ -40,14 +58,10 @@
         <n-tab-pane name="AI-BOT" tab="🧠 AI Bot">
           <Page6 />
         </n-tab-pane>
-        <n-tab-pane name="CoPilot" tab="✈️ Co-Pilot">
-          <Page7 />
-        </n-tab-pane>
+    
 
         <!-- Advanced Bots -->
-        <n-tab-pane name="1Year-Bot" tab="📅 1YearBot">
-          <Page9 />
-        </n-tab-pane>
+      
         <n-tab-pane name="Grinder-Bot" tab="⚙️ Grinder">
           <Page10 />
         </n-tab-pane>
@@ -77,6 +91,7 @@
 import { ref, onMounted } from 'vue';
 import { useAppStore } from '~/stores/app.store';
 
+import TradePage from '~/pages/trade.vue';
 import Page1 from '~/pages/grid-bots-plus.vue';
 import Page2 from '~/pages/grid-bots.vue';
 import Page3 from '~/pages/frontrun.vue';
@@ -84,7 +99,8 @@ import Page5 from '~/pages/Bots/FibBots.vue';
 import Page6 from '~/pages/Bots/AIBOT.vue';
 import Page7 from '~/pages/Bots/Co-Pilot.vue';
 import Page8 from '~/pages/Bots/OneClickBot.vue';
-import Page9 from '~/pages/Bots/1YearBot.vue';
+import DcaIntegrationPage from '~/pages/dca-integration.vue';
+import Page9 from '~/pages/smart-dca.vue';
 import Page10 from '~/pages/Bots/GrinderBot.vue';
 import Page11 from '~/pages/Bots/Scalp1ng.vue';
 import Page12 from '~/pages/Bots/OrderBookBot.vue';
@@ -112,8 +128,8 @@ onMounted(async () => {
 .arbtoolz-page {
   padding: 0;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+  height: calc(100vh - 95px);
+  overflow-y: auto;
   background: #0f1419;
 }
 
@@ -121,10 +137,9 @@ onMounted(async () => {
 .arbtoolz-card {
   background: #1a1f2e;
   border: 1px solid #2a3441;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 :deep(.n-card__content) {
@@ -132,7 +147,7 @@ onMounted(async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Page Header */
@@ -204,13 +219,14 @@ onMounted(async () => {
 :deep(.n-tabs-pane-wrapper) {
   padding: 0;
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 :deep(.n-tab-pane) {
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
+  padding: 16px;
+  height: auto;
+  min-height: 100%;
+  overflow-y: visible;
 }
 
 /* Responsive Design */

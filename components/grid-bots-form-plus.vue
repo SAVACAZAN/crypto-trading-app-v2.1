@@ -1,9 +1,15 @@
 <script setup>
 import { useAppStore } from '~/stores/app.store';
+import { useStrategyGridBot } from '~/composables/useStrategyGridBot';
+import StrategiesGridBot from '~/components/StrategiesGridBot.vue';
 import {ref, watch, computed, onMounted, onUnmounted} from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
 
 const app = useAppStore()
+const {
+  amountTypeOptions,
+  ordersSideOptions
+} = useStrategyGridBot();
 
 let userID = useCookie('userID');
 
@@ -21,24 +27,12 @@ const manualLowerPrice = ref('');
 const manualUpperPrice = ref('');
 
 let name = ref(`gridBot_${generateRandomString(5)}`);
-let strategyPicker = ref();
-let strategyPickerOptions = ref([]);
 let lowerPrice = ref('');
 let upperPrice = ref('');
 let amountType = ref('incrementalPercent');
-let amountTypeOptions = [
-  { value: 'quantityPerGrid', label:'Qty Per Grid'},
-  { value: 'totalAmount', label:'Total Amount'},
-  { value: 'incrementalPercent', label:'Incremental Amount'}
-];
 let amount = ref('');
 let nrOfGrids = ref('');
 let ordersSide = ref('buyOrSell');
-let ordersSideOptions = [
-  { value: 'buyOrSell', label: 'Buy & Sell' },
-  { value: 'buyOnly', label: 'Buy Only' },
-  { value: 'sellOnly', label: 'Sell Only' },
-];
 let incrementalPercentAmountBuy = ref('');
 let incrementalPercentAmountSell = ref('');
 let deviationPriceBuy = ref('');
@@ -205,171 +199,58 @@ function generateRandomString(length = 20) {
   return randomString;
 }
 
-async function selectStrategy() {
-  console.log('selecting');
+// Fetch balance for the selected symbol
+async function fetchBalanceForSymbol() {
+  try {
+    const exchange = currentExchange.value || 'coinbaseadvanced';
+    const symbol = currentSymbol.value || 'LCX/USDC';
 
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
-
-  for (let i = 0; i < strategiesStore.length; i++) {
-    if (strategiesStore[i].name === strategyPicker.value) {
-      console.log('strategy selected: ', strategiesStore[i]);
-
-      name.value = strategiesStore[i].name;
-      lowerPrice.value = strategiesStore[i].lowerPrice;
-      upperPrice.value = strategiesStore[i].upperPrice;
-      amountType.value = strategiesStore[i].amountType;
-      amount.value = strategiesStore[i].amount;
-      nrOfGrids.value = strategiesStore[i].nrOfGrids;
-      ordersSide.value = strategiesStore[i].ordersSide;
-      incrementalPercentAmountBuy.value = strategiesStore[i].incrementalPercentAmountBuy;
-      incrementalPercentAmountSell.value = strategiesStore[i].incrementalPercentAmountSell;
-      deviationPriceBuy.value = strategiesStore[i].deviationPriceBuy;
-      deviationPriceSell.value = strategiesStore[i].deviationPriceSell;
-      deviationAmountBuy.value = strategiesStore[i].deviationAmountBuy;
-      deviationAmountSell.value = strategiesStore[i].deviationAmountSell;
-      usePriceGroup.value = strategiesStore[i].usePriceGroup;
-      priceGroupBuy.value = strategiesStore[i].priceGroupBuy;
-      priceGroupSell.value = strategiesStore[i].priceGroupSell;
-    }
-  }
-}
-
-async function addStrategy() {
-  console.log('adding');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
-
-  let newStrategy = {
-    name: name.value,
-    exchange: currentExchange.value,
-    symbol: currentSymbol.value,
-    lowerPrice: lowerPrice.value,
-    upperPrice: upperPrice.value,
-    amountType: amountType.value,
-    amount: amount.value,
-    nrOfGrids: nrOfGrids.value,
-    ordersSide: ordersSide.value,
-    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
-    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
-    deviationPriceBuy: deviationPriceBuy.value,
-    deviationPriceSell: deviationPriceSell.value,
-    deviationAmountBuy: deviationAmountBuy.value,
-    deviationAmountSell: deviationAmountSell.value,
-    usePriceGroup: usePriceGroup.value,
-    priceGroupBuy: priceGroupBuy.value,
-    priceGroupSell: priceGroupSell.value,
-  };
-
-  //push in store
-  if (strategiesStore !== null) {
-    if (strategiesStore.length > 0) {
-      for (let i = 0; i < strategiesStore.length ; i++) {
-        console.log('?????: ', strategiesStore[i].name,  newStrategy.name);
-        if (strategiesStore[i].name !== newStrategy.name) {
-          strategiesStore.push(newStrategy);
-        }
+    const response = await $fetch('/api/v1/fetchBalance', {
+      query: {
+        userID: userID.value,
+        exchange: exchange,
+        symbol: symbol
       }
-    } else {
-      strategiesStore.push(newStrategy);
+    });
+
+    if (response.data) {
+      BalanceBase.value = response.data.base || 0;
+      BalanceQuote.value = response.data.quote || 0;
+      BalanceBaseInUSD.value = response.data.baseInUSD || 0;
+      BalanceQuoteInUSD.value = response.data.quoteInUSD || 0;
+      BalanceBaseProfit.value = response.data.baseProfit || 0;
+      BalanceQuoteProfit.value = response.data.quoteProfit || 0;
+      BalanceBotProfit.value = response.data.botProfit || 0;
     }
-  } else {
-    strategiesStore = [newStrategy];
+  } catch (error) {
+    console.error('Error fetching balance:', error);
   }
-
-  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
-
-  //push in options list
-  strategyPickerOptions.value.push({
-    value: newStrategy.name,
-    label: newStrategy.name
-  });
-
-  //set in select
-  strategyPicker.value = newStrategy.name;
 }
 
-async function editStrategy() {
-  console.log('editing');
+// Strategy methods are now in useStrategyGridBot composable
+// Local wrappers to pass form data to composable methods
 
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
+// Handle strategy apply from StrategiesGridBot component
+function handleStrategyApplied(appliedData) {
+  if (appliedData) {
+    name.value = appliedData.name;
+    lowerPrice.value = appliedData.lowerPrice.toString();
+    upperPrice.value = appliedData.upperPrice.toString();
+    amount.value = appliedData.amount.toString();
+    nrOfGrids.value = appliedData.nrOfGrids.toString();
+    ordersSide.value = appliedData.ordersSide;
+    amountType.value = appliedData.amountType;
+    incrementalPercentAmountBuy.value = appliedData.incBuy.toString();
+    incrementalPercentAmountSell.value = appliedData.incSell.toString();
+    deviationPriceBuy.value = appliedData.devPriceBuy.toString();
+    deviationPriceSell.value = appliedData.devPriceSell.toString();
+    deviationAmountBuy.value = appliedData.devAmtBuy.toString();
+    deviationAmountSell.value = appliedData.devAmtSell.toString();
+    bestBid.value = appliedData.bestBid;
+    bestAsk.value = appliedData.bestAsk;
 
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length ; i++) {
-      if (strategiesStore[i].name === strategyPicker.value) {
-        strategiesStore[i].lowerPrice = lowerPrice.value;
-        strategiesStore[i].upperPrice = upperPrice.value;
-        strategiesStore[i].amountType = amountType.value;
-        strategiesStore[i].amount = amount.value;
-        strategiesStore[i].nrOfGrids = nrOfGrids.value;
-        strategiesStore[i].ordersSide = ordersSide.value;
-        strategiesStore[i].incrementalPercentAmountBuy = incrementalPercentAmountBuy.value;
-        strategiesStore[i].incrementalPercentAmountSell = incrementalPercentAmountSell.value;
-        strategiesStore[i].deviationPriceBuy = deviationPriceBuy.value;
-        strategiesStore[i].deviationPriceSell = deviationPriceSell.value;
-        strategiesStore[i].deviationAmountBuy = deviationAmountBuy.value;
-        strategiesStore[i].deviationAmountSell = deviationAmountSell.value;
-        strategiesStore[i].usePriceGroup = usePriceGroup.value;
-        strategiesStore[i].priceGroupBuy = priceGroupBuy.value;
-        strategiesStore[i].priceGroupSell = priceGroupSell.value;
-      }
-    }
+    console.log('✅ Strategy applied and form updated!');
   }
-
-  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
-}
-
-async function deleteStrategy() {
-  console.log('deleting');
-
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
-
-  //deleting from store
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length ; i++) {
-      if (strategiesStore[i].name === strategyPicker.value) {
-        strategiesStore.splice(i, 1);
-      }
-    }
-  }
-
-  //deleting from strategy picker options
-  for (let i = 0; i < strategyPickerOptions.value.length ; i++) {
-    if (strategyPickerOptions.value[i].label === strategyPicker.value) {
-      strategyPickerOptions.value.splice(i, 1);
-    }
-  }
-
-  //deleting from strategy picker
-  strategyPicker.value = '';
-
-  //reset form
-  lowerPrice.value = '';
-  upperPrice.value = '';
-  amountType.value = 'quantityPerGrid';
-  amount.value = '';
-  nrOfGrids.value = '';
-  ordersSide.value = 'buyOrSell';
-  incrementalPercentAmountBuy.value = '';
-  incrementalPercentAmountSell.value = '';
-  deviationPriceBuy.value = '';
-  deviationPriceSell.value = '';
-  deviationAmountBuy.value = '';
-  deviationAmountSell.value = '';
-  usePriceGroup.value = '';
-  priceGroupBuy.value = '';
-  priceGroupSell.value = '';
-
-  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
-}
-
-async function deleteAllStrategies() {
-  console.log('deleting all strategies');
-
-  let strategiesStore = [];
-  localStorage.setItem('strategiesStore', JSON.stringify(strategiesStore));
-
-  strategyPickerOptions.value = [];
-  strategyPicker.value = '';
 }
 
 async function createGridBot(){
@@ -462,16 +343,7 @@ onMounted(async () => {
   await fetchRSIValues();
   await fetchBalanceForSymbol();
 
-  let strategiesStore = JSON.parse(localStorage.getItem('strategiesStore'));
-
-  if (strategiesStore !== null) {
-    for (let i = 0; i < strategiesStore.length; i++) {
-      strategyPickerOptions.value.push({
-        value: strategiesStore[i].name,
-        label: strategiesStore[i].name
-      });
-    }
-  }
+  // Strategies are loaded in StrategiesGridBot component
 });
 
 onUnmounted(() => {
@@ -484,35 +356,73 @@ onUnmounted(() => {
   <div class="gridbot-form-container">
     <!-- Compact Header with Prices -->
     <div class="form-header">
-      <span class="header-icon">⚙️</span>
-      <span class="header-title">Grid Bot Config</span>
+
+       <div class="create-button-section">
+            <n-button type="primary" size="small" @click="createGridBot">⚙️CREATE BOT</n-button>
+          </div>
+
       <div class="field-group">
         <n-input v-model:value="name" size="tiny" placeholder="Bot name" />
       </div>
-      <td class="field-cell">
-        <n-input v-model:value="lowerPrice" size="tiny" placeholder="LOWER PRICE">
+      <div class="field-cell">
+        <n-input v-model:value="lowerPrice" size="tiny" placeholder="LOWER PRICE" style="--n-color: rgba(16, 235, 4, 0.1); --n-color-focus: rgba(16, 235, 4, 0.15); --n-text-color: #10eb04; --n-border: 1px solid rgba(16, 235, 4, 0.3); --n-border-hover: 1px solid rgba(16, 235, 4, 0.5); --n-border-focus: 1px solid #10eb04;">
           <template #suffix>{{ quote }}</template>
         </n-input>
-      </td>
-      <td class="field-cell">
-        <n-input v-model:value="upperPrice" size="tiny" placeholder="UPPER PRICE">
+      </div>
+      <div class="field-cell">
+        <n-input v-model:value="upperPrice" size="tiny" placeholder="UPPER PRICE" style="--n-color: rgba(235, 4, 4, 0.1); --n-color-focus: rgba(235, 4, 4, 0.15); --n-text-color: #eb0404; --n-border: 1px solid rgba(235, 4, 4, 0.3); --n-border-hover: 1px solid rgba(235, 4, 4, 0.5); --n-border-focus: 1px solid #eb0404;">
           <template #suffix>{{ quote }}</template>
         </n-input>
-      </td>
-      <td class="field-cell">
-        <n-input v-model:value="nrOfGrids" size="tiny" placeholder="GRIDS" />
-      </td>
-      <td class="field-cell">
-        <n-input v-model:value="amount" size="tiny" placeholder="AMOUNT">
-          <template #suffix>{{ quote }}</template>
-        </n-input>
-      </td>
-      <td class="field-cell">
+      </div>
+   <div class="field-cell" @mouseenter="$message.info('GRIDS: Number of grid orders', {duration: 2})">
+  <n-input
+    v-model:value="nrOfGrids"
+    size="tiny"
+    placeholder="GRIDS"
+    style="
+      --n-color: rgba(250, 204, 21, 0.1);
+      --n-color-focus: rgba(250, 204, 21, 0.15);
+      --n-text-color: #facc15;
+      --n-border: 1px solid rgba(250, 204, 21, 0.3);
+      --n-border-hover: 1px solid rgba(250, 204, 21, 0.5);
+      --n-border-focus: 1px solid #facc15;
+    "
+  />
+</div>
+
+<div class="field-cell" @mouseenter="$message.info('AMOUNT: Order amount', {duration: 2})">
+  <n-input
+    v-model:value="amount"
+    size="tiny"
+    placeholder="AMOUNT"
+    style="
+      --n-color: rgba(96, 165, 250, 0.1);
+      --n-color-focus: rgba(96, 165, 250, 0.15);
+      --n-text-color: #60a5fa;
+      --n-border: 1px solid rgba(96, 165, 250, 0.3);
+      --n-border-hover: 1px solid rgba(96, 165, 250, 0.5);
+      --n-border-focus: 1px solid #60a5fa;
+    "
+  >
+    <template #suffix>{{ quote }}</template>
+  </n-input>
+</div>
+
+
+      <div class="field-cell">
         <n-select v-model:value="amountType" :options="amountTypeOptions" size="tiny" placeholder="AMOUNT TYPE" />
-      </td>
-      <td class="field-cell">
+      </div>
+      <div class="field-cell">
         <n-select v-model:value="ordersSide" :options="ordersSideOptions" size="tiny" placeholder="ORDER TYPE" />
-      </td>
+      </div>
+
+        <div class="checkbox-cell-center">
+          <n-checkbox v-model:checked="usePriceGroup" size="small" class="compact-checkbox-inline">
+
+          </n-checkbox>
+        </div> 
+
+      
       <div class="header-prices">
         <div class="price-badge bid">
           <span class="price-label">BID</span>
@@ -526,65 +436,88 @@ onUnmounted(() => {
     </div>
 
   <!-- Configuration Table -->
-<div class="config-section">
-  <div class="section-header">
-  
-  </div>
 
-  <div class="section-content">
+
+  
     <table class="config-table compact">
       <!-- Row 1: GRIDS, AMOUNT, INC % BUY, INC % SELL, DEV PRICE B, DEV PRICE S, DEV AMT B, DEV AMT S, PRICE GRP B, PRICE GRP S, USE PRICE GROUP -->
       <tr class="config-row">
-      
-        <td class="field-cell">
-          <n-input v-model:value="incrementalPercentAmountBuy" size="tiny" placeholder="INC % BUY">
-            <template #suffix>%</template>
-          </n-input>
+        <!-- Price Group Inputs - Stacked Vertically on Top Left -->
+        <td style="padding: 2px; vertical-align: top; text-align: left;">
+          <div v-if="usePriceGroup" style="display: flex; flex-direction: row; gap: 2px;">
+            <n-input v-model:value="priceGroupBuy" size="small" placeholder="PGrp B" class="price-group-input-buy" style="width: 123px;">
+              <template #suffix>{{ quote }}</template>
+            </n-input>
+            <n-input v-model:value="priceGroupSell" size="small" placeholder="PGrp S" class="price-group-input-sell" style="width: 123px;">
+              <template #suffix>{{ quote }}</template>
+            </n-input>
+          </div>
         </td>
-        <td class="field-cell">
-          <n-input v-model:value="incrementalPercentAmountSell" size="tiny" placeholder="INC % SELL">
-            <template #suffix>%</template>
-          </n-input>
+
+        <!-- BUY/SELL Table -->
+        <td colspan="8" style="text-align: right; padding: 0px;">
+          <table class="buy-sell-table">
+            <tbody>
+              <tr>
+                <td class="buy-cell header-row"><strong style="color: #10eb04;">📈 BUY</strong></td>
+                <td class="sell-cell header-row"><strong style="color: #eb0404;">📉 SELL</strong></td>
+              </tr>
+              <tr>
+                <td class="buy-cell">INC %</td>
+                <td class="sell-cell">INC %</td>
+              </tr>
+              <tr>
+                <td class="buy-cell">
+                  <n-input v-model:value="incrementalPercentAmountBuy" size="tiny" placeholder="%" class="buy-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+                <td class="sell-cell">
+                  <n-input v-model:value="incrementalPercentAmountSell" size="tiny" placeholder="%" class="sell-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+              </tr>
+              <tr>
+                <td class="buy-cell">DEV PRICE</td>
+                <td class="sell-cell">DEV PRICE</td>
+              </tr>
+              <tr>
+                <td class="buy-cell">
+                  <n-input v-model:value="deviationPriceBuy" size="tiny" placeholder="%" class="buy-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+                <td class="sell-cell">
+                  <n-input v-model:value="deviationPriceSell" size="tiny" placeholder="%" class="sell-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+              </tr>
+              <tr>
+                <td class="buy-cell">DEV AMOUNT</td>
+                <td class="sell-cell">DEV AMOUNT</td>
+              </tr>
+              <tr>
+                <td class="buy-cell">
+                  <n-input v-model:value="deviationAmountBuy" size="tiny" placeholder="%" class="buy-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+                <td class="sell-cell">
+                  <n-input v-model:value="deviationAmountSell" size="tiny" placeholder="%" class="sell-input">
+                    <template #suffix>%</template>
+                  </n-input>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </td>
-        <td class="field-cell">
-          <n-input v-model:value="deviationPriceBuy" size="tiny" placeholder="DEV PRICE B">
-            <template #suffix>%</template>
-          </n-input>
-        </td>
-        <td class="field-cell">
-          <n-input v-model:value="deviationPriceSell" size="tiny" placeholder="DEV PRICE S">
-            <template #suffix>%</template>
-          </n-input>
-        </td>
-        <td class="field-cell">
-          <n-input v-model:value="deviationAmountBuy" size="tiny" placeholder="DEV AMT B">
-            <template #suffix>%</template>
-          </n-input>
-        </td>
-        <td class="field-cell">
-          <n-input v-model:value="deviationAmountSell" size="tiny" placeholder="DEV AMT S">
-            <template #suffix>%</template>
-          </n-input>
-        </td>
-        <td class="field-cell price-group-cell" v-show="usePriceGroup">
-          <n-input v-model:value="priceGroupBuy" size="tiny" placeholder="PRICE GRP B">
-            <template #suffix>{{ quote }}</template>
-          </n-input>
-        </td>
-        <td class="field-cell price-group-cell" v-show="usePriceGroup">
-          <n-input v-model:value="priceGroupSell" size="tiny" placeholder="PRICE GRP S">
-            <template #suffix>{{ quote }}</template>
-          </n-input>
-        </td>
-        <td class="checkbox-cell-center">
-          <n-checkbox v-model:checked="usePriceGroup" size="small" class="compact-checkbox-inline">
-            Use Price Group
-          </n-checkbox>
-        </td>
+
       </tr>
     </table>
-  </div>
-</div>
+
+
 
     <!-- Quick Actions - Price Actions -->
     <div class="config-section">
@@ -607,13 +540,27 @@ onUnmounted(() => {
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.07)">7%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.09)">9%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.10)">10%</n-button>
+                 <n-button size="tiny" type="success" @click="updateLowerPrice(0.15)">15%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.20)">20%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.30)">30%</n-button>
+                    <n-button size="tiny" type="success" @click="updateLowerPrice(0.40)">40%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.50)">50%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.60)">60%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.70)">70%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.80)">80%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.90)">90%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.91)">91%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.92)">92%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.93)">93%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.94)">94%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.95)">95%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.96)">96%</n-button>
               <n-button size="tiny" type="success" @click="updateLowerPrice(0.97)">97%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.98)">98%</n-button>
+              <n-button size="tiny" type="success" @click="updateLowerPrice(0.99)">99%</n-button>
+
+
+
             </div>
           </div>
           <div class="price-row">
@@ -628,86 +575,98 @@ onUnmounted(() => {
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.07)">7%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.09)">9%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.10)">10%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(0.15)">15%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.20)">20%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.30)">30%</n-button>
+                  <n-button size="tiny" type="error" @click="updateUpperPrice(0.40)">40%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.50)">50%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.60)">60%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.70)">70%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.80)">80%</n-button>
               <n-button size="tiny" type="error" @click="updateUpperPrice(0.90)">90%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(1.00)">100%</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(2.00)">x2</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(3.00)">x3</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(4.00)">x4</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(5.00)">x5</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(6.00)">x6</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(7.00)">x7</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(8.00)">x8</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(9.00)">x9</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(10.00)">x10</n-button>
+              <n-button size="tiny" type="error" @click="updateUpperPrice(20.00)">x20</n-button>
+        
+
             </div>
           </div>
 
-          <!-- Upper Multiplier - 1 row -->
-          <div class="price-row">
-            <span class="price-row-label">x Upper</span>
-            <div class="price-row-buttons">
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 1).toString()">x1</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 2).toString()">x2</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 3).toString()">x3</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 4).toString()">x4</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 5).toString()">x5</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 6).toString()">x6</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 7).toString()">x7</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 8).toString()">x8</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 9).toString()">x9</n-button>
-              <n-button size="tiny" type="error" @click="upperPrice = (parseFloat(upperPrice) * 10).toString()">x10</n-button>
-            </div>
-          </div>
+         
         </div>
+
+
+
+
+
+
 
         <!-- GRIDS AND AMOUNT QUICK ACTIONS -->
         <div class="quick-actions-row">
           <div class="quick-actions-group">
             <span class="quick-actions-label">Grids</span>
             <div class="quick-buttons-inline">
-              <n-button size="tiny" @click="nrOfGrids = '1'">1</n-button>
-              <n-button size="tiny" @click="nrOfGrids = '10'">10</n-button>
-              <n-button size="tiny" @click="nrOfGrids = '100'">100</n-button>
+              <n-button size="tiny" type="warning" @click="nrOfGrids = '10'">10</n-button>
+              <n-button size="tiny" type="warning" @click="nrOfGrids = '20'">20</n-button>
+              <n-button size="tiny" type="warning" @click="nrOfGrids = '30'">30</n-button>
+              <n-button size="tiny" type="warning" @click="nrOfGrids = '50'">50</n-button>
+              <n-button size="tiny" type="warning" @click="nrOfGrids = '100'">100</n-button>
             </div>
           </div>
 
           <div class="quick-actions-group">
             <span class="quick-actions-label">Amount</span>
             <div class="quick-buttons-inline">
-              <n-button size="tiny" @click="amount = '1'">1</n-button>
-              <n-button size="tiny" @click="amount = '5'">5</n-button>
-              <n-button size="tiny" @click="amount = '10'">10</n-button>
-              <n-button size="tiny" @click="amount = '100'">100</n-button>
+              <n-button size="tiny" type="info" @click="amount = '1.1'">1.1</n-button>
+              <n-button size="tiny" type="info" @click="amount = '5'">5</n-button>
+              <n-button size="tiny" type="info" @click="amount = '10.1'">10.1</n-button>
+              <n-button size="tiny" type="info" @click="amount = '50'">50</n-button>
+              <n-button size="tiny" type="info" @click="amount = '100'">100</n-button>
             </div>
           </div>
 
-          <div class="create-button-section">
-            <n-button type="primary" size="small" @click="createGridBot">CREATE BOT</n-button>
-          </div>
+         
         </div>
       </div>
     </div>
 
-    <!-- Strategies Management -->
-    <div class="config-section">
-      <div class="section-header" @click="showStrategies = !showStrategies">
-        <span>💾 Strategies</span>
-        <span class="collapse-icon">{{ showStrategies ? '▼' : '▶' }}</span>
-      </div>
-      <div v-show="showStrategies" class="section-content">
-        <div class="form-row">
-          <n-select
-            v-model:value="strategyPicker"
-            :options="strategyPickerOptions"
-            @update:value="selectStrategy"
-            size="tiny"
-            placeholder="Select strategy"
-          />
-        </div>
-        <div class="strategy-buttons">
-          <n-button size="tiny" @click="addStrategy">Add</n-button>
-          <n-button size="tiny" @click="editStrategy">Edit</n-button>
-          <n-button size="tiny" @click="deleteStrategy">Del</n-button>
-          <n-button size="tiny" @click="deleteAllStrategies">Clear</n-button>
-        </div>
-      </div>
-    </div>
+    <!-- Strategies Management Component -->
+    <ClientOnly>
+      <StrategiesGridBot
+        :userID="userID?.value"
+        :exchange="currentExchange.value"
+        :symbol="currentSymbol.value"
+        :bestBid="bestBid.value"
+        :bestAsk="bestAsk.value"
+        :formData="{
+          name,
+          lowerPrice,
+          upperPrice,
+          amountType,
+          amount,
+          nrOfGrids,
+          ordersSide,
+          incrementalPercentAmountBuy,
+          incrementalPercentAmountSell,
+          deviationPriceBuy,
+          deviationPriceSell,
+          deviationAmountBuy,
+          deviationAmountSell,
+          usePriceGroup,
+          priceGroupBuy,
+          priceGroupSell
+        }"
+        @apply-strategy="handleStrategyApplied"
+      />
+    </ClientOnly>
 
     <!-- RSI Information -->
     <div class="config-section">
@@ -770,6 +729,7 @@ onUnmounted(() => {
 
 .config-row {
   border-bottom: 1px solid rgba(42, 52, 65, 0.3);
+  height: 38px;
 }
 
 .config-row:last-child {
@@ -777,10 +737,15 @@ onUnmounted(() => {
 }
 
 .field-cell {
-  padding: 3px 2px;
-  vertical-align: top;
+  padding: 6px 2px;
+  vertical-align: middle;
   max-width: 50px;
   width: 50px;
+}
+
+.field-cell[style*="width: 123px"] {
+  max-width: 123px !important;
+  width: 123px !important;
 }
 
 .price-group-cell {
@@ -798,12 +763,21 @@ onUnmounted(() => {
 /* Colored Inputs - Row 1 */
 
 .checkbox-cell-center {
-  padding: 3px 2px;
-  vertical-align: center;
+  padding: 6px 4px;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .compact-checkbox-inline {
   margin-top: 12px;
+}
+
+.compact-checkbox-inline :deep(.n-checkbox__label) {
+  display: none;
+}
+
+.checkbox-cell-center:hover .compact-checkbox-inline :deep(.n-checkbox__label) {
+  display: inline;
 }
 
 /* Inline Input Groups */
@@ -1148,21 +1122,22 @@ onUnmounted(() => {
 
 /* Header Field Cells - LOWER PRICE and UPPER PRICE */
 .form-header .field-cell {
-  max-width: 120px;
-  width: 120px;
+  max-width: 130px;
+  width: 130px;
+  flex-shrink: 0;
 }
 
-/* Header inputs - 14px font */
-.form-header .field-cell :deep(.n-input__input-el) {
-  font-size: 14px !important;
-  padding: 6px 8px !important;
-  height: 28px !important;
-}
-
+/* Header Field Cells - General */
 .form-header .field-cell :deep(.n-input__placeholder) {
   font-size: 13px !important;
   text-transform: uppercase !important;
   font-weight: 600 !important;
+}
+
+.form-header .field-cell :deep(.n-input__input-el) {
+  font-size: 14px !important;
+  padding: 6px 8px !important;
+  height: 28px !important;
 }
 
 .form-header .field-cell :deep(.n-input__suffix) {
@@ -1170,34 +1145,218 @@ onUnmounted(() => {
   padding: 0 2px !important;
 }
 
-/* Header LOWER PRICE - Green */
-.form-header .field-cell:nth-of-type(1) :deep(.n-input__placeholder) {
-  color: rgba(16, 185, 129, 0.8) !important;
+/* Header GRIDS input - 4th field-cell (nrOfGrids) - compact */
+.form-header .field-cell:nth-of-type(3) {
+  max-width: 60px !important;
+  width: 40px !important;
+  padding: 0 !important;
 }
 
-.form-header .field-cell:nth-of-type(1) :deep(.n-input) {
-  background: rgba(16, 185, 129, 0.25) !important;
-  border-color: rgba(16, 185, 129, 0.6) !important;
+.form-header .field-cell:nth-of-type(3) :deep(.n-input) {
+  width: 60px !important;
 }
 
-.form-header .field-cell:nth-of-type(1) :deep(.n-input__input-el) {
-  background: rgba(16, 185, 129, 0.25) !important;
-  color: rgba(16, 185, 129, 0.9) !important;
+.form-header .field-cell:nth-of-type(3) :deep(.n-input__input-el) {
+  font-size: 11px !important;
+  padding: 2px 3px !important;
+  height: 20px !important;
+  line-height: 20px !important;
 }
 
-/* Header UPPER PRICE - Red */
-.form-header .field-cell:nth-of-type(2) :deep(.n-input__placeholder) {
-  color: rgba(239, 68, 68, 0.8) !important;
+.form-header .field-cell:nth-of-type(3) :deep(.n-input__placeholder) {
+  font-size: 9px !important;
 }
 
-.form-header .field-cell:nth-of-type(2) :deep(.n-input) {
-  background: rgba(239, 68, 68, 0.25) !important;
-  border-color: rgba(239, 68, 68, 0.6) !important;
+/* Header AMOUNT input - 5th field-cell (amount) - larger */
+.form-header .field-cell:nth-of-type(4) {
+  max-width: 100px !important;
+  width: 100px !important;
+  padding: 0 !important;
 }
 
-.form-header .field-cell:nth-of-type(2) :deep(.n-input__input-el) {
-  background: rgba(239, 68, 68, 0.25) !important;
-  color: rgba(239, 68, 68, 0.9) !important;
+.form-header .field-cell:nth-of-type(4) :deep(.n-input) {
+  width: 150px !important;
+}
+
+.form-header .field-cell:nth-of-type(4) :deep(.n-input__input-el) {
+  font-size: 11px !important;
+  padding: 4px 6px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+}
+
+.form-header .field-cell:nth-of-type(4) :deep(.n-input__placeholder) {
+  font-size: 10px !important;
+}
+
+.form-header .field-cell:nth-of-type(4) :deep(.n-input__suffix) {
+  font-size: 10px !important;
+}
+
+/* Buy/Sell Table - 2 columns, 4 rows */
+.buy-sell-table {
+  width: auto;
+  display: inline-table;
+  border-collapse: collapse;
+  margin-top: 2px;
+  table-layout: auto;
+}
+
+.buy-sell-table td {
+  padding: 1px 2px;
+  vertical-align: middle;
+}
+
+.buy-cell {
+  background: rgba(16, 235, 4, 0.08);
+  border: 1px solid rgba(16, 235, 4, 0.3);
+  border-radius: 2px;
+  text-align: right;
+  font-size: 9px;
+  color: #10eb04;
+  padding: 2px 3px;
+}
+
+.sell-cell {
+  background: rgba(235, 4, 4, 0.08);
+  border: 1px solid rgba(235, 4, 4, 0.3);
+  border-radius: 2px;
+  text-align: right;
+  font-size: 9px;
+  color: #eb0404;
+  padding: 2px 3px;
+}
+
+.buy-cell.header-row {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 3px;
+}
+
+.sell-cell.header-row {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 3px;
+}
+
+/* BUY Inputs - Green */
+.buy-input {
+  width: 100%;
+  max-width: 55px;
+}
+
+.buy-input :deep(.n-input) {
+  background: rgba(16, 235, 4, 0.4) !important;
+  border-color: rgba(16, 235, 4, 0.6) !important;
+}
+
+.buy-input :deep(.n-input__input-el) {
+  background: rgba(16, 235, 4, 0.4) !important;
+  color: #10eb04 !important;
+  font-size: 10px !important;
+  padding: 2px 2px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+}
+
+.buy-input :deep(.n-input__placeholder) {
+  color: #10eb04 !important;
+  font-size: 8px !important;
+}
+
+.buy-input :deep(.n-input__suffix) {
+  color: #10eb04 !important;
+  font-size: 7px !important;
+}
+
+/* SELL Inputs - Red */
+.sell-input {
+  width: 100%;
+  max-width: 55px;
+}
+
+.sell-input :deep(.n-input) {
+  background: rgba(235, 4, 4, 0.4) !important;
+  border-color: rgba(235, 4, 4, 0.6) !important;
+}
+
+.sell-input :deep(.n-input__input-el) {
+  background: rgba(235, 4, 4, 0.4) !important;
+  color: #eb0404 !important;
+  font-size: 10px !important;
+  padding: 2px 2px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+}
+
+.sell-input :deep(.n-input__placeholder) {
+  color: #eb0404 !important;
+  font-size: 8px !important;
+}
+
+.sell-input :deep(.n-input__suffix) {
+  color: #eb0404 !important;
+  font-size: 7px !important;
+}
+
+/* Price Group Inputs - BUY (Green) */
+.price-group-input-buy {
+  width: 100%;
+}
+
+.price-group-input-buy :deep(.n-input) {
+  background: rgba(16, 235, 4, 0.35) !important;
+  border-color: rgba(16, 235, 4, 0.6) !important;
+  width: 100% !important;
+}
+
+.price-group-input-buy :deep(.n-input__input-el) {
+  background: rgba(16, 235, 4, 0.35) !important;
+  color: #10eb04 !important;
+  font-size: 13px !important;
+  padding: 6px 6px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+}
+
+.price-group-input-buy :deep(.n-input__placeholder) {
+  color: #10eb04 !important;
+  font-size: 11px !important;
+}
+
+.price-group-input-buy :deep(.n-input__suffix) {
+  color: #10eb04 !important;
+  font-size: 10px !important;
+}
+
+/* Price Group Inputs - SELL (Red) */
+.price-group-input-sell {
+  width: 100%;
+}
+
+.price-group-input-sell :deep(.n-input) {
+  background: rgba(235, 4, 4, 0.35) !important;
+  border-color: rgba(235, 4, 4, 0.6) !important;
+  width: 100% !important;
+}
+
+.price-group-input-sell :deep(.n-input__input-el) {
+  background: rgba(235, 4, 4, 0.35) !important;
+  color: #eb0404 !important;
+  font-size: 13px !important;
+  padding: 6px 6px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+}
+
+.price-group-input-sell :deep(.n-input__placeholder) {
+  color: #eb0404 !important;
+  font-size: 11px !important;
+}
+
+.price-group-input-sell :deep(.n-input__suffix) {
+  color: #eb0404 !important;
+  font-size: 10px !important;
 }
 
 /* Config Sections */

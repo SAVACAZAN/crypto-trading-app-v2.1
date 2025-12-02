@@ -1,0 +1,12 @@
+# List of cards to update: network|symbol|icon|generatingVar
+Dogecoin|DOGE|Ð|generatingDoge
+BitcoinCash|BCH|₿|generatingBch  
+Dash|DASH|Đ|generatingDash
+Near|NEAR|🔷|generatingNear
+Celestia|TIA|🌌|generatingTia
+Kusama|KSM|🐦|generatingKsm
+Axelar|AXL|🔗|generatingAxl
+VeChain|VET|⚡|generatingVet
+Flow|FLOW|🌊|generatingFlow
+Tezos|XTZ|🔷|generatingXtz
+Starknet|STRK|⚡|generatingStrk

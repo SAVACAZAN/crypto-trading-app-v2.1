@@ -1,0 +1,554 @@
+
+async function loadSecretWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Secret Network'
+      }
+    });
+
+    if (response.success) {
+      secretWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Secret Network wallets:', error);
+  }
+}
+
+async function loadKujiraWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Kujira'
+      }
+    });
+
+    if (response.success) {
+      kujiraWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Kujira wallets:', error);
+  }
+}
+
+async function loadArchwayWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Archway'
+      }
+    });
+
+    if (response.success) {
+      archwayWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Archway wallets:', error);
+  }
+}
+
+async function loadThorchainWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Thorchain'
+      }
+    });
+
+    if (response.success) {
+      thorchainWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Thorchain wallets:', error);
+  }
+}
+
+async function loadWavesWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Waves'
+      }
+    });
+
+    if (response.success) {
+      wavesWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Waves wallets:', error);
+  }
+}
+
+async function loadZilliqaWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Zilliqa'
+      }
+    });
+
+    if (response.success) {
+      zilliqaWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Zilliqa wallets:', error);
+  }
+}
+
+async function loadNeoWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'NEO'
+      }
+    });
+
+    if (response.success) {
+      neoWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading NEO wallets:', error);
+  }
+}
+
+async function loadKadenaWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Kadena'
+      }
+    });
+
+    if (response.success) {
+      kadenaWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Kadena wallets:', error);
+  }
+}
+
+async function loadEosWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'EOS'
+      }
+    });
+
+    if (response.success) {
+      eosWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading EOS wallets:', error);
+  }
+}
+
+async function loadWaxWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'WAX'
+      }
+    });
+
+    if (response.success) {
+      waxWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading WAX wallets:', error);
+  }
+}
+
+async function loadOntologyWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Ontology'
+      }
+    });
+
+    if (response.success) {
+      ontologyWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Ontology wallets:', error);
+  }
+}
+
+async function loadThetaWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Theta Network'
+      }
+    });
+
+    if (response.success) {
+      thetaWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Theta Network wallets:', error);
+  }
+}
+
+async function loadCasperWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Casper Network'
+      }
+    });
+
+    if (response.success) {
+      casperWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Casper Network wallets:', error);
+  }
+}
+
+async function loadIconWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'ICON'
+      }
+    });
+
+    if (response.success) {
+      iconWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading ICON wallets:', error);
+  }
+}
+
+async function loadQtumWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Qtum'
+      }
+    });
+
+    if (response.success) {
+      qtumWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Qtum wallets:', error);
+  }
+}
+
+async function loadErgoWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Ergo'
+      }
+    });
+
+    if (response.success) {
+      ergoWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Ergo wallets:', error);
+  }
+}
+
+async function loadNemWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'NEM'
+      }
+    });
+
+    if (response.success) {
+      nemWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading NEM wallets:', error);
+  }
+}
+
+async function loadSymbolWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Symbol'
+      }
+    });
+
+    if (response.success) {
+      symbolWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Symbol wallets:', error);
+  }
+}
+
+async function loadNervosCkbWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Nervos CKB'
+      }
+    });
+
+    if (response.success) {
+      nervosCkbWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Nervos CKB wallets:', error);
+  }
+}
+
+async function loadAlephZeroWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Aleph Zero'
+      }
+    });
+
+    if (response.success) {
+      alephZeroWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Aleph Zero wallets:', error);
+  }
+}
+
+async function loadRadixWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Radix DLT'
+      }
+    });
+
+    if (response.success) {
+      radixWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Radix DLT wallets:', error);
+  }
+}
+
+async function loadNibiruWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Nibiru Chain'
+      }
+    });
+
+    if (response.success) {
+      nibiruWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Nibiru Chain wallets:', error);
+  }
+}
+
+async function loadDymensionWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Dymension'
+      }
+    });
+
+    if (response.success) {
+      dymensionWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Dymension wallets:', error);
+  }
+}
+
+async function loadImmutableXWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Immutable X'
+      }
+    });
+
+    if (response.success) {
+      immutableXWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Immutable X wallets:', error);
+  }
+}
+
+async function loadLoopringWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Loopring'
+      }
+    });
+
+    if (response.success) {
+      loopringWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Loopring wallets:', error);
+  }
+}
+
+async function loadUltraWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Ultra.io'
+      }
+    });
+
+    if (response.success) {
+      ultraWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Ultra.io wallets:', error);
+  }
+}
+
+async function loadHyperliquidWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Hyperliquid'
+      }
+    });
+
+    if (response.success) {
+      hyperliquidWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Hyperliquid wallets:', error);
+  }
+}
+
+async function loadConstellationWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'Constellation'
+      }
+    });
+
+    if (response.success) {
+      constellationWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading Constellation wallets:', error);
+  }
+}
+
+async function loadLcxWallets() {
+  try {
+    const response = await $fetch('/api/v1/Wallets/fetchUserWallets', {
+      method: 'GET',
+      params: {
+        userID: userID.value,
+        network: 'LCX'
+      }
+    });
+
+    if (response.success) {
+      lcxWallets.value = response.data || [];
+    }
+  } catch (error) {
+    console.error('[CryptoWallet] Error loading LCX wallets:', error);
+  }
+}
+
+
+// onMounted calls:
+  loadSecretWallets(),
+  loadKujiraWallets(),
+  loadArchwayWallets(),
+  loadThorchainWallets(),
+  loadWavesWallets(),
+  loadZilliqaWallets(),
+  loadNeoWallets(),
+  loadKadenaWallets(),
+  loadEosWallets(),
+  loadWaxWallets(),
+  loadOntologyWallets(),
+  loadThetaWallets(),
+  loadCasperWallets(),
+  loadIconWallets(),
+  loadQtumWallets(),
+  loadErgoWallets(),
+  loadNemWallets(),
+  loadSymbolWallets(),
+  loadNervosCkbWallets(),
+  loadAlephZeroWallets(),
+  loadRadixWallets(),
+  loadNibiruWallets(),
+  loadDymensionWallets(),
+  loadImmutableXWallets(),
+  loadLoopringWallets(),
+  loadUltraWallets(),
+  loadHyperliquidWallets(),
+  loadConstellationWallets(),
+  loadLcxWallets(),

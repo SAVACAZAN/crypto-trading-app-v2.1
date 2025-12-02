@@ -11,7 +11,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('Grid Bots Library Loaded...')
+    console.log('Scalp1ng Bots Library Loaded...')
 
     nitroApp.Scalp1ngBotLib = {
         async createBot(data) {

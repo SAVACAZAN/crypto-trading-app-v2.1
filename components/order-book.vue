@@ -26,6 +26,12 @@ onUnmounted(() => {
 });
 
 async function fetchOrderBookPooling() {
+  // Safety check - don't fetch if exchange or symbol are not set
+  if (!currentExchange.value || !currentSymbol.value) {
+    console.warn('⚠️ OrderBook: Exchange or symbol not set, skipping fetch');
+    return;
+  }
+
   let bids = [];
   let asks = [];
 
@@ -33,9 +39,16 @@ async function fetchOrderBookPooling() {
     query:{
       userID:userID.value,
       exchange:currentExchange.value,
-      symbol:currentSymbol.value,
+      symbol:currentSymbol.value
+      // No limit = get FULL orderbook depth from exchange
     }
   });
+
+  // Handle case where user has no API keys configured
+  if (orderBook.noApiKeys) {
+    // Silently skip - user hasn't configured API keys yet
+    return;
+  }
 
   if (orderBook.data) {
     for (let i = 0; i < orderBook.data.bids.length; i++) {
@@ -111,7 +124,7 @@ async function fetchOrderBookPooling() {
 }
 
 .card-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -124,12 +137,12 @@ async function fetchOrderBookPooling() {
   gap: 0px;
 }
 
-/* Asks & Bids Sections */
+/* Asks & Bids Sections - Compact Display */
 .asks-section,
 .bids-section {
   display: flex;
   flex-direction: column;
-  max-height: 200px;
+  max-height: 350px;
   overflow-y: auto;
   overflow-x: hidden;
 }

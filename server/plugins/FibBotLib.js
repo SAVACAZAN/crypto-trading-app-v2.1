@@ -10,7 +10,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('Grid Bots Library Loaded...');
+    console.log('Fib Bots Library Loaded...');
 
     nitroApp.FibBotLib = {
         async createBot(data) {

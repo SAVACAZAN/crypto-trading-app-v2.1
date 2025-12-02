@@ -11,6 +11,8 @@ export const useAppStore = defineStore('app', {
             selectedApiKey:null,
             selectedApiKeys:[], // Array for multiple API keys
             currentPrice: null, // Live price from ticker
+            btcPrice: null, // Live BTC price from ticker
+            ethPrice: null, // Live ETH price from ticker
         }
     },
     getters:{
@@ -54,6 +56,12 @@ export const useAppStore = defineStore('app', {
         },
         getCurrentPrice(state) {
             return state.currentPrice;
+        },
+        getBtcPrice(state) {
+            return state.btcPrice;
+        },
+        getEthPrice(state) {
+            return state.ethPrice;
         }
     },
     actions: {
@@ -163,6 +171,12 @@ export const useAppStore = defineStore('app', {
         },
         setCurrentPrice(price) {
             this.currentPrice = price;
+        },
+        setBtcPrice(price) {
+            this.btcPrice = price;
+        },
+        setEthPrice(price) {
+            this.ethPrice = price;
         }
     },
 })

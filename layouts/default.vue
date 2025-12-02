@@ -10,13 +10,14 @@
                 <n-space justify="space-between" align="center" class="inner">
                     <!-- LEFT SIDE - LOGO + TICKER BAR + API SELECTOR -->
                     <div class="navbar-left">
-                        <nuxt-link to="/dashboard"><n-text class="app-title"><b>Crypto App</b></n-text></nuxt-link>
+                        <nuxt-link to="/cryptoapp"><n-text class="app-title"><b>Crypto App</b></n-text></nuxt-link>
                         <TickerBar />
                         <ApiSelector />
                     </div>
 
-                    <!-- RIGHT SIDE - USER INFO -->
+                    <!-- RIGHT SIDE - APP NAV + USER INFO -->
                     <div class="navbar-right">
+                        <AppTopButtonBar />
                         <n-text class="user-id-text">ID: {{userID}}</n-text>
                         <n-text class="referral-text">Ref: {{referralCode}}</n-text>
                         <n-dropdown :options="dropdownOptions">
@@ -52,7 +53,7 @@
                 </n-layout>
             </n-layout>
             <n-layout-footer bordered class="footer">
-                Crypto App - 2023
+                Crypto App - 1993
             </n-layout-footer>
         </n-layout>
     </n-space>
@@ -86,7 +87,20 @@ import {
     CafeOutline as CafeOutline,
     BugOutline  as BugOutline ,
     TrophyOutline as  TrophyOutline,
+    StatsChartOutline as StatsChartOutline,
+    GridOutline as GridOutline,
+    ImageOutline as ImageOutline,
+    GlobeOutline as GlobeOutline,
+    ShareSocialOutline as ShareSocialOutline,
+    ListOutline as ListOutline,
+    EyeOutline as EyeOutline,
+    TrendingUpOutline as TrendingUpOutline,
+    FlashOutline as FlashOutline,
 } from "@vicons/ionicons5";
+import { useAppStore } from '~/stores/app.store';
+
+const app = useAppStore();
+
 let userIDCookie = useCookie('userID');
 let userID = userIDCookie.value;
 
@@ -95,6 +109,18 @@ let referralCode = referralCodeCookie.value;
 
 let referredByCookie = useCookie('referredBy');
 let referredBy = referredByCookie.value;
+
+// Initialize store data on mount
+onMounted(async () => {
+    console.log('🚀 Layout mounted - Loading user exchange data for:', userID);
+    if (userID) {
+        await app.loadUserExchangeData(userID);
+        console.log('✅ Store initialized with:', {
+            exchange: app.getUserSelectedExchange,
+            market: app.getUserSelectedMarket
+        });
+    }
+});
 
 function renderIcon(icon) {
     return () => h(NIcon, null, { default: () => h(icon) });
@@ -107,28 +133,45 @@ const sidebarOptions = [
                 NuxtLink,
                 {
                     to: {
-                        name: 'dashboard',
+                        name: 'cryptoapp',
                     }
                 },
-                { default: () => 'Dashboard' }
+                { default: () => 'CryptoApp' }
             ),
-        key: 'dashboard',
+        key: 'cryptoapp',
         icon: renderIcon(AppsSharp),
     },
-    {
+
+
+        {
         label: () =>
             h(
                 NuxtLink,
                 {
                     to: {
-                        name: 'trade',
+                        name: 'ArbToolz',
                     }
                 },
-                { default: () => 'Trade' }
+                { default: () => 'ArbToolz' }
             ),
-        key: 'trade',
-        icon: renderIcon(BarChart),
+        key: 'ArbToolz',
+        icon: renderIcon(FlashOutline),
     },
+
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'trade',
+    //                 }
+    //             },
+    //             { default: () => 'Trade' }
+    //         ),
+    //     key: 'trade',
+    //     icon: renderIcon(BarChart),
+    // },
     // {
     //     label: () =>
     //         h(
@@ -158,109 +201,93 @@ const sidebarOptions = [
     //     key: 'grid-bots',
     //     icon: renderIcon(MenuOutline),
     // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'grid-bots-plus',
+    //                 }
+    //             },
+    //             { default: () => 'GRID Bots Plus' }
+    //         ),
+    //     key: 'grid-bots-plus',
+    //     icon: renderIcon(StarOutline),
+    // },
     {
         label: () =>
             h(
                 NuxtLink,
                 {
                     to: {
-                        name: 'grid-bots-plus',
+                        name: 'social-trading',
                     }
                 },
-                { default: () => 'GRID Bots Plus' }
+                { default: () => 'Social Trading' }
             ),
-        key: 'grid-bots-plus',
-        icon: renderIcon(StarOutline),
+        key: 'social-trading',
+        icon: renderIcon(ShareSocialOutline),
     },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'GridBotReadme',
-                    }
-                },
-                { default: () => '📚 Grid Bot README' }
-            ),
-        key: 'GridBotReadme',
-        icon: renderIcon(BookIcon),
-    },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'FrontRunReadme',
-                    }
-                },
-                { default: () => '📚 FrontRun README' }
-            ),
-        key: 'FrontRunReadme',
-        icon: renderIcon(BookIcon),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'GridBotReadme',
+    //                 }
+    //             },
+    //             { default: () => '📚 Grid Bot README' }
+    //         ),
+    //     key: 'GridBotReadme',
+    //     icon: renderIcon(BookIcon),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'FrontRunReadme',
+    //                 }
+    //             },
+    //             { default: () => '📚 FrontRun README' }
+    //         ),
+    //     key: 'FrontRunReadme',
+    //     icon: renderIcon(BookIcon),
+    // },
 
 
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'OneClickBot',
-                    }
-                },
-                { default: () => 'One Click Bot  ' }
-            ),
-        key: 'OneClickBot',
-        icon: renderIcon(StarOutline),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'OneClickBot',
+    //                 }
+    //             },
+    //             { default: () => 'One Click Bot  ' }
+    //         ),
+    //     key: 'OneClickBot',
+    //     icon: renderIcon(StarOutline),
+    // },
 
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'AiToolz',
-                    }
-                },
-                { default: () => '🤖 AI Toolz' }
-            ),
-        key: 'AiToolz',
-        icon: renderIcon(Analytics),
-    },
-
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'OpenOrdersDev',
-                    }
-                },
-                { default: () => 'Open Orders' }
-            ),
-        key: 'OpenOrdersDev',
-        icon: renderIcon(SearchOutline),
-    },
-
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'ClosedOrdersDev',
-                    }
-                },
-                { default: () => 'Closed Orders' }
-            ),
-        key: 'ClosedOrdersDev',
-        icon: renderIcon(BookIcon),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'StocksMarkets-GlobalMarketOverview',
+    //                 }
+    //             },
+    //             { default: () => '📊 Stocks' }
+    //         ),
+    //     key: 'StocksMarkets-GlobalMarketOverview',
+    //     icon: renderIcon(TrendingUpOutline),
+    // },
 
     {
         label: () =>
@@ -268,44 +295,119 @@ const sidebarOptions = [
                 NuxtLink,
                 {
                     to: {
-                        name: 'TickerBarPage',
+                        name: 'analytics',
                     }
                 },
-                { default: () => '📊 Ticker Bar' }
+                { default: () => 'Analytics' }
             ),
-        key: 'TickerBarPage',
-        icon: renderIcon(BarChart),
-    },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'BalanceSAVE',
-                    }
-                },
-                { default: () => 'BalanceSAVE' }
-            ),
-        key: 'BalanceSAVE',
-        icon: renderIcon(SearchOutline),
+        key: 'analytics',
+        icon: renderIcon(StatsChartOutline),
     },
 
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'AiToolz',
+    //                 }
+    //             },
+    //             { default: () => '🤖 AI Toolz' }
+    //         ),
+    //     key: 'AiToolz',
+    //     icon: renderIcon(Analytics),
+    // },
 
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'OrderListDuplicate',
-                    }
-                },
-                { default: () => 'OrderListDuplicate' }
-            ),
-        key: 'OrderListDuplicate',
-        icon: renderIcon(SearchOutline),
-    },
+
+
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'TickerBarPage',
+    //                 }
+    //             },
+    //             { default: () => '📊 Ticker Bar' }
+    //         ),
+    //     key: 'TickerBarPage',
+    //     icon: renderIcon(BarChart),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'BalanceSAVE',
+    //                 }
+    //             },
+    //             { default: () => 'BalanceSAVE' }
+    //         ),
+    //     key: 'BalanceSAVE',
+    //     icon: renderIcon(SearchOutline),
+    // },
+
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'STATS',
+    //                 }
+    //             },
+    //             { default: () => 'Stats' }
+    //         ),
+    //     key: 'STATS',
+    //     icon: renderIcon(StatsChartOutline),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'Networks',
+    //                 }
+    //             },
+    //             { default: () => 'Networks' }
+    //         ),
+    //     key: 'Networks',
+    //     icon: renderIcon(GlobeOutline),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'TestNetworkDev',
+    //                 }
+    //             },
+    //             { default: () => 'TestNets' }
+    //         ),
+    //     key: 'TestNetworkDev',
+    //     icon: renderIcon(BugOutline),
+    // },
+
+
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'OrderListDuplicate',
+    //                 }
+    //             },
+    //             { default: () => 'OrderListDuplicate' }
+    //         ),
+    //     key: 'OrderListDuplicate',
+    //     icon: renderIcon(SearchOutline),
+    // },
     // {
     //     label: () =>
     //         h(
@@ -320,20 +422,20 @@ const sidebarOptions = [
     //     key: 'BidAndAsk',
     //     icon: renderIcon(GitCompareOutline),
     // },
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                  to: {
-                    name: 'ALL-STR',
-                  }
-                },
-                { default: () => 'ALL-STR' }
-            ),
-        key: 'ALL-STR',
-        icon: renderIcon(CafeOutline),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'ALL-STR',
+    //               }
+    //             },
+    //             { default: () => 'ALL-STR' }
+    //         ),
+    //     key: 'ALL-STR',
+    //     icon: renderIcon(CafeOutline),
+    // },
 
     // {
     //     label: () =>
@@ -396,38 +498,65 @@ const sidebarOptions = [
 
 
 
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'DEXs',
+    //                 }
+    //             },
+    //             { default: () => 'DEXs' }
+    //         ),
+    //     key: 'DEXs',
+    //     icon: renderIcon(StarOutline),
+    // },
+
     {
         label: () =>
             h(
                 NuxtLink,
                 {
                     to: {
-                        name: 'ArbToolz',
+                        name: 'ChatToolz',
                     }
                 },
-                { default: () => 'ArbToolz' }
+                { default: () => 'ChatToolz' }
             ),
-        key: 'ArbToolz',
-        icon: renderIcon(SettingsOutline),
+        key: 'ChatToolz',
+        icon: renderIcon(MailOutline),
     },
 
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'TelegramToolz',
+    //                 }
+    //             },
+    //             { default: () => 'TelegramToolz' }
+    //         ),
+    //     key: 'TelegramToolz',
+    //     icon: renderIcon(MailOutline),
+    // },
 
- 
- 
-    {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                    to: {
-                        name: 'Referrals',
-                    }
-                },
-                { default: () => 'Referrals' }
-            ),
-        key: 'Referrals',
-        icon: renderIcon(CameraOutline),
-    },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //                 to: {
+    //                     name: 'Referrals',
+    //                 }
+    //             },
+    //             { default: () => 'Referrals' }
+    //         ),
+    //     key: 'Referrals',
+    //     icon: renderIcon(CameraOutline),
+    // },
     
     // {
     //     label: () =>
@@ -443,21 +572,21 @@ const sidebarOptions = [
     //     key: 'dca-bots',
     //     icon: renderIcon(GitCompareOutline),
     // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'back-testing',
+    //               }
+    //             },
+    //             { default: () => 'Back testing' }
+    //         ),
+    //     key: 'back-testing',
+    //     icon: renderIcon(GitCompareOutline),
+    // }, 
     {
-        label: () =>
-            h(
-                NuxtLink,
-                {
-                  to: {
-                    name: 'back-testing',
-                  }
-                },
-                { default: () => 'Back testing' }
-            ),
-        key: 'back-testing',
-        icon: renderIcon(GitCompareOutline),
-    }, 
-    { 
         label: () =>
             h(
                 NuxtLink,
@@ -471,7 +600,49 @@ const sidebarOptions = [
         key: 'dev-tools',
         icon: renderIcon(CloudUploadOutline),
     },
-   
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'Web3Toolz',
+    //               }
+    //             },
+    //             { default: () => 'Web3 Toolz' }
+    //         ),
+    //     key: 'Web3Toolz',
+    //     icon: renderIcon(GlobeOutline),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'social-profile',
+    //               }
+    //             },
+    //             { default: () => '👥 Social Profile' }
+    //         ),
+    //     key: 'social-profile',
+    //     icon: renderIcon(ShareSocialOutline),
+    // },
+    // {
+    //     label: () =>
+    //         h(
+    //             NuxtLink,
+    //             {
+    //               to: {
+    //                 name: 'rarible',
+    //               }
+    //             },
+    //             { default: () => 'Rarible NFT' }
+    //         ),
+    //     key: 'rarible',
+    //     icon: renderIcon(ImageOutline),
+    // },
+
 ];
 
 const dropdownOptions = [
@@ -631,7 +802,7 @@ const dropdownOptions = [
 }
 
 /* Individual menu item colors - using nth-child */
-:deep(.n-menu-item:nth-child(1) a) { color: #FF6B6B !important; } /* Dashboard */
+:deep(.n-menu-item:nth-child(1) a) { color: #FF6B6B !important; } /* CryptoApp */
 :deep(.n-menu-item:nth-child(1) .n-menu-item-content__icon) { color: #FF6B6B !important; }
 
 :deep(.n-menu-item:nth-child(2) a) { color: #4ECDC4 !important; } /* Trade */
@@ -639,6 +810,9 @@ const dropdownOptions = [
 
 :deep(.n-menu-item:nth-child(3) a) { color: #45B7D1 !important; } /* GRID Bots Plus */
 :deep(.n-menu-item:nth-child(3) .n-menu-item-content__icon) { color: #45B7D1 !important; }
+
+:deep(.n-menu-item:nth-child(4) a) { color: #96CEB4 !important; } /* Social Trading */
+:deep(.n-menu-item:nth-child(4) .n-menu-item-content__icon) { color: #96CEB4 !important; }
 
 :deep(.n-menu-item:nth-child(4) a) { color: #96CEB4 !important; } /* Grid Bot README */
 :deep(.n-menu-item:nth-child(4) .n-menu-item-content__icon) { color: #96CEB4 !important; }
@@ -682,6 +856,9 @@ const dropdownOptions = [
 :deep(.n-menu-item:nth-child(17) a) { color: #FAB1A0 !important; } /* Dev Tools */
 :deep(.n-menu-item:nth-child(17) .n-menu-item-content__icon) { color: #FAB1A0 !important; }
 
+:deep(.n-menu-item:nth-child(18) a) { color: #FFD93D !important; } /* Price Spectrum */
+:deep(.n-menu-item:nth-child(18) .n-menu-item-content__icon) { color: #FFD93D !important; }
+
 .container {
   height: calc(100vh - 95px) !important; /* Updated: 15px header + 48px balance bar + 32px footer */
 }
@@ -703,7 +880,7 @@ const dropdownOptions = [
 /* ========== BALANCE BAR (NAVBAR2) ========== */
 .header-balance {
   position: sticky;
-  top: 15px;
+  top: 25px;
   z-index: 10;
   height: 48px !important;
   padding: 0 16px !important;
@@ -712,6 +889,15 @@ const dropdownOptions = [
   border: none !important;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.header-indicators {
+  position: sticky;
+  top: 73px; /* 25px navbar + 48px balance bar */
+  z-index: 9;
+  padding: 8px 16px !important;
+  background: transparent;
+  border: none !important;
 }
 </style>
 

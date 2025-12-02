@@ -199,9 +199,12 @@ export default defineNitroPlugin((nitroApp) => {
                              console.log(`\x1b[31m✔️ Tranzacție de tip \x1b[1mSELL\x1b[0;31m cu succes nr. ${this.sellCount} \x1b[0m pentru simbolul \x1b[1m${bot.symbol}\x1b[0m`);
                          }
      
+                         // Save the ORIGINAL filled order (with original side) to filledOrders FIRST
                          let filledOrders = bot.filledOrders;
-                         filledOrders.push(bot.activeOrders[gridOrdersIndex]);
-     
+                         const originalFilledOrder = { ...bot.activeOrders[gridOrdersIndex] };
+                         filledOrders.push(originalFilledOrder);
+
+                         // THEN update the active order with the NEW inverse order data
                          bot.activeOrders[gridOrdersIndex] = {
                              ...bot.activeOrders[gridOrdersIndex],
                              id: newOrderResponse.data.id,

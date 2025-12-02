@@ -8,7 +8,7 @@
       <PumpDumpForm/>
     </n-gi>
     <n-gi span="12 800:4">
-      <OrderBook/>
+ 
       
       
     </n-gi>

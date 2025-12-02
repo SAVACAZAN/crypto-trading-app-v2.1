@@ -1,0 +1,1761 @@
+
+<!-- ========== PHASE 3+ NEW NETWORKS ========== -->
+
+      <!-- Ronin Card -->
+      <div class="crypto-card ronin-card" @click="navigateTo('/RoninNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon ronin">⚔️</div>
+          <div class="crypto-info">
+            <h3>Ronin</h3>
+            <span class="crypto-symbol">RON</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalRoninWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalRoninAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="roninWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in roninWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="roninWallets.length > 2" class="more-indicator">
+            +{{ roninWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateRoninWallet" :loading="generatingRonin" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Immutable zkEVM Card -->
+      <div class="crypto-card immutableZkEVM-card" @click="navigateTo('/ImmutableZkEVMNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon immutableZkEVM">🎯</div>
+          <div class="crypto-info">
+            <h3>Immutable zkEVM</h3>
+            <span class="crypto-symbol">IMX</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalImmutableZkEVMWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalImmutableZkEVMAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="immutableZkEVMWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in immutableZkEVMWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="immutableZkEVMWallets.length > 2" class="more-indicator">
+            +{{ immutableZkEVMWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateImmutableZkEVMWallet" :loading="generatingImmutableZkEVM" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Beam Card -->
+      <div class="crypto-card beam-card" @click="navigateTo('/BeamNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon beam">🌟</div>
+          <div class="crypto-info">
+            <h3>Beam</h3>
+            <span class="crypto-symbol">BEAM</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalBeamWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalBeamAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="beamWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in beamWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="beamWallets.length > 2" class="more-indicator">
+            +{{ beamWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateBeamWallet" :loading="generatingBeam" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Oasys Card -->
+      <div class="crypto-card oasys-card" @click="navigateTo('/OasysNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon oasys">🏝️</div>
+          <div class="crypto-info">
+            <h3>Oasys</h3>
+            <span class="crypto-symbol">OAS</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalOasysWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalOasysAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="oasysWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in oasysWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="oasysWallets.length > 2" class="more-indicator">
+            +{{ oasysWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateOasysWallet" :loading="generatingOasys" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Polygon zkEVM Card -->
+      <div class="crypto-card polygonZkEVM-card" @click="navigateTo('/PolygonZkEVMNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon polygonZkEVM">🔷</div>
+          <div class="crypto-info">
+            <h3>Polygon zkEVM</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalPolygonZkEVMWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalPolygonZkEVMAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="polygonZkEVMWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in polygonZkEVMWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="polygonZkEVMWallets.length > 2" class="more-indicator">
+            +{{ polygonZkEVMWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generatePolygonZkEVMWallet" :loading="generatingPolygonZkEVM" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Boba Network Card -->
+      <div class="crypto-card boba-card" @click="navigateTo('/BobaNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon boba">🧋</div>
+          <div class="crypto-info">
+            <h3>Boba Network</h3>
+            <span class="crypto-symbol">BOBA</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalBobaWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalBobaAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="bobaWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in bobaWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="bobaWallets.length > 2" class="more-indicator">
+            +{{ bobaWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateBobaWallet" :loading="generatingBoba" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Metis Card -->
+      <div class="crypto-card metis-card" @click="navigateTo('/MetisNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon metis">🌊</div>
+          <div class="crypto-info">
+            <h3>Metis</h3>
+            <span class="crypto-symbol">METIS</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalMetisWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalMetisAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="metisWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in metisWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="metisWallets.length > 2" class="more-indicator">
+            +{{ metisWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateMetisWallet" :loading="generatingMetis" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Aurora Card -->
+      <div class="crypto-card aurora-card" @click="navigateTo('/AuroraNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon aurora">🌌</div>
+          <div class="crypto-info">
+            <h3>Aurora</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalAuroraWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalAuroraAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="auroraWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in auroraWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="auroraWallets.length > 2" class="more-indicator">
+            +{{ auroraWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateAuroraWallet" :loading="generatingAurora" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Redstone Card -->
+      <div class="crypto-card redstone-card" @click="navigateTo('/RedstoneNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon redstone">🔴</div>
+          <div class="crypto-info">
+            <h3>Redstone</h3>
+            <span class="crypto-symbol">RED</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalRedstoneWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalRedstoneAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="redstoneWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in redstoneWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="redstoneWallets.length > 2" class="more-indicator">
+            +{{ redstoneWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateRedstoneWallet" :loading="generatingRedstone" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- opBNB Card -->
+      <div class="crypto-card opBNB-card" @click="navigateTo('/OpBNBNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon opBNB">⚡</div>
+          <div class="crypto-info">
+            <h3>opBNB</h3>
+            <span class="crypto-symbol">BNB</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalOpBNBWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalOpBNBAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="opBNBWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in opBNBWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="opBNBWallets.length > 2" class="more-indicator">
+            +{{ opBNBWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateOpBNBWallet" :loading="generatingOpBNB" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Arbitrum Nova Card -->
+      <div class="crypto-card arbitrumNova-card" @click="navigateTo('/ArbitrumNovaNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon arbitrumNova">🎮</div>
+          <div class="crypto-info">
+            <h3>Arbitrum Nova</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalArbitrumNovaWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalArbitrumNovaAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="arbitrumNovaWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in arbitrumNovaWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="arbitrumNovaWallets.length > 2" class="more-indicator">
+            +{{ arbitrumNovaWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateArbitrumNovaWallet" :loading="generatingArbitrumNova" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Zora Network Card -->
+      <div class="crypto-card zora-card" @click="navigateTo('/ZoraNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon zora">🎨</div>
+          <div class="crypto-info">
+            <h3>Zora Network</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalZoraWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalZoraAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="zoraWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in zoraWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="zoraWallets.length > 2" class="more-indicator">
+            +{{ zoraWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateZoraWallet" :loading="generatingZora" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Manta Pacific Card -->
+      <div class="crypto-card mantaPacific-card" @click="navigateTo('/MantaPacificNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon mantaPacific">🦈</div>
+          <div class="crypto-info">
+            <h3>Manta Pacific</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalMantaPacificWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalMantaPacificAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="mantaPacificWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in mantaPacificWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="mantaPacificWallets.length > 2" class="more-indicator">
+            +{{ mantaPacificWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateMantaPacificWallet" :loading="generatingMantaPacific" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Morph L2 Card -->
+      <div class="crypto-card morphL2-card" @click="navigateTo('/MorphL2Network')">
+        <div class="card-header">
+          <div class="crypto-icon morphL2">🔀</div>
+          <div class="crypto-info">
+            <h3>Morph L2</h3>
+            <span class="crypto-symbol">ETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalMorphL2Wallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalMorphL2Addresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="morphL2Wallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in morphL2Wallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="morphL2Wallets.length > 2" class="more-indicator">
+            +{{ morphL2Wallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateMorphL2Wallet" :loading="generatingMorphL2" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Xai Network Card -->
+      <div class="crypto-card xai-card" @click="navigateTo('/XaiNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon xai">🎯</div>
+          <div class="crypto-info">
+            <h3>Xai Network</h3>
+            <span class="crypto-symbol">XAI</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalXaiWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalXaiAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="xaiWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in xaiWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="xaiWallets.length > 2" class="more-indicator">
+            +{{ xaiWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateXaiWallet" :loading="generatingXai" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Fraxtal Card -->
+      <div class="crypto-card fraxtal-card" @click="navigateTo('/FraxtalNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon fraxtal">❄️</div>
+          <div class="crypto-info">
+            <h3>Fraxtal</h3>
+            <span class="crypto-symbol">frxETH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalFraxtalWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalFraxtalAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="fraxtalWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in fraxtalWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="fraxtalWallets.length > 2" class="more-indicator">
+            +{{ fraxtalWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateFraxtalWallet" :loading="generatingFraxtal" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Taiko Card -->
+      <div class="crypto-card taiko-card" @click="navigateTo('/TaikoNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon taiko">⛩️</div>
+          <div class="crypto-info">
+            <h3>Taiko</h3>
+            <span class="crypto-symbol">TAIKO</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalTaikoWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalTaikoAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="taikoWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in taikoWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="taikoWallets.length > 2" class="more-indicator">
+            +{{ taikoWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateTaikoWallet" :loading="generatingTaiko" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Mode Network Card -->
+      <div class="crypto-card modeNetwork-card" @click="navigateTo('/ModeNetworkNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon modeNetwork">🟢</div>
+          <div class="crypto-info">
+            <h3>Mode Network</h3>
+            <span class="crypto-symbol">MODE</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalModeNetworkWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalModeNetworkAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="modeNetworkWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in modeNetworkWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="modeNetworkWallets.length > 2" class="more-indicator">
+            +{{ modeNetworkWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateModeNetworkWallet" :loading="generatingModeNetwork" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Celo Card -->
+      <div class="crypto-card celo-card" @click="navigateTo('/CeloNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon celo">📱</div>
+          <div class="crypto-info">
+            <h3>Celo</h3>
+            <span class="crypto-symbol">CELO</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalCeloWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalCeloAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="celoWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in celoWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="celoWallets.length > 2" class="more-indicator">
+            +{{ celoWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateCeloWallet" :loading="generatingCelo" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Hedera Card -->
+      <div class="crypto-card hedera-card" @click="navigateTo('/HederaNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon hedera">ⓗ</div>
+          <div class="crypto-info">
+            <h3>Hedera</h3>
+            <span class="crypto-symbol">HBAR</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalHederaWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalHederaAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="hederaWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in hederaWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="hederaWallets.length > 2" class="more-indicator">
+            +{{ hederaWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateHederaWallet" :loading="generatingHedera" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Sei Network Card -->
+      <div class="crypto-card sei-card" @click="navigateTo('/SeiNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon sei">🌊</div>
+          <div class="crypto-info">
+            <h3>Sei Network</h3>
+            <span class="crypto-symbol">SEI</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalSeiWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalSeiAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="seiWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in seiWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="seiWallets.length > 2" class="more-indicator">
+            +{{ seiWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateSeiWallet" :loading="generatingSei" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Kava Card -->
+      <div class="crypto-card kava-card" @click="navigateTo('/KavaNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon kava">🔴</div>
+          <div class="crypto-info">
+            <h3>Kava</h3>
+            <span class="crypto-symbol">KAVA</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalKavaWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalKavaAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="kavaWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in kavaWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="kavaWallets.length > 2" class="more-indicator">
+            +{{ kavaWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateKavaWallet" :loading="generatingKava" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Shimmer EVM Card -->
+      <div class="crypto-card shimmerEVM-card" @click="navigateTo('/ShimmerEVMNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon shimmerEVM">✨</div>
+          <div class="crypto-info">
+            <h3>Shimmer EVM</h3>
+            <span class="crypto-symbol">SMR</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalShimmerEVMWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalShimmerEVMAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="shimmerEVMWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in shimmerEVMWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="shimmerEVMWallets.length > 2" class="more-indicator">
+            +{{ shimmerEVMWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateShimmerEVMWallet" :loading="generatingShimmerEVM" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Conflux eSpace Card -->
+      <div class="crypto-card confluxESpace-card" @click="navigateTo('/ConfluxESpaceNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon confluxESpace">🌐</div>
+          <div class="crypto-info">
+            <h3>Conflux eSpace</h3>
+            <span class="crypto-symbol">CFX</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalConfluxESpaceWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalConfluxESpaceAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="confluxESpaceWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in confluxESpaceWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="confluxESpaceWallets.length > 2" class="more-indicator">
+            +{{ confluxESpaceWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateConfluxESpaceWallet" :loading="generatingConfluxESpace" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Oasis Emerald Card -->
+      <div class="crypto-card oasisEmerald-card" @click="navigateTo('/OasisEmeraldNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon oasisEmerald">🌹</div>
+          <div class="crypto-info">
+            <h3>Oasis Emerald</h3>
+            <span class="crypto-symbol">ROSE</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalOasisEmeraldWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalOasisEmeraldAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="oasisEmeraldWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in oasisEmeraldWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="oasisEmeraldWallets.length > 2" class="more-indicator">
+            +{{ oasisEmeraldWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateOasisEmeraldWallet" :loading="generatingOasisEmerald" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Energy Web Card -->
+      <div class="crypto-card energyWeb-card" @click="navigateTo('/EnergyWebNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon energyWeb">⚡</div>
+          <div class="crypto-info">
+            <h3>Energy Web</h3>
+            <span class="crypto-symbol">EWT</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalEnergyWebWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalEnergyWebAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="energyWebWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in energyWebWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="energyWebWallets.length > 2" class="more-indicator">
+            +{{ energyWebWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateEnergyWebWallet" :loading="generatingEnergyWeb" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Telos EVM Card -->
+      <div class="crypto-card telosEVM-card" @click="navigateTo('/TelosEVMNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon telosEVM">🔷</div>
+          <div class="crypto-info">
+            <h3>Telos EVM</h3>
+            <span class="crypto-symbol">TLOS</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalTelosEVMWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalTelosEVMAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="telosEVMWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in telosEVMWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="telosEVMWallets.length > 2" class="more-indicator">
+            +{{ telosEVMWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateTelosEVMWallet" :loading="generatingTelosEVM" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Horizen EON Card -->
+      <div class="crypto-card horizenEON-card" @click="navigateTo('/HorizenEONNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon horizenEON">🔐</div>
+          <div class="crypto-info">
+            <h3>Horizen EON</h3>
+            <span class="crypto-symbol">ZEN</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalHorizenEONWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalHorizenEONAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="horizenEONWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in horizenEONWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="horizenEONWallets.length > 2" class="more-indicator">
+            +{{ horizenEONWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateHorizenEONWallet" :loading="generatingHorizenEON" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Viction Card -->
+      <div class="crypto-card viction-card" @click="navigateTo('/VictionNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon viction">🎯</div>
+          <div class="crypto-info">
+            <h3>Viction</h3>
+            <span class="crypto-symbol">VIC</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalVictionWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalVictionAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="victionWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in victionWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="victionWallets.length > 2" class="more-indicator">
+            +{{ victionWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateVictionWallet" :loading="generatingViction" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Fuse Network Card -->
+      <div class="crypto-card fuse-card" @click="navigateTo('/FuseNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon fuse">💳</div>
+          <div class="crypto-info">
+            <h3>Fuse Network</h3>
+            <span class="crypto-symbol">FUSE</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalFuseWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalFuseAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="fuseWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in fuseWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="fuseWallets.length > 2" class="more-indicator">
+            +{{ fuseWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateFuseWallet" :loading="generatingFuse" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Syscoin Card -->
+      <div class="crypto-card syscoin-card" @click="navigateTo('/SyscoinNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon syscoin">🔷</div>
+          <div class="crypto-info">
+            <h3>Syscoin</h3>
+            <span class="crypto-symbol">SYS</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalSyscoinWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalSyscoinAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="syscoinWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in syscoinWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="syscoinWallets.length > 2" class="more-indicator">
+            +{{ syscoinWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateSyscoinWallet" :loading="generatingSyscoin" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- ThunderCore Card -->
+      <div class="crypto-card thunderCore-card" @click="navigateTo('/ThunderCoreNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon thunderCore">⚡</div>
+          <div class="crypto-info">
+            <h3>ThunderCore</h3>
+            <span class="crypto-symbol">TT</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalThunderCoreWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalThunderCoreAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="thunderCoreWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in thunderCoreWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="thunderCoreWallets.length > 2" class="more-indicator">
+            +{{ thunderCoreWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateThunderCoreWallet" :loading="generatingThunderCore" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Astar Card -->
+      <div class="crypto-card astar-card" @click="navigateTo('/AstarNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon astar">⭐</div>
+          <div class="crypto-info">
+            <h3>Astar</h3>
+            <span class="crypto-symbol">ASTR</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalAstarWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalAstarAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="astarWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in astarWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="astarWallets.length > 2" class="more-indicator">
+            +{{ astarWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateAstarWallet" :loading="generatingAstar" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Shiden Card -->
+      <div class="crypto-card shiden-card" @click="navigateTo('/ShidenNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon shiden">🦋</div>
+          <div class="crypto-info">
+            <h3>Shiden</h3>
+            <span class="crypto-symbol">SDN</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalShidenWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalShidenAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="shidenWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in shidenWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="shidenWallets.length > 2" class="more-indicator">
+            +{{ shidenWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateShidenWallet" :loading="generatingShiden" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Efinity Card -->
+      <div class="crypto-card efinity-card" @click="navigateTo('/EfinityNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon efinity">💎</div>
+          <div class="crypto-info">
+            <h3>Efinity</h3>
+            <span class="crypto-symbol">EFI</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalEfinityWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalEfinityAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="efinityWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in efinityWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="efinityWallets.length > 2" class="more-indicator">
+            +{{ efinityWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateEfinityWallet" :loading="generatingEfinity" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- World Chain Card -->
+      <div class="crypto-card worldChain-card" @click="navigateTo('/WorldChainNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon worldChain">🌍</div>
+          <div class="crypto-info">
+            <h3>World Chain</h3>
+            <span class="crypto-symbol">WLD</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalWorldChainWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalWorldChainAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="worldChainWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in worldChainWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="worldChainWallets.length > 2" class="more-indicator">
+            +{{ worldChainWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateWorldChainWallet" :loading="generatingWorldChain" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Sonic Card -->
+      <div class="crypto-card sonic-card" @click="navigateTo('/SonicNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon sonic">💨</div>
+          <div class="crypto-info">
+            <h3>Sonic</h3>
+            <span class="crypto-symbol">S</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalSonicWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalSonicAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="sonicWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in sonicWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="sonicWallets.length > 2" class="more-indicator">
+            +{{ sonicWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateSonicWallet" :loading="generatingSonic" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Flare Network Card -->
+      <div class="crypto-card flare-card" @click="navigateTo('/FlareNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon flare">🔥</div>
+          <div class="crypto-info">
+            <h3>Flare Network</h3>
+            <span class="crypto-symbol">FLR</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalFlareWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalFlareAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="flareWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in flareWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="flareWallets.length > 2" class="more-indicator">
+            +{{ flareWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateFlareWallet" :loading="generatingFlare" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Songbird Card -->
+      <div class="crypto-card songbird-card" @click="navigateTo('/SongbirdNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon songbird">🐦</div>
+          <div class="crypto-info">
+            <h3>Songbird</h3>
+            <span class="crypto-symbol">SGB</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalSongbirdWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalSongbirdAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="songbirdWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in songbirdWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="songbirdWallets.length > 2" class="more-indicator">
+            +{{ songbirdWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateSongbirdWallet" :loading="generatingSongbird" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- ZetaChain Card -->
+      <div class="crypto-card zetaChain-card" @click="navigateTo('/ZetaChainNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon zetaChain">⛓️</div>
+          <div class="crypto-info">
+            <h3>ZetaChain</h3>
+            <span class="crypto-symbol">ZETA</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalZetaChainWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalZetaChainAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="zetaChainWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in zetaChainWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="zetaChainWallets.length > 2" class="more-indicator">
+            +{{ zetaChainWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateZetaChainWallet" :loading="generatingZetaChain" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- SmartBCH Card -->
+      <div class="crypto-card smartBCH-card" @click="navigateTo('/SmartBCHNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon smartBCH">💚</div>
+          <div class="crypto-info">
+            <h3>SmartBCH</h3>
+            <span class="crypto-symbol">BCH</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalSmartBCHWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalSmartBCHAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="smartBCHWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in smartBCHWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="smartBCHWallets.length > 2" class="more-indicator">
+            +{{ smartBCHWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateSmartBCHWallet" :loading="generatingSmartBCH" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- RSK Card -->
+      <div class="crypto-card rSK-card" @click="navigateTo('/RSKNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon rSK">🟠</div>
+          <div class="crypto-info">
+            <h3>RSK</h3>
+            <span class="crypto-symbol">RBTC</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalRSKWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalRSKAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="rSKWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in rSKWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="rSKWallets.length > 2" class="more-indicator">
+            +{{ rSKWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateRSKWallet" :loading="generatingRSK" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Wanchain Card -->
+      <div class="crypto-card wanchain-card" @click="navigateTo('/WanchainNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon wanchain">🌐</div>
+          <div class="crypto-info">
+            <h3>Wanchain</h3>
+            <span class="crypto-symbol">WAN</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalWanchainWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalWanchainAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="wanchainWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in wanchainWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="wanchainWallets.length > 2" class="more-indicator">
+            +{{ wanchainWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateWanchainWallet" :loading="generatingWanchain" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- GoChain Card -->
+      <div class="crypto-card goChain-card" @click="navigateTo('/GoChainNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon goChain">🟢</div>
+          <div class="crypto-info">
+            <h3>GoChain</h3>
+            <span class="crypto-symbol">GO</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalGoChainWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalGoChainAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="goChainWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in goChainWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="goChainWallets.length > 2" class="more-indicator">
+            +{{ goChainWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateGoChainWallet" :loading="generatingGoChain" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+      <!-- Canto Card -->
+      <div class="crypto-card canto-card" @click="navigateTo('/CantoNetwork')">
+        <div class="card-header">
+          <div class="crypto-icon canto">🎵</div>
+          <div class="crypto-info">
+            <h3>Canto</h3>
+            <span class="crypto-symbol">CANTO</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-item">
+            <span class="stat-label">Wallets</span>
+            <span class="stat-value">{{ totalCantoWallets }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Addresses</span>
+            <span class="stat-value">{{ totalCantoAddresses }}</span>
+          </div>
+        </div>
+
+        <div v-if="cantoWallets.length > 0" class="addresses-preview">
+          <div class="address-item" v-for="(wallet, idx) in cantoWallets.slice(0, 2)" :key="wallet._id">
+            <span class="address-label">{{ wallet.walletName }}:</span>
+            <n-button text size="tiny" type="primary" @click.stop="copyToClipboard(wallet.address)">
+              {{ formatAddressShort(wallet.address) }}
+            </n-button>
+          </div>
+          <div v-if="cantoWallets.length > 2" class="more-indicator">
+            +{{ cantoWallets.length - 2 }} more wallets
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <n-button type="primary" size="small" @click.stop="generateCantoWallet" :loading="generatingCanto" block>
+            ➕ Generate Wallet
+          </n-button>
+        </div>
+      </div>
+
+
+<!-- ========== END PHASE 3+ NETWORKS ========== -->
+

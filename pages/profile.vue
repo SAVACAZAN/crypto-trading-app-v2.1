@@ -1,48 +1,16 @@
 <template>
   <div class="profile-container">
     <!-- Header -->
-    <div class="profile-header">
-      <h1 class="profile-title">Exchange Configuration</h1>
-      <p class="profile-subtitle">Manage your API keys for multiple exchanges</p>
-    </div>
+    <!-- <div class="profile-header">
+      <h1 class="profile-title">API Configuration</h1>
+      <p class="profile-subtitle">Manage your API keys for exchanges, AI providers, and specialized platforms</p>
+    </div> -->
 
-    <!-- My Exchanges Section -->
-    <n-card title="My API Keys" style="margin-bottom: 24px;">
-      <template #header-extra>
-        <div class="stats-badges">
-          <n-tag :bordered="false" type="info">
-            {{ Object.keys(groupedExchanges).length }} Exchange{{ Object.keys(groupedExchanges).length !== 1 ? 's' : '' }}
-          </n-tag>
-          <n-tag :bordered="false" type="success">
-            {{ tableData.length }} API Key{{ tableData.length !== 1 ? 's' : '' }}
-          </n-tag>
-        </div>
-      </template>
-
-      <!-- API Keys Table -->
-      <n-data-table
-        v-if="tableData.length > 0"
-        :columns="columns"
-        :data="tableData"
-        :pagination="false"
-        :bordered="false"
-        size="medium"
-      />
-
-      <!-- Empty State -->
-      <n-empty
-        v-else
-        description="No exchanges configured yet"
-        style="padding: 60px 20px;"
-      >
-        <template #extra>
-          <p style="color: #888; margin-top: 8px;">Add your first exchange below to get started</p>
-        </template>
-      </n-empty>
-    </n-card>
-
-    <!-- Add New Exchange Section -->
-    <div class="add-exchange-section">
+    <!-- Tab Navigation -->
+    <n-tabs v-model:value="activeTab" type="line" animated size="large" style="margin-bottom: 12px; margin-top: 0;">
+      <n-tab-pane name="exchanges" tab="🔄 Exchanges">
+    <!-- Add New Exchange Section (MOVED TO TOP) -->
+    <div class="add-exchange-section" style="margin-bottom: 24px;">
       <n-card class="add-exchange-card">
         <template #header>
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -146,8 +114,55 @@
       </n-card>
     </div>
 
-    <!-- AI Providers Section -->
-    <n-card style="margin-top: 24px; border: 2px solid #667eea;">
+    <!-- My API Keys Section (MOVED TO BOTTOM, COLLAPSIBLE) -->
+    <n-collapse style="margin-top: 20px;">
+      <n-collapse-item title="My API Keys" name="my-keys" class="compact-collapse">
+        <template #header>
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+            <span style="font-size: 14px; font-weight: 600;">My API Keys</span>
+            <div style="margin-left: auto; display: flex; gap: 6px;">
+              <span class="mini-badge badge-info">
+                {{ Object.keys(groupedExchanges).length }} Exchange{{ Object.keys(groupedExchanges).length !== 1 ? 's' : '' }}
+              </span>
+              <span class="mini-badge badge-success">
+                {{ tableData.length }} Key{{ tableData.length !== 1 ? 's' : '' }}
+              </span>
+            </div>
+          </div>
+        </template>
+
+        <!-- API Keys Table -->
+        <n-data-table
+          v-if="tableData.length > 0"
+          :columns="columns"
+          :data="tableData"
+          :pagination="false"
+          :bordered="false"
+          size="small"
+          class="compact-table"
+          style="margin-top: 8px;"
+        />
+
+        <!-- Empty State -->
+        <n-empty
+          v-else
+          description="No exchanges configured yet"
+          style="padding: 30px 15px;"
+        >
+          <template #extra>
+            <p style="color: #888; margin-top: 6px; font-size: 13px;">Add your first exchange above to get started</p>
+          </template>
+        </n-empty>
+      </n-collapse-item>
+    </n-collapse>
+      </n-tab-pane>
+
+      <n-tab-pane name="ai" tab="🤖 AI Providers">
+        <!-- AI Providers Section -->
+    <n-card style="border: 2px solid #667eea;">
       <template #header>
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -193,12 +208,147 @@
         </n-gi>
       </n-grid>
     </n-card>
+      </n-tab-pane>
+
+      <n-tab-pane name="hyperliquid" tab="⚡ Hyperliquid">
+        <n-card style="border: 2px solid #00ffaa;">
+          <template #header>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="padding: 8px; background: linear-gradient(135deg, #00ffaa 0%, #00cc88 100%); border-radius: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 style="margin: 0; font-size: 20px; color: #00ffaa;">⚡ Hyperliquid API Keys</h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: #888;">
+                  Configure your Hyperliquid API credentials for ultra-fast perpetual trading
+                </p>
+              </div>
+            </div>
+          </template>
+
+          <!-- Info Box -->
+          <div style="padding: 12px; background: rgba(0, 255, 170, 0.05); border-left: 3px solid #00ffaa; border-radius: 4px; margin-bottom: 20px;">
+            <div style="font-size: 13px; color: #a0a0a0; line-height: 1.6;">
+              <strong style="color: #00ffaa;">ℹ️ About Hyperliquid:</strong><br/>
+              Hyperliquid is a high-performance perpetual futures DEX with institutional-grade infrastructure.
+              Get your API keys from <a href="https://app.hyperliquid.xyz" target="_blank" style="color: #00ffaa;">app.hyperliquid.xyz</a> to enable trading.
+            </div>
+          </div>
+
+          <!-- Add Hyperliquid API Key Form -->
+          <n-space vertical :size="20">
+            <div class="form-group">
+              <label class="form-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                API Key Name
+              </label>
+              <n-input
+                v-model:value="hyperliquidKeyName"
+                placeholder="e.g., 'Main Account', 'Trading Bot'"
+                :maxlength="50"
+                size="large"
+                clearable
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+                Wallet Address
+              </label>
+              <n-input
+                v-model:value="hyperliquidWalletAddress"
+                placeholder="0x..."
+                size="large"
+                clearable
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Private Key
+              </label>
+              <n-input
+                v-model:value="hyperliquidPrivateKey"
+                type="password"
+                placeholder="Enter your private key (keep this secure!)"
+                size="large"
+                clearable
+                show-password-on="click"
+              />
+              <span class="form-hint">⚠️ Never share your private key with anyone!</span>
+            </div>
+
+            <n-button
+              type="primary"
+              size="large"
+              @click="addHyperliquidKey"
+              :disabled="hyperliquidBtn.disabled"
+              :loading="hyperliquidBtn.disabled"
+              block
+              strong
+            >
+              <template #icon>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </template>
+              {{ hyperliquidBtn.text }}
+            </n-button>
+          </n-space>
+
+          <!-- Existing Hyperliquid Keys Table -->
+          <n-divider style="margin: 32px 0;" />
+          <h3 style="color: #00ffaa; margin-bottom: 16px;">Saved Hyperliquid Keys</h3>
+          <n-data-table
+            v-if="hyperliquidTableData.length > 0"
+            :columns="hyperliquidColumns"
+            :data="hyperliquidTableData"
+            :pagination="false"
+            :bordered="false"
+            size="medium"
+          />
+          <n-empty
+            v-else
+            description="No Hyperliquid API keys configured"
+            style="padding: 40px 20px;"
+          />
+        </n-card>
+      </n-tab-pane>
+
+      <n-tab-pane name="specialized" tab="🎯 Specialized">
+        <SpecializedPlatformsConfig :userId="userID" />
+      </n-tab-pane>
+
+      <n-tab-pane name="referrals" tab="🎁 Referrals">
+        <ReferralsTab />
+      </n-tab-pane>
+
+      <n-tab-pane name="social" tab="🌐 Social">
+        <SocialProfileTab />
+      </n-tab-pane>
+    </n-tabs>
   </div>
 </template>
 
 <script setup>
 import { h } from 'vue';
 import { NButton, NInput } from "naive-ui";
+import SpecializedPlatformsConfig from '~/components/SpecializedPlatformsConfig.vue';
+import ReferralsTab from '~/components/ReferralsTab.vue';
+import SocialProfileTab from '~/components/SocialProfileTab.vue';
 
 definePageMeta({
   middleware: 'auth'
@@ -209,7 +359,16 @@ const { getExchangeLogo } = useExchangeLogos();
 let userIDCookie = useCookie('userID');
 let userID = userIDCookie.value;
 
+// User data for Referrals tab
+const username = ref(useCookie('username').value || '');
+const profilePicture = ref(useCookie('profilePicture').value || '');
+const referralCode = ref(useCookie('referralCode').value || '');
+const referredBy = ref(useCookie('referredBy').value || '');
+
 const notification = useNotification();
+
+// Active Tab
+const activeTab = ref('exchanges');
 
 const addBtn = ref({
   text: 'Add Exchange',
@@ -336,6 +495,12 @@ const columns = [
           size: 'small',
           onClick: () => startEdit(row)
         }, { default: () => 'Edit' }),
+        h(NButton, {
+          type: 'info',
+          size: 'small',
+          onClick: () => refreshMarkets(row),
+          loading: row.refreshing || false
+        }, { default: () => '🔄 Markets' }),
         h(NButton, {
           type: 'error',
           size: 'small',
@@ -532,6 +697,41 @@ async function deleteKeys(row) {
       content: "Delete Error",
       meta: error.message || "An error occurred",
     });
+  }
+}
+
+async function refreshMarkets(row) {
+  // Set refreshing state
+  row.refreshing = true;
+
+  try {
+    const resp = await $fetch('/api/v1/refreshExchangeMarkets', {
+      method: 'POST',
+      body: {
+        userID: userID,
+        exchange: row.exchange
+      }
+    });
+
+    if (resp.success) {
+      notify('success', {
+        content: "Markets Updated",
+        meta: `${row.exchange.toUpperCase()}: ${resp.totalMarkets} trading pairs loaded`,
+        duration: 5000
+      });
+    } else {
+      notify('error', {
+        content: "Update Failed",
+        meta: resp.message || "Failed to refresh markets",
+      });
+    }
+  } catch (error) {
+    notify('error', {
+      content: "Refresh Error",
+      meta: error.message || "An error occurred while refreshing markets",
+    });
+  } finally {
+    row.refreshing = false;
   }
 }
 
@@ -807,11 +1007,187 @@ async function deleteAiApiKey(providerId) {
 
 // Fetch AI keys on mount
 fetchAiApiKeys();
+
+// ==================== HYPERLIQUID CONFIGURATION ====================
+
+const hyperliquidKeyName = ref('');
+const hyperliquidWalletAddress = ref('');
+const hyperliquidPrivateKey = ref('');
+const hyperliquidBtn = ref({
+  text: 'Add Hyperliquid Key',
+  disabled: false
+});
+
+const hyperliquidTableData = ref([]);
+
+// Hyperliquid table columns
+const hyperliquidColumns = [
+  {
+    title: 'Name',
+    key: 'name',
+    width: 200,
+    render: (row) => h('span', { style: 'font-weight: 600;' }, row.name)
+  },
+  {
+    title: 'Wallet Address',
+    key: 'walletAddress',
+    render: (row) => {
+      return h('code', {
+        style: 'font-family: "Courier New", monospace; color: #00ffaa; font-size: 13px; background: rgba(0,255,170,0.1); padding: 4px 8px; border-radius: 4px;'
+      }, maskWalletAddress(row.walletAddress));
+    }
+  },
+  {
+    title: 'Private Key',
+    key: 'privateKey',
+    render: (row) => {
+      return h('code', {
+        style: 'font-family: "Courier New", monospace; color: #ffa500; font-size: 13px; background: rgba(255,165,0,0.1); padding: 4px 8px; border-radius: 4px;'
+      }, '••••••••••••••••');
+    }
+  },
+  {
+    title: 'Actions',
+    key: 'actions',
+    width: 120,
+    align: 'right',
+    render: (row) => {
+      return h(NButton, {
+        type: 'error',
+        size: 'small',
+        onClick: () => deleteHyperliquidKey(row)
+      }, { default: () => 'Delete' });
+    }
+  }
+];
+
+// Helper function to mask wallet address
+function maskWalletAddress(address) {
+  if (!address) return 'N/A';
+  if (address.length <= 10) return '0x••••';
+  return address.substring(0, 6) + '••••' + address.substring(address.length - 4);
+}
+
+// Add Hyperliquid Key
+async function addHyperliquidKey() {
+  if (!hyperliquidKeyName.value || !hyperliquidWalletAddress.value || !hyperliquidPrivateKey.value) {
+    notify('warning', {
+      content: "Missing Information",
+      meta: "Please fill in all fields",
+    });
+    return;
+  }
+
+  hyperliquidBtn.value.text = 'Adding...';
+  hyperliquidBtn.value.disabled = true;
+
+  try {
+    const response = await $fetch('/api/v1/addHyperliquidKey', {
+      method: 'POST',
+      body: {
+        userID,
+        name: hyperliquidKeyName.value.trim(),
+        walletAddress: hyperliquidWalletAddress.value.trim(),
+        privateKey: hyperliquidPrivateKey.value.trim()
+      }
+    });
+
+    if (response.success) {
+      hyperliquidTableData.value.push({
+        id: response.data._id,
+        name: hyperliquidKeyName.value.trim(),
+        walletAddress: hyperliquidWalletAddress.value.trim(),
+        privateKey: hyperliquidPrivateKey.value.trim()
+      });
+
+      notify('success', {
+        content: "Hyperliquid Key Added",
+        meta: `${hyperliquidKeyName.value} has been configured!`,
+      });
+
+      // Reset form
+      hyperliquidKeyName.value = '';
+      hyperliquidWalletAddress.value = '';
+      hyperliquidPrivateKey.value = '';
+    } else {
+      notify('error', {
+        content: "Failed to Add Key",
+        meta: response.message || "An error occurred",
+      });
+    }
+  } catch (error) {
+    notify('error', {
+      content: "Error",
+      meta: error.message || "Failed to add Hyperliquid key",
+    });
+  } finally {
+    hyperliquidBtn.value.text = 'Add Hyperliquid Key';
+    hyperliquidBtn.value.disabled = false;
+  }
+}
+
+// Delete Hyperliquid Key
+async function deleteHyperliquidKey(row) {
+  try {
+    const response = await $fetch('/api/v1/deleteHyperliquidKey', {
+      method: 'POST',
+      body: {
+        userID,
+        id: row.id
+      }
+    });
+
+    if (response.success) {
+      const index = hyperliquidTableData.value.findIndex(item => item.id === row.id);
+      if (index !== -1) {
+        hyperliquidTableData.value.splice(index, 1);
+      }
+
+      notify('info', {
+        content: "Key Deleted",
+        meta: `${row.name} has been removed`,
+      });
+    } else {
+      notify('error', {
+        content: "Delete Failed",
+        meta: response.message || "Failed to delete key",
+      });
+    }
+  } catch (error) {
+    notify('error', {
+      content: "Error",
+      meta: error.message || "An error occurred",
+    });
+  }
+}
+
+// Fetch existing Hyperliquid keys
+async function fetchHyperliquidKeys() {
+  try {
+    const response = await $fetch('/api/v1/fetchHyperliquidKeys', {
+      query: { userID }
+    });
+
+    if (response.success && response.data) {
+      hyperliquidTableData.value = response.data.map(item => ({
+        id: item._id,
+        name: item.name,
+        walletAddress: item.walletAddress,
+        privateKey: item.privateKey
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to fetch Hyperliquid keys:', error);
+  }
+}
+
+// Fetch Hyperliquid keys on mount
+fetchHyperliquidKeys();
 </script>
 
 <style scoped>
 .profile-container {
-  padding: 24px;
+  padding: 0 24px 24px 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -874,5 +1250,57 @@ fetchAiApiKeys();
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   color: #fff;
+}
+
+/* Compact collapse styles for My API Keys */
+.compact-collapse :deep(.n-collapse-item__header) {
+  padding: 10px 12px !important;
+}
+
+.compact-collapse :deep(.n-collapse-item__content-wrapper) {
+  padding: 8px 12px !important;
+}
+
+/* Mini badges for API Keys count */
+.mini-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.badge-info {
+  background: rgba(42, 148, 255, 0.15);
+  color: #2a94ff;
+}
+
+.badge-success {
+  background: rgba(24, 160, 88, 0.15);
+  color: #18a058;
+}
+
+/* Compact table styling */
+.compact-table :deep(.n-data-table-th) {
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.compact-table :deep(.n-data-table-td) {
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+}
+
+.compact-table :deep(.n-data-table-tr) {
+  height: auto !important;
+}
+
+.compact-table :deep(.n-button) {
+  padding: 4px 12px !important;
+  font-size: 12px !important;
+  height: 28px !important;
 }
 </style>

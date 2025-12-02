@@ -10,7 +10,7 @@ const config = {
 const math = create(all, config);
 
 export default defineNitroPlugin((nitroApp) => {
-    console.log('Grid Bots Library Loaded...');
+    console.log('Grinder Bots Library Loaded...');
 
     nitroApp.GrinderBotLib = {
         async createGrinderBot(data) {

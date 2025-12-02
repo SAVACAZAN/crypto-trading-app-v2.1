@@ -1,8 +1,5 @@
 <template>
   <div class="ai-toolz-page">
-    <!-- Page Header -->
- 
-
     <!-- Tabs Navigation -->
     <n-tabs type="line" animated size="small" class="ai-tabs">
       <n-tab-pane name="v1" tab="🌟 AI Grid Bots V1 (Glassmorphism)">
@@ -41,7 +38,7 @@ onMounted(async () => {
 /* ========== COMPACT AI TOOLZ PAGE (FIXED TOP) ========== */
 .ai-toolz-page {
   padding: 0;
-  height: calc(100vh - 68px);
+  height: calc(100vh - 95px);
   display: flex;
   flex-direction: column;
   overflow: hidden;

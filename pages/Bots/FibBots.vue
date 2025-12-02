@@ -1,34 +1,30 @@
-
 <template>
-     <h2>Fib Bots</h2>
-  <n-grid x-gap="12" :cols="12" item-responsive>
-    <n-gi span="12 800:8">
-    
-    
-      <FibBotsForm/>
-    </n-gi>
-    <n-gi span="12 800:4">
-
-      
-      
-    </n-gi>
-  </n-grid>
-
-
+  <div>
+    <h2>Fibonacci Bots</h2>
+    <FibBotsForm/>
+  </div>
 </template>
-
-
-
 
 <script setup>
 import FibBotsForm from '~/components/Bots/fib-bots-form.vue';
+import { useAppStore } from '~/stores/app.store';
+import { onMounted } from 'vue';
 
 definePageMeta({
   middleware: 'auth'
 })
-import { useAppStore } from '~/stores/app.store';
-const app = useAppStore()
-let userID = useCookie('userID');
 
-await app.loadUserExchangeData(userID.value);
+const app = useAppStore();
+const userID = useCookie('userID');
+
+// Load data in onMounted to avoid blocking page render
+onMounted(async () => {
+  try {
+    console.log('📦 FibBots page: Loading user exchange data...');
+    await app.loadUserExchangeData(userID.value);
+    console.log('✅ FibBots page: User exchange data loaded');
+  } catch (error) {
+    console.error('❌ FibBots page: Error loading user exchange data:', error);
+  }
+});
 </script>

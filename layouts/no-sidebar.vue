@@ -1,21 +1,9 @@
 <template>
-  <n-space vertical>
-    <n-layout>
-      <n-layout-header bordered class="header">
-        <n-space justify="space-between" align="center" class="inner">
-          <nuxt-link to="/"><n-text><b>Crypto App</b></n-text></nuxt-link>
-        </n-space>
-      </n-layout-header>
-      <n-layout class="container">
-        <n-layout class="content">
-          <slot></slot>
-        </n-layout>
-      </n-layout>
-      <n-layout-footer bordered class="footer">
-        Crypto App - 2023
-      </n-layout-footer>
+  <n-layout>
+    <n-layout class="content">
+      <slot></slot>
     </n-layout>
-  </n-space>
+  </n-layout>
 </template>
 
 <script setup>

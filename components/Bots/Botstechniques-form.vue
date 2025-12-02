@@ -503,6 +503,7 @@ onMounted(() => {
 
       <n-gi>
                   <table>
+                    <tbody>
                   <tr>
                     <td>
                       <n-button @click="updateLowerPrice(0.0001)">  - </n-button>
@@ -568,12 +569,13 @@ onMounted(() => {
                       <n-button @click="updateUpperPrice(0.09)">  + 9%</n-button>
                     </td>
                   </tr>
+                    </tbody>
                 </table>
       </n-gi>
 
       <n-gi>
                   <table>
-
+                    <tbody>
                     <tr>
                       <td>
                         <n-button @click="updateLowerPrice(0.1)">  - 10%</n-button>
@@ -638,6 +640,7 @@ onMounted(() => {
                         <n-button @click="updateUpperPrice(0.9)">  + 90%</n-button>
                       </td>
                     </tr>
+                    </tbody>
                   </table>
       </n-gi>
 
