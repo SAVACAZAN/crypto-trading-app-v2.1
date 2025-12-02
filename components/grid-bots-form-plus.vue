@@ -4,8 +4,10 @@ import { useStrategyGridBot } from '~/composables/useStrategyGridBot';
 import StrategiesGridBot from '~/components/StrategiesGridBot.vue';
 import {ref, watch, computed, onMounted, onUnmounted} from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
+import { useMessage } from 'naive-ui';
 
 const app = useAppStore()
+const message = useMessage()
 const {
   amountTypeOptions,
   ordersSideOptions
@@ -185,6 +187,10 @@ function applyInitialDeviation() {
     updateUpperPrice();
     initialDeviationApplied = true;
   }
+}
+
+function showTooltip(text) {
+  message.info(text, { duration: 2 })
 }
 
 function generateRandomString(length = 20) {
@@ -374,7 +380,7 @@ onUnmounted(() => {
           <template #suffix>{{ quote }}</template>
         </n-input>
       </div>
-   <div class="field-cell" @mouseenter="$message.info('GRIDS: Number of grid orders', {duration: 2})">
+   <div class="field-cell" @mouseenter="showTooltip('GRIDS: Number of grid orders')">
   <n-input
     v-model:value="nrOfGrids"
     size="tiny"
@@ -390,7 +396,7 @@ onUnmounted(() => {
   />
 </div>
 
-<div class="field-cell" @mouseenter="$message.info('AMOUNT: Order amount', {duration: 2})">
+<div class="field-cell" @mouseenter="showTooltip('AMOUNT: Order amount')">
   <n-input
     v-model:value="amount"
     size="tiny"
@@ -438,10 +444,11 @@ onUnmounted(() => {
   <!-- Configuration Table -->
 
 
-  
+
     <table class="config-table compact">
-      <!-- Row 1: GRIDS, AMOUNT, INC % BUY, INC % SELL, DEV PRICE B, DEV PRICE S, DEV AMT B, DEV AMT S, PRICE GRP B, PRICE GRP S, USE PRICE GROUP -->
-      <tr class="config-row">
+      <tbody>
+        <!-- Row 1: GRIDS, AMOUNT, INC % BUY, INC % SELL, DEV PRICE B, DEV PRICE S, DEV AMT B, DEV AMT S, PRICE GRP B, PRICE GRP S, USE PRICE GROUP -->
+        <tr class="config-row">
         <!-- Price Group Inputs - Stacked Vertically on Top Left -->
         <td style="padding: 2px; vertical-align: top; text-align: left;">
           <div v-if="usePriceGroup" style="display: flex; flex-direction: row; gap: 2px;">
@@ -514,7 +521,8 @@ onUnmounted(() => {
           </table>
         </td>
 
-      </tr>
+        </tr>
+      </tbody>
     </table>
 
 

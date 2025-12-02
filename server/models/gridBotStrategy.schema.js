@@ -3,8 +3,7 @@ import mongoose from 'mongoose'
 const gridBotStrategySchema = new mongoose.Schema({
   userId: {
     type: String,
-    required: true,
-    index: true
+    required: true
   },
   name: {
     type: String,
@@ -89,7 +88,10 @@ const gridBotStrategySchema = new mongoose.Schema({
     // Store reference prices for display purposes only
     referenceBid: Number,
     referenceAsk: Number,
-    lastUpdated: Date
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
   }]
 }, {
   timestamps: true

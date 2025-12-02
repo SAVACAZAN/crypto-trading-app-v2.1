@@ -538,7 +538,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  clearIntervalAsync(orderListInterval);
+  if (orderListInterval) {
+    clearIntervalAsync(orderListInterval);
+  }
 });
 
 async function cancelOrder(row) {
