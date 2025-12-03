@@ -360,25 +360,53 @@ function closeModal() {
           </div>
         </n-tab-pane>
 
-        <!-- TAB 2: ORDERS -->
+        <!-- TAB 2: ORDERS (With Filled Values) -->
         <n-tab-pane name="orders" tab="📋 Orders">
           <div class="compact-orders">
             <div class="orders-header">
               <span class="orders-title">Grid Orders ({{ gridOrders.length }})</span>
               <span class="orders-range">{{ summary?.priceRange }}</span>
             </div>
-            <div class="orders-scroll">
-              <div
-                v-for="order in gridOrders"
-                :key="order.id"
-                :class="['order-row', order.side.toLowerCase(), { 'is-initial': order.isInitial }]"
-              >
-                <span class="order-num">#{{ order.id + 1 }}</span>
-                <span :class="['order-side', order.side.toLowerCase()]">{{ order.side }}</span>
-                <span class="order-price">{{ order.price }}</span>
-                <span class="order-amount">{{ order.amount }}</span>
-                <span class="order-total">{{ order.total }}</span>
-                <span class="order-percentage">{{ order.percentage }}%</span>
+
+            <!-- BUY ORDERS WITH FILLED VALUES -->
+            <div v-if="deviationAnalysis && deviationAnalysis.buyOrders.length > 0" style="margin-bottom: 20px;">
+              <div style="font-size: 11px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                📈 BUY ORDERS (with incremental & deviations)
+              </div>
+              <div class="orders-scroll">
+                <div
+                  v-for="(order, idx) in deviationAnalysis.buyOrders"
+                  :key="`buy-filled-${idx}`"
+                  style="display: grid; grid-template-columns: 40px 80px 100px 100px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(16, 235, 4, 0.08); border-left: 3px solid #10eb04; border-radius: 2px; font-size: 9px; margin-bottom: 4px; align-items: center;"
+                >
+                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ order.filledPrice }}</span>
+                  <span style="color: #06b6d4; font-size: 8px;">+{{ order.incrementValue }}</span>
+                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
+                  <span style="color: #fbbf24;">{{ order.filledTotal }}</span>
+                  <span style="color: #888;">{{ order.percentage }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SELL ORDERS WITH FILLED VALUES -->
+            <div v-if="deviationAnalysis && deviationAnalysis.sellOrders.length > 0">
+              <div style="font-size: 11px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                📉 SELL ORDERS (with incremental & deviations)
+              </div>
+              <div class="orders-scroll">
+                <div
+                  v-for="(order, idx) in deviationAnalysis.sellOrders"
+                  :key="`sell-filled-${idx}`"
+                  style="display: grid; grid-template-columns: 40px 80px 100px 100px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(235, 4, 4, 0.08); border-left: 3px solid #eb0404; border-radius: 2px; font-size: 9px; margin-bottom: 4px; align-items: center;"
+                >
+                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ order.filledPrice }}</span>
+                  <span style="color: #fbbf24; font-size: 8px;">+{{ order.incrementValue }}</span>
+                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
+                  <span style="color: #06b6d4;">{{ order.filledTotal }}</span>
+                  <span style="color: #888;">{{ order.percentage }}%</span>
+                </div>
               </div>
             </div>
           </div>
