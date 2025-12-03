@@ -517,7 +517,7 @@ function closeModal() {
               </div>
               <div class="orders-scroll">
                 <div
-                  v-for="(order, idx) in incrementalOrders.buyOrders"
+                  v-for="(order, idx) in [...incrementalOrders.buyOrders].reverse()"
                   :key="`inc-buy-${idx}`"
                   :class="['order-row', 'buy', { 'is-initial': order.isInitial }]"
                 >
@@ -525,7 +525,7 @@ function closeModal() {
                   <span class="order-side buy">BUY</span>
                   <span class="order-price">{{ order.price }}</span>
                   <span class="order-amount">{{ order.incrementalQty }}</span>
-                  <span class="order-total">${{ order.incrementalAmount }}</span>
+                  <span class="order-total">${{ order.incrementalAmount }}.00</span>
                   <span class="order-percentage">{{ order.percentage }}%</span>
                 </div>
               </div>
@@ -566,7 +566,7 @@ function closeModal() {
                   <span class="order-side sell">SELL</span>
                   <span class="order-price">{{ order.price }}</span>
                   <span class="order-amount">{{ order.incrementalQty }}</span>
-                  <span class="order-total">${{ order.incrementalAmount }}</span>
+                  <span class="order-total">${{ order.incrementalAmount }}.00</span>
                   <span class="order-percentage">{{ order.percentage }}%</span>
                 </div>
               </div>
