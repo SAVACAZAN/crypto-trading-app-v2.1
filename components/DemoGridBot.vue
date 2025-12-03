@@ -432,7 +432,7 @@ function closeModal() {
               <div v-if="gridOrders.filter(o => o.side === 'BUY').length > 0">
                 <div style="background: rgba(16, 235, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3); margin-bottom: 12px;">
                   <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
-                    📈 BUY ORDERS
+                    📈 BUY ORDERS ({{ incrementalOrders.amountType }})
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; font-size: 10px;">
@@ -473,7 +473,7 @@ function closeModal() {
               <div v-if="gridOrders.filter(o => o.side === 'SELL').length > 0">
                 <div style="background: rgba(235, 4, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3); margin-bottom: 12px;">
                   <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
-                    📉 SELL ORDERS
+                    📉 SELL ORDERS ({{ incrementalOrders.amountType }})
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; font-size: 10px;">
