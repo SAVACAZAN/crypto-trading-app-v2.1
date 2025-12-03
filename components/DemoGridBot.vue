@@ -54,9 +54,9 @@ const gridOrders = computed(() => {
 
     orders.push({
       id: i,
-      price: price.toFixed(6),
+      price: price.toFixed(8),
       amount: orderQuantity.toFixed(4),
-      total: baseAmount.toFixed(4),
+      total: baseAmount.toFixed(2),
       side: side,
       percentage: ((price - lower) / (upper - lower) * 100).toFixed(2),
       isInitial: current > 0 && Math.abs(price - current) < priceStep / 2
@@ -95,13 +95,91 @@ const summary = computed(() => {
     totalOrders: orders.length,
     buyOrdersCount: buyOrders.length,
     sellOrdersCount: sellOrders.length,
-    avgBuyPrice: avgBuyPrice.toFixed(6),
-    avgSellPrice: avgSellPrice.toFixed(6),
+    avgBuyPrice: avgBuyPrice.toFixed(8),
+    avgSellPrice: avgSellPrice.toFixed(8),
     avgBaseQuantity: avgBaseQuantity.toFixed(4),
     totalAmount: totalAmount.toFixed(4),
-    totalValue: totalValue.toFixed(4),
-    avgPrice: avgPrice.toFixed(6),
-    priceRange: `${orders[0].price} - ${orders[orders.length - 1].price}`
+    totalValue: totalValue.toFixed(2),
+    avgPrice: avgPrice.toFixed(8),
+    priceRange: `${parseFloat(orders[0].price).toFixed(8)} - ${parseFloat(orders[orders.length - 1].price).toFixed(8)}`
+  };
+});
+
+// Incremental orders (with incremental amounts, without deviations)
+const incrementalOrders = computed(() => {
+  const {
+    incrementalPercentAmountBuy,
+    incrementalPercentAmountSell
+  } = props.config;
+
+  const incBuy = parseFloat(incrementalPercentAmountBuy) || 0;
+  const incSell = parseFloat(incrementalPercentAmountSell) || 0;
+
+  const orders = gridOrders.value;
+  if (orders.length === 0) return null;
+
+  const buyOrders = orders.filter(o => o.side === 'BUY');
+  const sellOrders = orders.filter(o => o.side === 'SELL');
+
+  // Calculate incremental orders WITHOUT deviations
+  let incrementalBuyOrders = [];
+  let incrementalSellOrders = [];
+  let totalBuyIncremental = 0;
+  let totalBuyQtyIncremental = 0;
+  let totalSellIncremental = 0;
+  let totalSellQtyIncremental = 0;
+
+  if (buyOrders.length > 0) {
+    incrementalBuyOrders = buyOrders.map((order, index) => {
+      const baseAmount = parseFloat(order.total);
+      const price = parseFloat(order.price);
+
+      // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
+      const incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
+      const incrementalQty = incrementalAmount / price;
+
+      totalBuyIncremental += incrementalAmount;
+      totalBuyQtyIncremental += incrementalQty;
+
+      return {
+        ...order,
+        incrementalAmount: incrementalAmount.toFixed(2),
+        incrementalQty: incrementalQty.toFixed(4),
+        incrementalTotal: (incrementalAmount).toFixed(2)
+      };
+    });
+  }
+
+  if (sellOrders.length > 0) {
+    incrementalSellOrders = sellOrders.map((order, index) => {
+      const baseAmount = parseFloat(order.total);
+      const price = parseFloat(order.price);
+
+      // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
+      const incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * index));
+      const incrementalQty = incrementalAmount / price;
+
+      totalSellIncremental += incrementalAmount;
+      totalSellQtyIncremental += incrementalQty;
+
+      return {
+        ...order,
+        incrementalAmount: incrementalAmount.toFixed(2),
+        incrementalQty: incrementalQty.toFixed(4),
+        incrementalTotal: (incrementalAmount).toFixed(2)
+      };
+    });
+  }
+
+  return {
+    incBuy,
+    incSell,
+    buyOrders: incrementalBuyOrders,
+    sellOrders: incrementalSellOrders,
+    totalBuyIncremental: totalBuyIncremental.toFixed(2),
+    totalBuyQtyIncremental: totalBuyQtyIncremental.toFixed(4),
+    totalSellIncremental: totalSellIncremental.toFixed(2),
+    totalSellQtyIncremental: totalSellQtyIncremental.toFixed(4)
   };
 });
 
@@ -120,8 +198,8 @@ const deviationAnalysis = computed(() => {
   const devPriceSell = parseFloat(deviationPriceSell) || 0;
   const devAmtBuy = parseFloat(deviationAmountBuy) || 1;
   const devAmtSell = parseFloat(deviationAmountSell) || 1;
-  const incBuy = parseFloat(incrementalPercentAmountBuy) || 1;
-  const incSell = parseFloat(incrementalPercentAmountSell) || 1;
+  const incBuy = parseFloat(incrementalPercentAmountBuy) || 0;
+  const incSell = parseFloat(incrementalPercentAmountSell) || 0;
 
   const orders = gridOrders.value;
   if (orders.length === 0) return null;
@@ -153,10 +231,10 @@ const deviationAnalysis = computed(() => {
 
       return {
         ...order,
-        filledAmount: filledAmountValue.toFixed(4),
+        filledAmount: filledAmountValue.toFixed(2),
         filledPrice: filledPrice.toFixed(6),
-        filledTotal: (filledAmountValue * filledPrice).toFixed(4),
-        incrementValue: incrementalAmount.toFixed(4),
+        filledTotal: (filledAmountValue * filledPrice).toFixed(2),
+        incrementValue: incrementalAmount.toFixed(2),
         deviated: true
       };
     });
@@ -180,10 +258,10 @@ const deviationAnalysis = computed(() => {
 
       return {
         ...order,
-        filledAmount: filledAmountValue.toFixed(4),
+        filledAmount: filledAmountValue.toFixed(2),
         filledPrice: filledPrice.toFixed(6),
-        filledTotal: (filledAmountValue * filledPrice).toFixed(4),
-        incrementValue: incrementalAmount.toFixed(4),
+        filledTotal: (filledAmountValue * filledPrice).toFixed(2),
+        incrementValue: incrementalAmount.toFixed(2),
         deviated: true
       };
     });
@@ -198,8 +276,8 @@ const deviationAnalysis = computed(() => {
     incSell,
     buyOrders: filledBuyOrders,
     sellOrders: filledSellOrders,
-    totalBuyFilled: totalBuyFilled.toFixed(4),
-    totalSellFilled: totalSellFilled.toFixed(4)
+    totalBuyFilled: totalBuyFilled.toFixed(2),
+    totalSellFilled: totalSellFilled.toFixed(2)
   };
 });
 
@@ -275,7 +353,7 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Price:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ summary.avgBuyPrice }}</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ summary.avgBuyPrice.toFixed(8) }}</span>
                 </div>
               </div>
             </div>
@@ -300,7 +378,7 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Price:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice }}</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice.toFixed(8) }}</span>
                 </div>
               </div>
             </div>
@@ -320,11 +398,11 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Total Filled:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ deviationAnalysis.totalBuyFilled }}</span>
+                  <span style="color: #10eb04; font-weight: 700;">${{ deviationAnalysis.totalBuyFilled }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Filled Price:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.buyOrders.length).toFixed(6) }}</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.buyOrders.length).toFixed(8) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Total Value:</span>
@@ -345,11 +423,11 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Total Filled:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ deviationAnalysis.totalSellFilled }}</span>
+                  <span style="color: #eb0404; font-weight: 700;">${{ deviationAnalysis.totalSellFilled }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Filled Price:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.sellOrders.length).toFixed(6) }}</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.sellOrders.length).toFixed(8) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Total Value:</span>
@@ -360,52 +438,87 @@ function closeModal() {
           </div>
         </n-tab-pane>
 
-        <!-- TAB 2: ORDERS (With Filled Values) -->
+        <!-- TAB 2: ORDERS WITH INCREMENTAL -->
         <n-tab-pane name="orders" tab="📋 Orders">
-          <div class="compact-orders">
-            <div class="orders-header">
-              <span class="orders-title">Grid Orders ({{ gridOrders.length }})</span>
-              <span class="orders-range">{{ summary?.priceRange }}</span>
-            </div>
-
-            <!-- BUY ORDERS WITH FILLED VALUES -->
-            <div v-if="deviationAnalysis && deviationAnalysis.buyOrders.length > 0" style="margin-bottom: 20px;">
-              <div style="font-size: 11px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
-                📈 BUY ORDERS (with incremental & deviations)
+          <div v-if="incrementalOrders" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- BUY INCREMENTAL ORDERS -->
+            <div v-if="incrementalOrders.buyOrders.length > 0">
+              <div style="background: rgba(16, 235, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3); margin-bottom: 12px;">
+                <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                  📈 BUY ORDERS (Incremental)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Orders:</span>
+                    <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.buyOrders.length }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Investment:</span>
+                    <span style="color: #10eb04; font-weight: 700;">${{ incrementalOrders.totalBuyIncremental }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Qty:</span>
+                    <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.totalBuyQtyIncremental }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Avg Price:</span>
+                    <span style="color: #10eb04; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalBuyIncremental) / parseFloat(incrementalOrders.totalBuyQtyIncremental)).toFixed(6) }}</span>
+                  </div>
+                </div>
               </div>
               <div class="orders-scroll">
                 <div
-                  v-for="(order, idx) in deviationAnalysis.buyOrders"
-                  :key="`buy-filled-${idx}`"
-                  style="display: grid; grid-template-columns: 40px 80px 100px 100px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(16, 235, 4, 0.08); border-left: 3px solid #10eb04; border-radius: 2px; font-size: 9px; margin-bottom: 4px; align-items: center;"
+                  v-for="(order, idx) in incrementalOrders.buyOrders"
+                  :key="`inc-buy-${idx}`"
+                  :class="['order-row', 'buy', { 'is-initial': order.isInitial }]"
                 >
-                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #06b6d4; font-size: 8px;">+{{ order.incrementValue }}</span>
-                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
-                  <span style="color: #fbbf24;">{{ order.filledTotal }}</span>
-                  <span style="color: #888;">{{ order.percentage }}%</span>
+                  <span class="order-num">#{{ idx + 1 }}</span>
+                  <span class="order-side buy">BUY</span>
+                  <span class="order-price">{{ order.price }}</span>
+                  <span class="order-amount">{{ order.incrementalQty }}</span>
+                  <span class="order-total">${{ order.incrementalAmount }}</span>
+                  <span class="order-percentage">{{ order.percentage }}%</span>
                 </div>
               </div>
             </div>
 
-            <!-- SELL ORDERS WITH FILLED VALUES -->
-            <div v-if="deviationAnalysis && deviationAnalysis.sellOrders.length > 0">
-              <div style="font-size: 11px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
-                📉 SELL ORDERS (with incremental & deviations)
+            <!-- SELL INCREMENTAL ORDERS -->
+            <div v-if="incrementalOrders.sellOrders.length > 0">
+              <div style="background: rgba(235, 4, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3); margin-bottom: 12px;">
+                <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                  📉 SELL ORDERS (Incremental)
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Orders:</span>
+                    <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.sellOrders.length }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Revenue:</span>
+                    <span style="color: #eb0404; font-weight: 700;">${{ incrementalOrders.totalSellIncremental }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Qty:</span>
+                    <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.totalSellQtyIncremental }}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                    <span style="color: #888;">Avg Price:</span>
+                    <span style="color: #eb0404; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalSellIncremental) / parseFloat(incrementalOrders.totalSellQtyIncremental)).toFixed(6) }}</span>
+                  </div>
+                </div>
               </div>
               <div class="orders-scroll">
                 <div
-                  v-for="(order, idx) in deviationAnalysis.sellOrders"
-                  :key="`sell-filled-${idx}`"
-                  style="display: grid; grid-template-columns: 40px 80px 100px 100px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(235, 4, 4, 0.08); border-left: 3px solid #eb0404; border-radius: 2px; font-size: 9px; margin-bottom: 4px; align-items: center;"
+                  v-for="(order, idx) in incrementalOrders.sellOrders"
+                  :key="`inc-sell-${idx}`"
+                  :class="['order-row', 'sell', { 'is-initial': order.isInitial }]"
                 >
-                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #fbbf24; font-size: 8px;">+{{ order.incrementValue }}</span>
-                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
-                  <span style="color: #06b6d4;">{{ order.filledTotal }}</span>
-                  <span style="color: #888;">{{ order.percentage }}%</span>
+                  <span class="order-num">#{{ idx + 1 }}</span>
+                  <span class="order-side sell">SELL</span>
+                  <span class="order-price">{{ order.price }}</span>
+                  <span class="order-amount">{{ order.incrementalQty }}</span>
+                  <span class="order-total">${{ order.incrementalAmount }}</span>
+                  <span class="order-percentage">{{ order.percentage }}%</span>
                 </div>
               </div>
             </div>
