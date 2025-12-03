@@ -6,6 +6,29 @@
       <p class="page-subtitle">Combine your trading strategies intelligently</p>
     </div>
 
+    <!-- 🔧 TECHNIQUES TAB SELECTOR - 12 GridBot+ Bots -->
+    <n-card class="techniques-tabs-card">
+      <div class="techniques-tabs-header">
+        <span class="techniques-title">🔧 Techniques - Select Your GridBot+ Strategy</span>
+      </div>
+      <div class="techniques-tabs-grid">
+        <n-button
+          v-for="(technique, index) in gridBotTechniques"
+          :key="index"
+          :type="selectedTechnique === technique.name ? 'primary' : 'default'"
+          @click="selectTechniqueTab(technique)"
+          class="technique-tab-button"
+          size="small"
+        >
+          <span class="technique-icon">{{ technique.emoji }}</span>
+          <span class="technique-text">{{ technique.name }}</span>
+        </n-button>
+      </div>
+      <div v-if="selectedTechnique" class="technique-info">
+        <span class="info-text">{{ getSelectedTechniqueInfo() }}</span>
+      </div>
+    </n-card>
+
     <!-- Mode Selector -->
     <n-card class="mode-selector-card">
       <div class="mode-selector">
@@ -606,6 +629,24 @@ const isCreating = ref(false);
 const creationProgress = ref([]);
 const creationMode = ref('normal'); // 'normal', 'ab-testing', 'conditional'
 
+// 🔧 12 GridBot+ Techniques/Bots
+const gridBotTechniques = ref([
+  { emoji: '🖱️', name: 'OneClick', description: 'One-click bot deployment - Instant bot creation' },
+  { emoji: '🏃', name: 'FrontRun', description: 'Front-running strategy - Beat the market' },
+  { emoji: '✈️', name: 'Co-Pilot', description: 'AI co-pilot assistance - Smart guidance' },
+  { emoji: '📊', name: 'DCA + Grid', description: 'DCA combined with grid - Best of both' },
+  { emoji: '🎯', name: 'Smart DCA', description: 'Intelligent DCA strategy - Technical timing' },
+  { emoji: '📊', name: 'GridBot', description: 'Classic grid trading - Range exploitation' },
+  { emoji: '🎯', name: 'Scalping', description: 'Fast scalping strategy - Quick profits' },
+  { emoji: '📈', name: 'FibBot', description: 'Fibonacci-based trading - Level-based entry' },
+  { emoji: '🧠', name: 'AI Bot', description: 'AI-powered trading - Machine learning' },
+  { emoji: '⚙️', name: 'Grinder', description: 'Continuous grinding bot - Steady gains' },
+  { emoji: '📖', name: 'OrderBook3pm', description: 'Order book analysis at 3pm - Time-based' },
+  { emoji: '🌟', name: 'AI Grid V1', description: 'AI Grid Bots V1 (Glassmorphism) - Latest version' }
+]);
+
+const selectedTechnique = ref(null);
+
 // GRID BOTS CONFIG
 const gridBots = ref({
   enabled: false,
@@ -695,6 +736,17 @@ const triggerConditionTypes = [
   { label: 'Win Rate %', value: 'winrate' },
   { label: 'Running Time (hours)', value: 'runtime' }
 ];
+
+// 🔧 SELECT TECHNIQUE TAB
+function selectTechniqueTab(technique) {
+  selectedTechnique.value = technique.name;
+  window.$message.info(`✨ ${technique.emoji} ${technique.name} selected! Configure below.`);
+}
+
+function getSelectedTechniqueInfo() {
+  const technique = gridBotTechniques.value.find(t => t.name === selectedTechnique.value);
+  return technique ? technique.description : '';
+}
 
 // PRESETS
 function loadPreset(presetName) {
@@ -1276,6 +1328,79 @@ async function createChainBot(botPosition, chainId) {
   padding: 0 12px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* 🔧 TECHNIQUES TABS CARD */
+.techniques-tabs-card {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(88, 126, 255, 0.08));
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.techniques-tabs-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.techniques-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #3b82f6;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+.techniques-tabs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.technique-tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px !important;
+  height: auto !important;
+  min-height: 60px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.technique-tab-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(59, 130, 246, 0.2);
+}
+
+.technique-icon {
+  font-size: 28px;
+  display: block;
+  line-height: 1;
+}
+
+.technique-text {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: normal;
+  line-height: 1.2;
+}
+
+.technique-info {
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.technique-info .info-text {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
 }
 
 /* Page Header */
