@@ -165,13 +165,13 @@ const incrementalOrders = computed(() => {
 
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // For incrementalPercent: first order (index 0) stays at baseAmount
-        // Subsequent orders get incremental applied: amount + ((amount / 100) * (incrementalPercent * index))
-        // Order 1 (index 0): baseAmount (no increment)
-        // Order 2 (index 1): baseAmount + (baseAmount / 100) * incBuy * 1
-        // Order 3 (index 2): baseAmount + (baseAmount / 100) * incBuy * 2
-        // etc.
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
+        // For BUY orders displayed in reverse (highest price first):
+        // Visual order #1 (highest price) should have no increment
+        // Visual order #2 should have 1x increment, etc.
+        // Since buyOrders are in ascending price order but displayed reversed,
+        // we need to apply incremental from the end: (length - 1 - index)
+        const reversedIndex = buyOrders.length - 1 - index;
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * reversedIndex));
       }
       // For other amountTypes (quantityPerGrid, totalAmount), amount stays constant
 
