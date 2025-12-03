@@ -138,14 +138,17 @@ const deviationAnalysis = computed(() => {
   if (buyOrders.length > 0) {
     filledBuyOrders = buyOrders.map((order, index) => {
       const baseAmount = parseFloat(order.total);
-      const adjustedAmount = baseAmount * devAmtBuy * (1 + (incBuy / 100) * index);
+      // Incremental formula: amount * devAmount * (1 + (incPercent/100) * orderIndex)
+      const incrementMultiplier = 1 + (incBuy / 100) * index;
+      const adjustedAmount = baseAmount * devAmtBuy * incrementMultiplier;
       const adjustedPrice = parseFloat(order.price) * (1 - (devPriceBuy / 100));
       totalBuyFilled += adjustedAmount;
       return {
         ...order,
         filledAmount: adjustedAmount.toFixed(4),
         filledPrice: adjustedPrice.toFixed(6),
-        filledTotal: (adjustedAmount * adjustedAmount).toFixed(4),
+        filledTotal: (adjustedAmount * adjustedPrice).toFixed(4),
+        incrementMultiplier: incrementMultiplier.toFixed(3),
         deviated: true
       };
     });
@@ -154,14 +157,17 @@ const deviationAnalysis = computed(() => {
   if (sellOrders.length > 0) {
     filledSellOrders = sellOrders.map((order, index) => {
       const baseAmount = parseFloat(order.total);
-      const adjustedAmount = baseAmount * devAmtSell * (1 + (incSell / 100) * index);
+      // Incremental formula: amount * devAmount * (1 + (incPercent/100) * orderIndex)
+      const incrementMultiplier = 1 + (incSell / 100) * index;
+      const adjustedAmount = baseAmount * devAmtSell * incrementMultiplier;
       const adjustedPrice = parseFloat(order.price) * (1 + (devPriceSell / 100));
       totalSellFilled += adjustedAmount;
       return {
         ...order,
         filledAmount: adjustedAmount.toFixed(4),
         filledPrice: adjustedPrice.toFixed(6),
-        filledTotal: (adjustedAmount * adjustedAmount).toFixed(4),
+        filledTotal: (adjustedAmount * adjustedPrice).toFixed(4),
+        incrementMultiplier: incrementMultiplier.toFixed(3),
         deviated: true
       };
     });
@@ -354,7 +360,7 @@ function closeModal() {
                   <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
                   <span style="color: #10eb04; font-weight: 700;">{{ order.filledPrice }}</span>
                   <span style="color: #e0e0e0;">{{ order.filledAmount }}</span>
-                  <span style="color: #06b6d4; font-weight: 600;">+{{ deviationAnalysis.incBuy * idx }}%</span>
+                  <span style="color: #06b6d4; font-weight: 600;">×{{ order.incrementMultiplier }}</span>
                 </div>
               </div>
             </div>
@@ -373,7 +379,7 @@ function closeModal() {
                   <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ order.filledPrice }}</span>
                   <span style="color: #e0e0e0;">{{ order.filledAmount }}</span>
-                  <span style="color: #fbbf24; font-weight: 600;">+{{ deviationAnalysis.incSell * idx }}%</span>
+                  <span style="color: #fbbf24; font-weight: 600;">×{{ order.incrementMultiplier }}</span>
                 </div>
               </div>
             </div>
