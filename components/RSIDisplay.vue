@@ -21,6 +21,46 @@ const props = defineProps({
 const { rsiValues, getRSIClass, fetchRSIValues, isLoadingRSI } = useRSIValues();
 const showRSIInfo = ref(true);
 
+// Drag state for RSI section
+const isDragging = ref(false);
+const dragOffsetX = ref(0);
+const dragOffsetY = ref(0);
+const rsiX = ref(0);
+const rsiY = ref(0);
+
+function startDrag(event) {
+  if (event.button !== 0) return; // Only left mouse button
+  isDragging.value = true;
+
+  // Get RSI section element
+  const rsiSection = document.querySelector('.rsi-config-section');
+  if (!rsiSection) return;
+
+  // Calculate offset between mouse and element position
+  const rect = rsiSection.getBoundingClientRect();
+  dragOffsetX.value = event.clientX - rect.left;
+  dragOffsetY.value = event.clientY - rect.top;
+
+  // Add event listeners
+  document.addEventListener('mousemove', handleDragMove);
+  document.addEventListener('mouseup', handleDragEnd);
+
+  event.preventDefault();
+}
+
+function handleDragMove(event) {
+  if (!isDragging.value) return;
+
+  rsiX.value = event.clientX - dragOffsetX.value;
+  rsiY.value = event.clientY - dragOffsetY.value;
+}
+
+function handleDragEnd() {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', handleDragMove);
+  document.removeEventListener('mouseup', handleDragEnd);
+}
+
 // Auto-fetch RSI if provided with exchange and symbol
 if (props.autoFetch && props.exchange && props.symbol) {
   fetchRSIValues(props.exchange, props.symbol);
@@ -38,11 +78,20 @@ watch(
 </script>
 
 <template>
-  <!-- RSI Information Section -->
-  <div class="config-section">
-    <div class="section-header" @click="showRSIInfo = !showRSIInfo">
+  <!-- RSI Information Section - Draggable -->
+  <div
+    class="rsi-config-section config-section"
+    :style="{
+      position: rsiX > 0 || rsiY > 0 ? 'fixed' : 'static',
+      left: rsiX > 0 ? rsiX + 'px' : 'auto',
+      top: rsiY > 0 ? rsiY + 'px' : 'auto',
+      cursor: isDragging ? 'grabbing' : 'grab',
+      zIndex: isDragging ? 1001 : 'auto'
+    }"
+  >
+    <div class="section-header" @mousedown="startDrag" style="user-select: none;">
       <span>📊 RSI at Creation</span>
-      <span class="collapse-icon">{{ showRSIInfo ? '▼' : '▶' }}</span>
+      <span class="collapse-icon" @click.stop="showRSIInfo = !showRSIInfo">{{ showRSIInfo ? '▼' : '▶' }}</span>
     </div>
     <div v-show="showRSIInfo" class="section-content rsi-section">
       <div v-if="isLoadingRSI" style="text-align: center; padding: 12px; color: #888;">

@@ -1,3 +1,13 @@
+/* RSI Config Section - Draggable */
+.rsi-config-section {
+  transition: all 0.1s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.rsi-config-section.dragging {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
 /* RSI Section Styles */
 .rsi-section {
   padding: 6px !important;
