@@ -58,12 +58,29 @@
       </div>
     </n-card>
 
-    <!-- Strategy Presets (Normal Mode Only) -->
+    <!-- Strategy Presets (Normal Mode Only) - 12 GridBot+ Techniques + Original Presets -->
     <n-card class="presets-card" v-if="creationMode === 'normal'">
       <div class="presets-header">
-        <span class="presets-title">📋 Quick Presets</span>
+        <span class="presets-title">📋 Quick Presets & 🔧 12 GridBot+ Techniques</span>
         <n-button size="small" @click="clearAll" quaternary>Clear All</n-button>
       </div>
+
+      <!-- 🔧 GridBot+ Techniques Grid -->
+      <div class="presets-section-title">🔧 GridBot+ Techniques</div>
+      <div class="presets-grid techniques-preset-grid">
+        <n-button
+          v-for="(technique, index) in gridBotTechniques"
+          :key="'tech-' + index"
+          size="small"
+          @click="loadTechniquePreset(technique)"
+          class="technique-preset-btn"
+        >
+          {{ technique.emoji }} {{ technique.name }}
+        </n-button>
+      </div>
+
+      <!-- Traditional Strategy Presets -->
+      <div class="presets-section-title" style="margin-top: 12px;">📊 Strategy Presets</div>
       <div class="presets-grid">
         <n-button size="small" type="success" @click="loadPreset('conservative')">
           🛡️ Conservative
@@ -746,6 +763,116 @@ function selectTechniqueTab(technique) {
 function getSelectedTechniqueInfo() {
   const technique = gridBotTechniques.value.find(t => t.name === selectedTechnique.value);
   return technique ? technique.description : '';
+}
+
+// 🔧 LOAD TECHNIQUE PRESET
+function loadTechniquePreset(technique) {
+  selectedTechnique.value = technique.name;
+  clearAll();
+
+  // Apply default configurations based on technique
+  switch(technique.name) {
+    case 'OneClick':
+      // Simple single grid bot
+      gridBots.value.enabled = true;
+      gridBots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} OneClick preset loaded - Quick single bot`);
+      break;
+
+    case 'FrontRun':
+      // Aggressive with DCA
+      gridBots.value.enabled = true;
+      gridBots.value.count = 2;
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} FrontRun preset loaded - Aggressive entry`);
+      break;
+
+    case 'Co-Pilot':
+      // Smart DCA focus
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 3;
+      window.$message.success(`✨ ${technique.emoji} Co-Pilot preset loaded - AI guidance`);
+      break;
+
+    case 'DCA + Grid':
+      // Balanced combination
+      dcaBots.value.enabled = true;
+      dcaBots.value.count = 1;
+      gridBots.value.enabled = true;
+      gridBots.value.count = 2;
+      window.$message.success(`✨ ${technique.emoji} DCA + Grid preset loaded - Best of both`);
+      break;
+
+    case 'Smart DCA':
+      // Smart DCA with technical indicators
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 2;
+      window.$message.success(`✨ ${technique.emoji} Smart DCA preset loaded - Technical timing`);
+      break;
+
+    case 'GridBot':
+      // Pure grid trading
+      gridBots.value.enabled = true;
+      gridBots.value.count = 3;
+      window.$message.success(`✨ ${technique.emoji} GridBot preset loaded - Range exploitation`);
+      break;
+
+    case 'Scalping':
+      // High frequency with many small grids
+      gridBots.value.enabled = true;
+      gridBots.value.count = 5;
+      window.$message.success(`✨ ${technique.emoji} Scalping preset loaded - Quick profits`);
+      break;
+
+    case 'FibBot':
+      // Fibonacci levels
+      fibBots.value.enabled = true;
+      fibBots.value.count = 2;
+      window.$message.success(`✨ ${technique.emoji} FibBot preset loaded - Level-based entry`);
+      break;
+
+    case 'AI Bot':
+      // AI with smart DCA
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 3;
+      fibBots.value.enabled = true;
+      fibBots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} AI Bot preset loaded - Machine learning`);
+      break;
+
+    case 'Grinder':
+      // Continuous small orders
+      dcaBots.value.enabled = true;
+      dcaBots.value.count = 3;
+      gridBots.value.enabled = true;
+      gridBots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} Grinder preset loaded - Steady gains`);
+      break;
+
+    case 'OrderBook3pm':
+      // Time-based strategy at 3pm
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 1;
+      gridBots.value.enabled = true;
+      gridBots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} OrderBook3pm preset loaded - Time-based`);
+      break;
+
+    case 'AI Grid V1':
+      // Latest AI version - comprehensive setup
+      gridBots.value.enabled = true;
+      gridBots.value.count = 3;
+      smartDCABots.value.enabled = true;
+      smartDCABots.value.count = 2;
+      fibBots.value.enabled = true;
+      fibBots.value.count = 1;
+      window.$message.success(`✨ ${technique.emoji} AI Grid V1 preset loaded - Latest version`);
+      break;
+
+    default:
+      window.$message.info(`✨ ${technique.emoji} ${technique.name} preset selected`);
+  }
 }
 
 // PRESETS
@@ -1446,10 +1573,35 @@ async function createChainBot(botPosition, chainId) {
   color: #10eb04;
 }
 
+.presets-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #10eb04;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(16, 235, 4, 0.2);
+}
+
 .presets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 8px;
+}
+
+.techniques-preset-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.technique-preset-btn {
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.technique-preset-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 /* Main Card */
