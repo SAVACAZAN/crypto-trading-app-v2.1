@@ -4,6 +4,7 @@ import { useStrategyGridBot } from '~/composables/useStrategyGridBot';
 import { useRSIValues } from '~/composables/useRSIValues';
 import StrategiesGridBot from '~/components/StrategiesGridBot.vue';
 import RSIDisplay from '~/components/RSIDisplay.vue';
+import DemoGridBot from '~/components/DemoGridBot.vue';
 import '~/components/styles/grid-bots-form-plus.css';
 import {ref, watch, computed, onMounted, onUnmounted} from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
@@ -34,6 +35,19 @@ const selectedApiKeys = computed(() => app.getSelectedApiKeys);
 // Computed base/quote that update when symbol changes
 const base = computed(() => currentSymbol.value ? currentSymbol.value.split('/')[0] : 'BTC');
 const quote = computed(() => currentSymbol.value ? currentSymbol.value.split('/')[1] : 'USD');
+
+// Demo grid configuration for DemoGridBot component
+const demoGridConfig = computed(() => ({
+  lowerPrice: lowerPrice.value,
+  upperPrice: upperPrice.value,
+  amount: amount.value,
+  nrOfGrids: nrOfGrids.value,
+  ordersSide: ordersSide.value,
+  currentPrice: currentPrice.value,
+  symbol: currentSymbol.value,
+  quote: quote.value
+}));
+
 const bestBid = ref(null);
 const bestAsk = ref(null);
 const manualLowerPrice = ref('');
@@ -84,6 +98,7 @@ let showBasicConfig = ref(true);
 let showAdvancedConfig = ref(false);
 let showPriceActions = ref(true);
 let showStrategies = ref(false);
+let showDemoGrid = ref(false);
 
 // Starea pentru a ține evidența dacă devierea inițială a fost aplicată sau nu
 let initialDeviationApplied = false;
@@ -332,6 +347,116 @@ async function createGridBot(){
   BotX2.value = 'ComandaX2';
 }
 
+// Create BUY ONLY bot (without changing form state)
+async function createBotBuyOnly() {
+  if (!userID?.value) {
+    message.error('❌ Cannot create bot: userID not available');
+    return;
+  }
+
+  if (!selectedApiKeys.value || selectedApiKeys.value.length === 0) {
+    message.error('No API Keys selected');
+    return;
+  }
+
+  const initialBotValue = currentPrice.value
+    ? (parseFloat(BalanceQuote.value || 0) + (parseFloat(BalanceBase.value || 0) * currentPrice.value)).toString()
+    : '0';
+
+  let data = {
+    userID: userID.value,
+    name: name.value,
+    exchange: currentExchange.value,
+    symbol: currentSymbol.value,
+    lowerPrice: lowerPrice.value,
+    upperPrice: upperPrice.value,
+    amountType: amountType.value,
+    amount: amount.value,
+    nrOfGrids: nrOfGrids.value,
+    ordersSide: 'buy',
+    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+    apiKeyNames: selectedApiKeys.value,
+    rsiAtCreation: rsiValues.value,
+    priceAtCreation: currentPrice.value,
+    BalanceBotStart: initialBotValue,
+    config: {
+      deviationPriceBuy: deviationPriceBuy.value,
+      deviationPriceSell: deviationPriceSell.value,
+      deviationAmountBuy: deviationAmountBuy.value,
+      deviationAmountSell: deviationAmountSell.value,
+      usePriceGroup: usePriceGroup.value,
+      priceGroupBuy: priceGroupBuy.value,
+      priceGroupSell: priceGroupSell.value,
+    }
+  };
+
+  try {
+    await $fetch('/api/v1/createGridBot', {
+      method: 'POST',
+      body: data
+    });
+    message.success('✅ BUY bot created!', { duration: 1 });
+  } catch (error) {
+    message.error(`Failed to create BUY bot: ${error.message}`, { duration: 3 });
+  }
+}
+
+// Create SELL ONLY bot (without changing form state)
+async function createBotSellOnly() {
+  if (!userID?.value) {
+    message.error('❌ Cannot create bot: userID not available');
+    return;
+  }
+
+  if (!selectedApiKeys.value || selectedApiKeys.value.length === 0) {
+    message.error('No API Keys selected');
+    return;
+  }
+
+  const initialBotValue = currentPrice.value
+    ? (parseFloat(BalanceQuote.value || 0) + (parseFloat(BalanceBase.value || 0) * currentPrice.value)).toString()
+    : '0';
+
+  let data = {
+    userID: userID.value,
+    name: name.value,
+    exchange: currentExchange.value,
+    symbol: currentSymbol.value,
+    lowerPrice: lowerPrice.value,
+    upperPrice: upperPrice.value,
+    amountType: amountType.value,
+    amount: amount.value,
+    nrOfGrids: nrOfGrids.value,
+    ordersSide: 'sell',
+    incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+    incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+    apiKeyNames: selectedApiKeys.value,
+    rsiAtCreation: rsiValues.value,
+    priceAtCreation: currentPrice.value,
+    BalanceBotStart: initialBotValue,
+    config: {
+      deviationPriceBuy: deviationPriceBuy.value,
+      deviationPriceSell: deviationPriceSell.value,
+      deviationAmountBuy: deviationAmountBuy.value,
+      deviationAmountSell: deviationAmountSell.value,
+      usePriceGroup: usePriceGroup.value,
+      priceGroupBuy: priceGroupBuy.value,
+      priceGroupSell: priceGroupSell.value,
+    }
+  };
+
+  try {
+    await $fetch('/api/v1/createGridBot', {
+      method: 'POST',
+      body: data
+    });
+    message.success('✅ SELL bot created!', { duration: 1 });
+  } catch (error) {
+    message.error(`Failed to create SELL bot: ${error.message}`, { duration: 3 });
+  }
+}
+
 onMounted(async () => {
   orderBookInterval = setIntervalAsync(fetchOrderBookPooling, 500);
   applyInitialDeviation();
@@ -359,6 +484,9 @@ onUnmounted(() => {
 
        <div class="create-button-section">
             <n-button type="primary" size="small" @click="createGridBot">⚙️CREATE BOT</n-button>
+            <n-button type="success" class="buy-only-btn" @click="createBotBuyOnly">📈BUY</n-button>
+            <n-button type="error" class="sell-only-btn" @click="createBotSellOnly">📉SELL</n-button>
+            <n-button type="info" class="demo-grid-btn" @click="showDemoGrid = !showDemoGrid">🎯VIEW DEMO GRID</n-button>
           </div>
 
       <div class="field-group">
@@ -672,6 +800,15 @@ onUnmounted(() => {
       :symbol="currentSymbol"
       :auto-fetch="true"
     />
+
+    <!-- Demo Grid Bot Component -->
+    <ClientOnly>
+      <DemoGridBot
+        :config="demoGridConfig"
+        :visible="showDemoGrid"
+        @close="showDemoGrid = false"
+      />
+    </ClientOnly>
 
   </div>
 </template>
