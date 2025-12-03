@@ -237,7 +237,13 @@ function handleStrategyApplied(appliedData) {
         exchange: appliedData.exchange,
         symbol: appliedData.symbol,
         lowerPrice: appliedData.lowerPrice,
-        upperPrice: appliedData.upperPrice
+        upperPrice: appliedData.upperPrice,
+        incBuy: appliedData.incBuy,
+        incSell: appliedData.incSell,
+        devPriceBuy: appliedData.devPriceBuy,
+        devPriceSell: appliedData.devPriceSell,
+        devAmtBuy: appliedData.devAmtBuy,
+        devAmtSell: appliedData.devAmtSell
       });
 
       // NOTE: exchange and symbol are computed properties (currentExchange, currentSymbol)
@@ -250,14 +256,25 @@ function handleStrategyApplied(appliedData) {
       nrOfGrids.value = (appliedData.nrOfGrids ?? 10).toString();
       ordersSide.value = appliedData.ordersSide || 'buyOrSell';
       amountType.value = appliedData.amountType || 'incrementalPercent';
+
+      // Incremental amounts
       incrementalPercentAmountBuy.value = (appliedData.incBuy ?? 1).toString();
       incrementalPercentAmountSell.value = (appliedData.incSell ?? 1).toString();
+
+      // Deviation fields (IMPORTANT: map devPrice* and devAmt* to deviationPrice* and deviationAmount*)
       deviationPriceBuy.value = (appliedData.devPriceBuy ?? 1).toString();
       deviationPriceSell.value = (appliedData.devPriceSell ?? 1).toString();
       deviationAmountBuy.value = (appliedData.devAmtBuy ?? 0.9).toString();
       deviationAmountSell.value = (appliedData.devAmtSell ?? 0.9).toString();
+
+      // Market prices
       bestBid.value = appliedData.bestBid ?? 0;
       bestAsk.value = appliedData.bestAsk ?? 0;
+
+      console.log('✅ All strategy values loaded:');
+      console.log('  - Incremental: incBuy=' + incrementalPercentAmountBuy.value + ', incSell=' + incrementalPercentAmountSell.value);
+      console.log('  - Deviation Price: buy=' + deviationPriceBuy.value + ', sell=' + deviationPriceSell.value);
+      console.log('  - Deviation Amount: buy=' + deviationAmountBuy.value + ', sell=' + deviationAmountSell.value);
     } catch (error) {
       console.error('Error applying strategy data:', error, appliedData);
     }
@@ -463,6 +480,29 @@ async function createBotSellOnly() {
     message.error(`Failed to create SELL bot: ${error.message}`, { duration: 3 });
   }
 }
+
+// Watch for changes in deviation fields and other config to ensure real-time updates
+watch(
+  () => [
+    lowerPrice.value,
+    upperPrice.value,
+    amount.value,
+    nrOfGrids.value,
+    amountType.value,
+    incrementalPercentAmountBuy.value,
+    incrementalPercentAmountSell.value,
+    deviationPriceBuy.value,
+    deviationPriceSell.value,
+    deviationAmountBuy.value,
+    deviationAmountSell.value,
+    currentPrice.value
+  ],
+  () => {
+    // demoGridConfig computed will automatically update with new values
+    // This watch just ensures reactivity is triggered
+    console.log('📊 Demo grid config updated with new values');
+  }
+);
 
 onMounted(async () => {
   orderBookInterval = setIntervalAsync(fetchOrderBookPooling, 500);
