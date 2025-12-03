@@ -6,6 +6,24 @@ const app = useAppStore()
 
 let userID = useCookie('userID');
 
+// 🔧 12 GridBot+ Techniques/Bots
+const GRIDBOT_TECHNIQUES = [
+  { emoji: '🖱️', name: 'OneClick', description: 'One-click bot deployment' },
+  { emoji: '🏃', name: 'FrontRun', description: 'Front-running strategy' },
+  { emoji: '✈️', name: 'Co-Pilot', description: 'AI co-pilot assistance' },
+  { emoji: '📊', name: 'DCA + Grid', description: 'DCA combined with grid' },
+  { emoji: '🎯', name: 'Smart DCA', description: 'Intelligent DCA strategy' },
+  { emoji: '📊', name: 'GridBot', description: 'Classic grid trading' },
+  { emoji: '🎯', name: 'Scalping', description: 'Fast scalping strategy' },
+  { emoji: '📈', name: 'FibBot', description: 'Fibonacci-based trading' },
+  { emoji: '🧠', name: 'AI Bot', description: 'AI-powered trading' },
+  { emoji: '⚙️', name: 'Grinder', description: 'Continuous grinding bot' },
+  { emoji: '📖', name: 'OrderBook3pm', description: 'Order book analysis at 3pm' },
+  { emoji: '🌟', name: 'AI Grid V1', description: 'AI Grid Bots V1 (Glassmorphism)' }
+];
+
+let selectedTechnique = ref(null);
+
 let currentExchange = ref(app.getUserSelectedExchange);
 let currentSymbol = ref(app.getUserSelectedMarket);
 
@@ -139,6 +157,14 @@ function generateRandomString(length = 20) {
   }
 
   return randomString;
+}
+
+// 🔧 Select GridBot+ Technique
+function selectTechnique(technique) {
+  selectedTechnique.value = technique;
+  // Update bot name with the selected technique
+  name.value = `${technique.emoji}_${technique.name}_${generateRandomString(5)}`;
+  console.log('Selected technique:', technique);
 }
 
 
@@ -400,9 +426,26 @@ onMounted(() => {
 
 <template>
 
+  <!-- 🔧 TECHNIQUES SECTION - 12 GridBot+ Bots -->
+  <n-card title="🔧 Techniques - Select GridBot+ Bot" style="margin-bottom: 12px;">
+    <div class="techniques-grid">
+      <div
+        v-for="(technique, index) in GRIDBOT_TECHNIQUES"
+        :key="index"
+        class="technique-card"
+        :class="{ 'active': selectedTechnique?.name === technique.name }"
+        @click="selectTechnique(technique)"
+      >
+        <div class="technique-emoji">{{ technique.emoji }}</div>
+        <div class="technique-name">{{ technique.name }}</div>
+        <div class="technique-description">{{ technique.description }}</div>
+      </div>
+    </div>
+  </n-card>
+
   <n-card>
 
-    
+
       <n-grid x-gap="12" :cols="2">
         <n-gi>
           <n-space vertical>
@@ -654,6 +697,117 @@ onMounted(() => {
 
 
 <style scoped>
+/* 🔧 TECHNIQUES GRID STYLES */
+.techniques-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+  max-width: 100%;
+}
+
+.technique-card {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(42, 52, 65, 0.5) 100%);
+  border: 2px solid rgba(88, 126, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 110px;
+  backdrop-filter: blur(10px);
+}
+
+.technique-card:hover {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 1) 0%, rgba(42, 52, 65, 0.8) 100%);
+  border-color: rgba(88, 126, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(88, 126, 255, 0.2);
+}
+
+.technique-card.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(88, 126, 255, 0.2) 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.4), inset 0 0 16px rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
+}
+
+.technique-emoji {
+  font-size: 32px;
+  margin-bottom: 6px;
+  display: block;
+  line-height: 1;
+}
+
+.technique-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.technique-description {
+  font-size: 8px;
+  color: #888;
+  line-height: 1.2;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.technique-card.active .technique-description {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .techniques-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  .technique-card {
+    min-height: 95px;
+    padding: 10px;
+  }
+
+  .technique-emoji {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+
+  .technique-name {
+    font-size: 10px;
+  }
+
+  .technique-description {
+    font-size: 7px;
+  }
+}
+
+@media (max-width: 480px) {
+  .techniques-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+  }
+
+  .technique-card {
+    min-height: 80px;
+    padding: 8px;
+  }
+
+  .technique-emoji {
+    font-size: 24px;
+  }
+}
+
+/* Original Button Styles */
 .buy-button {
   background-color: green; /* culoarea pentru butonul Buy Only */
 }

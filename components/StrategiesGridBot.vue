@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useMessage } from 'naive-ui';
 import { useStrategyGridBot } from '~/composables/useStrategyGridBot';
+
+const message = useMessage();
 
 const props = defineProps({
   userID: {
@@ -31,6 +34,46 @@ const props = defineProps({
 
 const emit = defineEmits(['apply-strategy']);
 
+// 🔧 12 GridBot+ Techniques/Bots Configuration
+const GRIDBOT_TECHNIQUES = {
+  '🖱️ OneClick': '🖱️',
+  '🏃 FrontRun': '🏃',
+  '✈️ Co-Pilot': '✈️',
+  '📊 DCA + Grid': '📊',
+  '🎯 Smart DCA': '🎯',
+  '📊 GridBot': '📊',
+  '🎯 Scalping': '🎯',
+  '📈 FibBot': '📈',
+  '🧠 AI Bot': '🧠',
+  '⚙️ Grinder': '⚙️',
+  '📖 OrderBook3pm': '📖',
+  '🌟 AI Grid Bots V1': '🌟'
+};
+
+function getStrategyEmoji(strategyName) {
+  if (!strategyName) return null;
+
+  // Check for exact matches first
+  for (const [key, emoji] of Object.entries(GRIDBOT_TECHNIQUES)) {
+    if (strategyName.includes(key) || key.includes(strategyName)) {
+      return emoji;
+    }
+  }
+
+  // Check for partial matches
+  const nameLower = strategyName.toLowerCase();
+  const nameWithoutEmoji = strategyName.replace(/^[^\w\s]+\s*/, '').toLowerCase();
+
+  for (const [key, emoji] of Object.entries(GRIDBOT_TECHNIQUES)) {
+    const keyWithoutEmoji = key.replace(/^[^\w\s]+\s*/, '').toLowerCase();
+    if (nameWithoutEmoji.includes(keyWithoutEmoji) || keyWithoutEmoji.includes(nameWithoutEmoji)) {
+      return emoji;
+    }
+  }
+
+  return null;
+}
+
 const {
   strategyPicker,
   strategyPickerOptions,
@@ -49,6 +92,47 @@ let newStrategyName = ref('');
 let newStrategyDescription = ref('');
 let loadingStrategies = ref(false);
 
+// Drag state for Strategies section
+const isDragging = ref(false);
+const dragOffsetX = ref(0);
+const dragOffsetY = ref(0);
+const strategiesX = ref(0);
+const strategiesY = ref(0);
+const showStrategiesPanel = ref(true);
+
+function startDrag(event) {
+  if (event.button !== 0) return; // Only left mouse button
+  isDragging.value = true;
+
+  // Get Strategies section element
+  const strategiesSection = document.querySelector('.strategies-config-section');
+  if (!strategiesSection) return;
+
+  // Calculate offset between mouse and element position
+  const rect = strategiesSection.getBoundingClientRect();
+  dragOffsetX.value = event.clientX - rect.left;
+  dragOffsetY.value = event.clientY - rect.top;
+
+  // Add event listeners
+  document.addEventListener('mousemove', handleDragMove);
+  document.addEventListener('mouseup', handleDragEnd);
+
+  event.preventDefault();
+}
+
+function handleDragMove(event) {
+  if (!isDragging.value) return;
+
+  strategiesX.value = event.clientX - dragOffsetX.value;
+  strategiesY.value = event.clientY - dragOffsetY.value;
+}
+
+function handleDragEnd() {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', handleDragMove);
+  document.removeEventListener('mouseup', handleDragEnd);
+}
+
 /**
  * Save current configuration as a strategy
  */
@@ -62,7 +146,7 @@ async function saveStrategy() {
   console.log('📦 props.bestAsk:', props.bestAsk);
 
   if (!newStrategyName.value.trim()) {
-    alert('Please enter a strategy name');
+    message.warning('Please enter a strategy name');
     return;
   }
 
@@ -74,7 +158,7 @@ async function saveStrategy() {
   console.log('🆔 userID value:', userID);
 
   if (!userID) {
-    alert('User ID is required - please login again');
+    message.error('User ID is required - please login again');
     return;
   }
 
@@ -92,17 +176,17 @@ async function saveStrategy() {
   console.log('  - nrOfGrids:', nrOfGridsValue);
 
   if (!lowerPriceValue || !upperPriceValue) {
-    alert('Please enter Lower Price and Upper Price');
+    message.warning('Please enter Lower Price and Upper Price');
     return;
   }
 
   if (!amountValue) {
-    alert('Please enter Amount');
+    message.warning('Please enter Amount');
     return;
   }
 
   if (!nrOfGridsValue) {
-    alert('Please enter Number of Grids');
+    message.warning('Please enter Number of Grids');
     return;
   }
 
@@ -136,7 +220,7 @@ async function saveStrategy() {
       console.error('❌ Cannot save strategy: Exchange or Symbol is missing');
       console.error('  - exchange:', exchangeValue);
       console.error('  - symbol:', symbolValue);
-      alert('❌ Error: Exchange or Trading Pair is not available. Please select a valid pair and try again.');
+      message.error('❌ Error: Exchange or Trading Pair is not available. Please select a valid pair and try again.');
       return;
     }
 
@@ -163,10 +247,10 @@ async function saveStrategy() {
     newStrategyDescription.value = '';
     showStrategyForm.value = false;
 
-    alert(`✅ Strategy "${strategyName}" saved successfully!`);
+    message.success(`✅ Strategy "${strategyName}" saved successfully!`, { duration: 1 });
   } catch (error) {
     console.error('Error saving strategy:', error);
-    alert(`Failed to save strategy: ${error.message}`);
+    message.error(`Failed to save strategy: ${error.message}`, { duration: 3 });
   }
 }
 
@@ -175,7 +259,7 @@ async function saveStrategy() {
  */
 async function handleApplyStrategy() {
   if (!strategyPicker.value) {
-    alert('Please select a strategy');
+    message.warning('Please select a strategy');
     return;
   }
 
@@ -184,7 +268,7 @@ async function handleApplyStrategy() {
   const userID = props.userID || userIDCookie?.value;
 
   if (!userID) {
-    alert('User ID is required - please login again');
+    message.error('User ID is required - please login again');
     return;
   }
 
@@ -208,7 +292,7 @@ async function handleApplyStrategy() {
     // The applyStrategy composable will handle fallbacks
     if (!strategyPicker.value) {
       console.error('❌ No strategy selected');
-      alert('❌ Error: Please select a strategy first.');
+      message.error('❌ Error: Please select a strategy first.');
       return;
     }
 
@@ -223,13 +307,14 @@ async function handleApplyStrategy() {
       // Emit event to parent component to update form
       console.log('✅ Strategy applied successfully, emitting event');
       emit('apply-strategy', appliedData);
-      alert(`✅ Strategy applied successfully!`);
+      message.success('✅ Strategy applied successfully!', { duration: 1 });
     } else {
       console.warn('⚠️ Strategy application returned no data');
+      message.warning('Strategy applied but no data returned', { duration: 1 });
     }
   } catch (error) {
     console.error('Error applying strategy:', error);
-    alert('Failed to apply strategy');
+    message.error(`Failed to apply strategy: ${error.message}`, { duration: 3 });
   }
 }
 
@@ -238,11 +323,7 @@ async function handleApplyStrategy() {
  */
 async function handleDeleteStrategy() {
   if (!strategyPicker.value) {
-    alert('Please select a strategy');
-    return;
-  }
-
-  if (!confirm('Are you sure you want to delete this strategy?')) {
+    message.warning('Please select a strategy');
     return;
   }
 
@@ -251,16 +332,16 @@ async function handleDeleteStrategy() {
   const userID = props.userID || userIDCookie?.value;
 
   if (!userID) {
-    alert('User ID is required - please login again');
+    message.error('User ID is required - please login again');
     return;
   }
 
   try {
     await deleteStrategy(strategyPicker.value, userID);
-    alert('✅ Strategy deleted successfully!');
+    message.success('✅ Strategy deleted successfully!', { duration: 1 });
   } catch (error) {
     console.error('Error deleting strategy:', error);
-    alert('Failed to delete strategy');
+    message.error('Failed to delete strategy', { duration: 3 });
   }
 }
 
@@ -269,11 +350,7 @@ async function handleDeleteStrategy() {
  */
 async function handleDeleteAllStrategies() {
   if (strategiesList.value.length === 0) {
-    alert('No strategies to delete');
-    return;
-  }
-
-  if (!confirm('Are you sure you want to delete ALL strategies?')) {
+    message.warning('No strategies to delete');
     return;
   }
 
@@ -282,16 +359,16 @@ async function handleDeleteAllStrategies() {
   const userID = props.userID || userIDCookie?.value;
 
   if (!userID) {
-    alert('User ID is required - please login again');
+    message.error('User ID is required - please login again');
     return;
   }
 
   try {
     await deleteAllStrategies(userID);
-    alert('✅ All strategies deleted successfully!');
+    message.success('✅ All strategies deleted successfully!', { duration: 1 });
   } catch (error) {
     console.error('Error deleting strategies:', error);
-    alert('Failed to delete strategies');
+    message.error('Failed to delete strategies', { duration: 3 });
   }
 }
 
@@ -328,75 +405,85 @@ watch(() => props.userID, async (newUserID) => {
 </script>
 
 <template>
-  <div class="strategies-section">
-    <!-- Strategies Header -->
-    <div class="strategies-header">
-      <span class="strategies-title">📚 Grid Bot Strategies</span>
-      <span class="strategies-count" v-if="strategiesList.length > 0">
-        {{ strategiesList.length }} saved
-      </span>
+  <!-- Strategies Panel - Draggable -->
+  <div
+    class="strategies-config-section config-section"
+    :style="{
+      position: strategiesX > 0 || strategiesY > 0 ? 'fixed' : 'static',
+      left: strategiesX > 0 ? strategiesX + 'px' : 'auto',
+      top: strategiesY > 0 ? strategiesY + 'px' : 'auto',
+      cursor: isDragging ? 'grabbing' : 'grab',
+      zIndex: isDragging ? 1001 : 'auto',
+      width: '40%',
+      maxHeight: '80vh'
+    }"
+  >
+    <div class="section-header" @mousedown="startDrag" style="user-select: none;">
+      <span>📚 Grid Bot Strategies</span>
+      <span class="collapse-icon" @click.stop="showStrategiesPanel = !showStrategiesPanel">{{ showStrategiesPanel ? '▼' : '▶' }}</span>
     </div>
+    <div v-show="showStrategiesPanel" class="section-content strategies-section">
+      <!-- Saved Strategies List - Grid of Small Boxes -->
+      <div v-if="strategiesList.length > 0" class="strategies-list">
+        <div class="strategies-buttons-grid">
+          <n-popover
+            v-for="strategy in strategiesList"
+            :key="strategy._id"
+            trigger="hover"
+            placement="top"
+            :show-arrow="true"
+          >
+            <template #trigger>
+              <n-button
+                :type="strategyPicker === strategy._id ? 'primary' : 'default'"
+                size="tiny"
+                @click="async () => {
+                  strategyPicker = strategy._id;
+                  await handleApplyStrategy();
+                }"
+                class="strategy-box"
+                :title="strategy.name"
+              >
+                {{ getStrategyEmoji(strategy.name) || strategy.name.substring(0, 3).toUpperCase() }}
+              </n-button>
+            </template>
 
-    <!-- Saved Strategies List - Grid of Small Boxes -->
-    <div v-if="strategiesList.length > 0" class="strategies-list">
-      <div class="strategies-buttons-grid">
-        <n-popover
-          v-for="strategy in strategiesList"
-          :key="strategy._id"
-          trigger="hover"
-          placement="top"
-          :show-arrow="true"
-        >
-          <template #trigger>
-            <n-button
-              :type="strategyPicker === strategy._id ? 'primary' : 'default'"
-              size="tiny"
-              @click="async () => {
-                strategyPicker = strategy._id;
-                await handleApplyStrategy();
-              }"
-              class="strategy-box"
-            >
-              {{ strategy.name.substring(0, 3).toUpperCase() }}
-            </n-button>
-          </template>
-
-          <!-- Popover Content - Strategy Details (4 rows only) -->
-          <div class="strategy-tooltip">
-            <!-- <div class="tooltip-title">{{ strategy.name }}</div> -->
-            <div v-if="strategy.pairs && strategy.pairs[0]" class="tooltip-content">
-              <div class="tooltip-row">
-                <span class="tooltip-label">Lower:</span>
-                <span class="tooltip-value lower">
-                  {{
-                    strategy.pairs[0].lowerPricePercent !== undefined
-                      ? strategy.pairs[0].lowerPricePercent.toFixed(2) + '%'
-                      : 'N/A'
-                  }}
-                </span>
-              </div>
-              <div class="tooltip-row">
-                <span class="tooltip-label">Upper:</span>
-                <span class="tooltip-value upper">
-                  {{
-                    strategy.pairs[0].upperPricePercent !== undefined
-                      ? strategy.pairs[0].upperPricePercent.toFixed(2) + '%'
-                      : 'N/A'
-                  }}
-                </span>
-              </div>
-              <div class="tooltip-row">
-                <span class="tooltip-label">Grids:</span>
-                <span class="tooltip-value">{{ strategy.pairs[0].grids ?? 'N/A' }}</span>
-              </div>
-              <div class="tooltip-row">
-                <span class="tooltip-label">Amount:</span>
-                <span class="tooltip-value">{{ strategy.pairs[0].amount?.toFixed(4) ?? 'N/A' }}</span>
+            <!-- Popover Content - Strategy Details (4 rows only) -->
+            <div class="strategy-tooltip">
+              <!-- <div class="tooltip-title">{{ strategy.name }}</div> -->
+              <div v-if="strategy.pairs && strategy.pairs[0]" class="tooltip-content">
+                <div class="tooltip-row">
+                  <span class="tooltip-label">Lower:</span>
+                  <span class="tooltip-value lower">
+                    {{
+                      strategy.pairs[0].lowerPricePercent !== undefined
+                        ? strategy.pairs[0].lowerPricePercent.toFixed(2) + '%'
+                        : 'N/A'
+                    }}
+                  </span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="tooltip-label">Upper:</span>
+                  <span class="tooltip-value upper">
+                    {{
+                      strategy.pairs[0].upperPricePercent !== undefined
+                        ? strategy.pairs[0].upperPricePercent.toFixed(2) + '%'
+                        : 'N/A'
+                    }}
+                  </span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="tooltip-label">Grids:</span>
+                  <span class="tooltip-value">{{ strategy.pairs[0].grids ?? 'N/A' }}</span>
+                </div>
+                <div class="tooltip-row">
+                  <span class="tooltip-label">Amount:</span>
+                  <span class="tooltip-value">{{ strategy.pairs[0].amount?.toFixed(4) ?? 'N/A' }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </n-popover>
-      </div>
+          </n-popover>
+        </div>
 
       <!-- Strategy Action Buttons -->
       <div class="strategy-actions">
@@ -480,16 +567,71 @@ watch(() => props.userID, async (newUserID) => {
         </n-button>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.strategies-section {
-  background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+/* Strategies Config Section - Draggable */
+.strategies-config-section {
+  transition: all 0.1s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.strategies-config-section.dragging {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Config Section Styling */
+.config-section {
+  background: #0f1419;
   border: 1px solid #2a3441;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.section-header {
+  padding: 6px 8px;
+  background: #1a1f2e;
+  border-bottom: 1px solid #2a3441;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+
+.section-header:hover {
+  background: #242936;
+}
+
+.collapse-icon {
+  font-size: 9px;
+  color: #666;
+  cursor: pointer;
+}
+
+.section-content {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(80vh - 40px);
+}
+
+.strategies-section {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 0;
   font-size: 11px;
 }
 
