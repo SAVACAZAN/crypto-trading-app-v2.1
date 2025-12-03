@@ -106,7 +106,7 @@ import Page11 from '~/pages/Bots/Scalp1ng.vue';
 import Page12 from '~/pages/Bots/OrderBookBot.vue';
 import Page13 from '~/pages/Bots/PumpDump.vue';
 import Page14 from '~/pages/Bots/BotsAnalysis.vue';
-import Page15 from '~/pages/Bots/Botstechniques.vue';
+import Page15 from '~/pages/Bots/Botstechniques-refactored.vue';
 import Page16 from '~/pages/Bots/machinelearning.vue';
 
 definePageMeta({

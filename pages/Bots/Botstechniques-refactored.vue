@@ -46,12 +46,12 @@
       <div class="active-bots-list">
         <div
           v-for="bot in activeBots"
-          :key="bot.id"
+          :key="bot._id || bot.chainId"
           class="active-bot-item"
         >
           <span class="bot-name">{{ bot.name }}</span>
-          <span class="bot-status" :class="bot.status">{{ bot.status }}</span>
-          <span class="bot-profit">{{ bot.profit > 0 ? '📈' : '📉' }} ${{ bot.profit.toFixed(2) }}</span>
+          <span class="bot-status" :class="bot.enabled ? 'running' : 'stopped'">{{ bot.enabled ? 'Running' : 'Stopped' }}</span>
+          <span class="bot-profit">⚙️ {{ bot.nodes?.length || 0 }} Nodes</span>
         </div>
       </div>
     </n-card>
@@ -206,15 +206,27 @@ function updateTrigger2(condition) {
 
 async function handleDeployChain(deployData) {
   try {
-    // API call to deploy bot chain
-    const response = await $fetch('/api/v1/deployBotChain', {
+    // Build nodes array from bot chain
+    const nodes = deployData.chain.map((bot, index) => ({
+      type: bot.type,
+      config: {
+        emoji: bot.emoji,
+        count: bot.count,
+        lowerPrice: deployData.config.lowerPrice,
+        upperPrice: deployData.config.upperPrice,
+        grids: deployData.config.grids,
+        amount: deployData.config.amount
+      },
+      trigger: index === deployData.chain.length - 1 ? null : (deployData.triggers[index] || 'profit')
+    }))
+
+    // API call to create bot chain
+    const response = await $fetch('/api/v1/createBotChain', {
       method: 'POST',
       body: {
-        userID: userID.value,
-        technique: deployData.technique.name,
-        chain: deployData.chain,
-        config: deployData.config,
-        triggers: deployData.triggers
+        userId: userID.value,
+        name: deployData.technique.name,
+        nodes: nodes
       }
     })
 
@@ -233,9 +245,8 @@ async function handleDeployChain(deployData) {
 
 async function fetchActiveBots() {
   try {
-    const response = await $fetch('/api/v1/fetchActiveBotChains', {
-      method: 'POST',
-      body: { userID: userID.value }
+    const response = await $fetch('/api/v1/fetchBotChains', {
+      query: { userId: userID.value }
     })
 
     if (response.success && response.data) {
