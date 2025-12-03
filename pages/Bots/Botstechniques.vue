@@ -58,15 +58,14 @@
       </div>
     </n-card>
 
-    <!-- Strategy Presets (Normal Mode Only) - 12 GridBot+ Techniques + Original Presets -->
+    <!-- 📊 Strategy Presets (Normal Mode Only) - 12 GridBot+ Techniques -->
     <n-card class="presets-card" v-if="creationMode === 'normal'">
       <div class="presets-header">
-        <span class="presets-title">📋 Quick Presets & 🔧 12 GridBot+ Techniques</span>
+        <span class="presets-title">📊 Strategy Presets - 12 GridBot+ Techniques</span>
         <n-button size="small" @click="clearAll" quaternary>Clear All</n-button>
       </div>
 
-      <!-- 🔧 GridBot+ Techniques Grid -->
-      <div class="presets-section-title">🔧 GridBot+ Techniques</div>
+      <!-- 🔧 GridBot+ Techniques Grid - All 12 Bots -->
       <div class="presets-grid techniques-preset-grid">
         <n-button
           v-for="(technique, index) in gridBotTechniques"
@@ -76,29 +75,6 @@
           class="technique-preset-btn"
         >
           {{ technique.emoji }} {{ technique.name }}
-        </n-button>
-      </div>
-
-      <!-- Traditional Strategy Presets -->
-      <div class="presets-section-title" style="margin-top: 12px;">📊 Strategy Presets</div>
-      <div class="presets-grid">
-        <n-button size="small" type="success" @click="loadPreset('conservative')">
-          🛡️ Conservative
-        </n-button>
-        <n-button size="small" type="info" @click="loadPreset('balanced')">
-          ⚖️ Balanced
-        </n-button>
-        <n-button size="small" type="warning" @click="loadPreset('aggressive')">
-          🔥 Aggressive
-        </n-button>
-        <n-button size="small" type="primary" @click="loadPreset('range-trader')">
-          📊 Range Trader
-        </n-button>
-        <n-button size="small" type="error" @click="loadPreset('trend-follower')">
-          📈 Trend Follower
-        </n-button>
-        <n-button size="small" @click="loadPreset('accumulator')">
-          💰 Accumulator
         </n-button>
       </div>
     </n-card>
@@ -1573,20 +1549,9 @@ async function createChainBot(botPosition, chainId) {
   color: #10eb04;
 }
 
-.presets-section-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #10eb04;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 8px;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(16, 235, 4, 0.2);
-}
-
 .presets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
 }
 
