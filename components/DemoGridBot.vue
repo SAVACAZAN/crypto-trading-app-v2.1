@@ -163,10 +163,14 @@ const incrementalOrders = computed(() => {
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
+      // GridBotLib uses index starting from 1, not 0
+      const gridIndex = index + 1;
+
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
+        // GridBotLib formula: (amount + ((amount / 100) * (incrementalPercent * index))) / price
+        // where index starts from 1: (amount + ((amount / 100) * (incBuy * gridIndex)))
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * gridIndex));
       }
 
       const incrementalQty = incrementalAmount / price;
@@ -189,10 +193,14 @@ const incrementalOrders = computed(() => {
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
+      // GridBotLib uses index starting from 1, not 0
+      const gridIndex = index + 1;
+
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * index));
+        // GridBotLib formula: (amount + ((amount / 100) * (incrementalPercent * index))) / price
+        // where index starts from 1: (amount + ((amount / 100) * (incSell * gridIndex)))
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * gridIndex));
       }
 
       const incrementalQty = incrementalAmount / price;
