@@ -138,17 +138,25 @@ const deviationAnalysis = computed(() => {
   if (buyOrders.length > 0) {
     filledBuyOrders = buyOrders.map((order, index) => {
       const baseAmount = parseFloat(order.total);
-      // Incremental formula: amount * devAmount * (1 + (incPercent/100) * orderIndex)
-      const incrementMultiplier = 1 + (incBuy / 100) * index;
-      const adjustedAmount = baseAmount * devAmtBuy * incrementMultiplier;
-      const adjustedPrice = parseFloat(order.price) * (1 - (devPriceBuy / 100));
-      totalBuyFilled += adjustedAmount;
+      const price = parseFloat(order.price);
+
+      // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
+      const incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
+
+      // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
+      const filledAmountValue = incrementalAmount + ((incrementalAmount / 100) * devAmtBuy);
+
+      // Apply deviation to price: newPrice = price + ((price / 100) * deviationPrice)
+      const filledPrice = price + ((price / 100) * devPriceBuy);
+
+      totalBuyFilled += filledAmountValue;
+
       return {
         ...order,
-        filledAmount: adjustedAmount.toFixed(4),
-        filledPrice: adjustedPrice.toFixed(6),
-        filledTotal: (adjustedAmount * adjustedPrice).toFixed(4),
-        incrementMultiplier: incrementMultiplier.toFixed(3),
+        filledAmount: filledAmountValue.toFixed(4),
+        filledPrice: filledPrice.toFixed(6),
+        filledTotal: (filledAmountValue * filledPrice).toFixed(4),
+        incrementValue: incrementalAmount.toFixed(4),
         deviated: true
       };
     });
@@ -157,17 +165,25 @@ const deviationAnalysis = computed(() => {
   if (sellOrders.length > 0) {
     filledSellOrders = sellOrders.map((order, index) => {
       const baseAmount = parseFloat(order.total);
-      // Incremental formula: amount * devAmount * (1 + (incPercent/100) * orderIndex)
-      const incrementMultiplier = 1 + (incSell / 100) * index;
-      const adjustedAmount = baseAmount * devAmtSell * incrementMultiplier;
-      const adjustedPrice = parseFloat(order.price) * (1 + (devPriceSell / 100));
-      totalSellFilled += adjustedAmount;
+      const price = parseFloat(order.price);
+
+      // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
+      const incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * index));
+
+      // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
+      const filledAmountValue = incrementalAmount + ((incrementalAmount / 100) * devAmtSell);
+
+      // Apply deviation to price: newPrice = price - ((price / 100) * deviationPrice)
+      const filledPrice = price - ((price / 100) * devPriceSell);
+
+      totalSellFilled += filledAmountValue;
+
       return {
         ...order,
-        filledAmount: adjustedAmount.toFixed(4),
-        filledPrice: adjustedPrice.toFixed(6),
-        filledTotal: (adjustedAmount * adjustedPrice).toFixed(4),
-        incrementMultiplier: incrementMultiplier.toFixed(3),
+        filledAmount: filledAmountValue.toFixed(4),
+        filledPrice: filledPrice.toFixed(6),
+        filledTotal: (filledAmountValue * filledPrice).toFixed(4),
+        incrementValue: incrementalAmount.toFixed(4),
         deviated: true
       };
     });
@@ -355,12 +371,12 @@ function closeModal() {
                 <div
                   v-for="(order, idx) in deviationAnalysis.buyOrders"
                   :key="`buy-${idx}`"
-                  style="display: grid; grid-template-columns: 40px 80px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(16, 235, 4, 0.08); border-left: 3px solid #10eb04; border-radius: 2px; font-size: 9px; margin-bottom: 4px;"
+                  style="display: grid; grid-template-columns: 35px 75px 85px 100px; gap: 6px; padding: 6px 8px; background: rgba(16, 235, 4, 0.08); border-left: 3px solid #10eb04; border-radius: 2px; font-size: 8px; margin-bottom: 4px;"
                 >
                   <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
                   <span style="color: #10eb04; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #e0e0e0;">{{ order.filledAmount }}</span>
-                  <span style="color: #06b6d4; font-weight: 600;">×{{ order.incrementMultiplier }}</span>
+                  <span style="color: #06b6d4;">+{{ order.incrementValue }}</span>
+                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
                 </div>
               </div>
             </div>
@@ -374,12 +390,12 @@ function closeModal() {
                 <div
                   v-for="(order, idx) in deviationAnalysis.sellOrders"
                   :key="`sell-${idx}`"
-                  style="display: grid; grid-template-columns: 40px 80px 100px 80px; gap: 8px; padding: 6px 8px; background: rgba(235, 4, 4, 0.08); border-left: 3px solid #eb0404; border-radius: 2px; font-size: 9px; margin-bottom: 4px;"
+                  style="display: grid; grid-template-columns: 35px 75px 85px 100px; gap: 6px; padding: 6px 8px; background: rgba(235, 4, 4, 0.08); border-left: 3px solid #eb0404; border-radius: 2px; font-size: 8px; margin-bottom: 4px;"
                 >
                   <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #e0e0e0;">{{ order.filledAmount }}</span>
-                  <span style="color: #fbbf24; font-weight: 600;">×{{ order.incrementMultiplier }}</span>
+                  <span style="color: #fbbf24;">+{{ order.incrementValue }}</span>
+                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
                 </div>
               </div>
             </div>
