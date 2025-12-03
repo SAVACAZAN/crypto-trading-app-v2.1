@@ -45,7 +45,14 @@ const demoGridConfig = computed(() => ({
   ordersSide: ordersSide.value,
   currentPrice: currentPrice.value,
   symbol: currentSymbol.value,
-  quote: quote.value
+  quote: quote.value,
+  amountType: amountType.value,
+  incrementalPercentAmountBuy: incrementalPercentAmountBuy.value,
+  incrementalPercentAmountSell: incrementalPercentAmountSell.value,
+  deviationPriceBuy: deviationPriceBuy.value,
+  deviationPriceSell: deviationPriceSell.value,
+  deviationAmountBuy: deviationAmountBuy.value,
+  deviationAmountSell: deviationAmountSell.value
 }));
 
 const bestBid = ref(null);
