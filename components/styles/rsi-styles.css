@@ -1,0 +1,85 @@
+/* RSI Section Styles */
+.rsi-section {
+  padding: 6px !important;
+}
+
+.rsi-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+}
+
+.rsi-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  height: 55px;
+  min-width: 0;
+}
+
+.rsi-item:hover {
+  border-color: rgba(0, 255, 255, 0.5);
+  background: rgba(0, 255, 255, 0.08);
+}
+
+.rsi-timeframe {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 3px;
+  letter-spacing: 0.5px;
+}
+
+.rsi-value {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+/* RSI Color Classes */
+.rsi-item.bullish {
+  border-color: rgba(16, 235, 4, 0.6);
+  background: rgba(16, 235, 4, 0.15);
+}
+
+.rsi-item.bullish .rsi-value {
+  color: #10eb04;
+  text-shadow: 0 0 8px rgba(16, 235, 4, 0.6);
+}
+
+.rsi-item.bearish {
+  border-color: rgba(233, 10, 21, 0.6);
+  background: rgba(233, 10, 21, 0.15);
+}
+
+.rsi-item.bearish .rsi-value {
+  color: #e90a15;
+  text-shadow: 0 0 8px rgba(233, 10, 21, 0.6);
+}
+
+.rsi-item.overbought {
+  border-color: rgba(255, 107, 0, 0.6);
+  background: rgba(255, 107, 0, 0.15);
+}
+
+.rsi-item.overbought .rsi-value {
+  color: #ff6b00;
+  text-shadow: 0 0 8px rgba(255, 107, 0, 0.6);
+}
+
+.rsi-item.oversold {
+  border-color: rgba(0, 149, 255, 0.6);
+  background: rgba(0, 149, 255, 0.15);
+}
+
+.rsi-item.oversold .rsi-value {
+  color: #0095ff;
+  text-shadow: 0 0 8px rgba(0, 149, 255, 0.6);
+}
