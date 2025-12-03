@@ -253,54 +253,107 @@ function closeModal() {
             </div>
           </div>
 
-          <!-- BUY/SELL DETAILED STATS -->
-          <div v-if="summary && (config.ordersSide === 'buyOrSell' || config.ordersSide === 'buy' || config.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <!-- BUY PANEL -->
+          <!-- BUY/SELL DETAILED STATS WITH DEVIATIONS -->
+          <div v-if="summary && deviationAnalysis && (config.ordersSide === 'buyOrSell' || config.ordersSide === 'buy' || config.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <!-- BUY PANEL - ORIGINAL ORDERS -->
             <div v-if="summary.buyOrdersCount > 0" style="background: rgba(16, 235, 4, 0.08); padding: 14px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3);">
-              <div style="font-size: 13px; color: #10eb04; margin-bottom: 10px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
-                📈 BUY ORDERS
+              <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                📈 BUY ORDERS (Original)
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Number of orders:</span>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Orders:</span>
                   <span style="color: #10eb04; font-weight: 700;">{{ summary.buyOrdersCount }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Total investment ({{ config.quote }}):</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Investment:</span>
                   <span style="color: #10eb04; font-weight: 700;">${{ (gridOrders.filter(o => o.side === 'BUY').reduce((sum, o) => sum + parseFloat(o.total), 0)).toFixed(2) }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Total quantity ({{ config.symbol?.split('/')[0] }}):</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Qty:</span>
                   <span style="color: #10eb04; font-weight: 700;">{{ (gridOrders.filter(o => o.side === 'BUY').reduce((sum, o) => sum + parseFloat(o.amount), 0)).toFixed(4) }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Average price:</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Avg Price:</span>
                   <span style="color: #10eb04; font-weight: 700;">{{ summary.avgBuyPrice }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- SELL PANEL -->
+            <!-- SELL PANEL - ORIGINAL ORDERS -->
             <div v-if="summary.sellOrdersCount > 0" style="background: rgba(235, 4, 4, 0.08); padding: 14px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3);">
-              <div style="font-size: 13px; color: #eb0404; margin-bottom: 10px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
-                📉 SELL ORDERS
+              <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                📉 SELL ORDERS (Original)
               </div>
-              <div style="display: flex; flex-direction: column; gap: 6px;">
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Number of orders:</span>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Orders:</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ summary.sellOrdersCount }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Total revenue ({{ config.quote }}):</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Revenue:</span>
                   <span style="color: #eb0404; font-weight: 700;">${{ (gridOrders.filter(o => o.side === 'SELL').reduce((sum, o) => sum + parseFloat(o.total), 0)).toFixed(2) }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Total quantity ({{ config.symbol?.split('/')[0] }}):</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Qty:</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ (gridOrders.filter(o => o.side === 'SELL').reduce((sum, o) => sum + parseFloat(o.amount), 0)).toFixed(4) }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                  <span style="color: #888;">Average price:</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Avg Price:</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUY/SELL FILLED WITH DEVIATIONS -->
+          <div v-if="deviationAnalysis && (config.ordersSide === 'buyOrSell' || config.ordersSide === 'buy' || config.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+            <!-- BUY FILLED PANEL -->
+            <div v-if="deviationAnalysis.buyOrders.length > 0" style="background: rgba(16, 235, 4, 0.15); padding: 14px; border-radius: 6px; border: 2px solid rgba(16, 235, 4, 0.5);">
+              <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                📈 BUY FILLED (With Deviations)
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Orders:</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ deviationAnalysis.buyOrders.length }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Total Filled:</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ deviationAnalysis.totalBuyFilled }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Avg Filled Price:</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.buyOrders.length).toFixed(6) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Total Value:</span>
+                  <span style="color: #10eb04; font-weight: 700;">${{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledTotal), 0)).toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SELL FILLED PANEL -->
+            <div v-if="deviationAnalysis.sellOrders.length > 0" style="background: rgba(235, 4, 4, 0.15); padding: 14px; border-radius: 6px; border: 2px solid rgba(235, 4, 4, 0.5);">
+              <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                📉 SELL FILLED (With Deviations)
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Orders:</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ deviationAnalysis.sellOrders.length }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Total Filled:</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ deviationAnalysis.totalSellFilled }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Avg Filled Price:</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.sellOrders.length).toFixed(6) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                  <span style="color: #888;">Total Value:</span>
+                  <span style="color: #eb0404; font-weight: 700;">${{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledTotal), 0)).toFixed(2) }}</span>
                 </div>
               </div>
             </div>
