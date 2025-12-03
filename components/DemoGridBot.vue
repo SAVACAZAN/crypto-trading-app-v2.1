@@ -17,6 +17,10 @@ const activeTab = ref('stats');
 
 // Calculate grid orders based on configuration
 const gridOrders = computed(() => {
+  if (!props.config) {
+    return [];
+  }
+
   const {
     lowerPrice,
     upperPrice,
@@ -377,7 +381,7 @@ function closeModal() {
           </div>
 
           <!-- BUY/SELL DETAILED STATS WITH DEVIATIONS -->
-          <div v-if="summary && deviationAnalysis && (config.ordersSide === 'buyOrSell' || config.ordersSide === 'buy' || config.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div v-if="summary && deviationAnalysis && (config?.ordersSide === 'buyOrSell' || config?.ordersSide === 'buy' || config?.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <!-- BUY PANEL - ORIGINAL ORDERS -->
             <div v-if="summary.buyOrdersCount > 0" style="background: rgba(16, 235, 4, 0.08); padding: 14px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3);">
               <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
@@ -398,7 +402,7 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Price:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ summary.avgBuyPrice.toFixed(8) }}</span>
+                  <span style="color: #10eb04; font-weight: 700;">{{ summary.avgBuyPrice }}</span>
                 </div>
               </div>
             </div>
@@ -423,7 +427,7 @@ function closeModal() {
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Price:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice.toFixed(8) }}</span>
+                  <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice }}</span>
                 </div>
               </div>
             </div>
