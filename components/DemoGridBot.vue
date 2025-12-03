@@ -55,16 +55,16 @@ const gridOrders = computed(() => {
 
     // Calculate based on amountType
     if (amtType === 'quantityPerGrid') {
-      // amount is fixed quantity per grid
-      orderQuantity = baseAmount / price;
-      orderTotal = baseAmount;
+      // amount is fixed quantity per grid (baseAmount is quantity, not USD)
+      orderQuantity = baseAmount;
+      orderTotal = baseAmount * price; // Calculate USD value
     } else if (amtType === 'totalAmount') {
-      // amount is distributed equally across all grids
+      // amount is distributed equally across all grids (baseAmount is total USD)
       const amountPerGrid = baseAmount / grids;
       orderQuantity = amountPerGrid / price;
       orderTotal = amountPerGrid;
     } else {
-      // incrementalPercent: amount is base amount for first grid
+      // incrementalPercent: amount is base USD amount for first grid
       orderQuantity = baseAmount / price;
       orderTotal = baseAmount;
     }
@@ -159,7 +159,7 @@ const incrementalOrders = computed(() => {
 
   if (buyOrders.length > 0) {
     incrementalBuyOrders = buyOrders.map((order, index) => {
-      const baseAmount = parseFloat(order.total);
+      const baseAmount = parseFloat(order.total); // USD amount from gridOrders
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
@@ -168,10 +168,12 @@ const incrementalOrders = computed(() => {
 
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: (amount + ((amount / 100) * (incrementalPercent * index))) / price
-        // where index starts from 1: (amount + ((amount / 100) * (incBuy * gridIndex)))
+        // For incrementalPercent: baseAmount is the USD amount for the FIRST grid
+        // Apply incremental: amount + ((amount / 100) * (incrementalPercent * gridIndex))
+        // GridBotLib formula line 336: (amount + ((amount / 100) * (incrementalPercent * index))) / price
         incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * gridIndex));
       }
+      // For other amountTypes (quantityPerGrid, totalAmount), amount stays constant
 
       const incrementalQty = incrementalAmount / price;
 
@@ -189,7 +191,7 @@ const incrementalOrders = computed(() => {
 
   if (sellOrders.length > 0) {
     incrementalSellOrders = sellOrders.map((order, index) => {
-      const baseAmount = parseFloat(order.total);
+      const baseAmount = parseFloat(order.total); // USD amount from gridOrders
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
@@ -198,10 +200,12 @@ const incrementalOrders = computed(() => {
 
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: (amount + ((amount / 100) * (incrementalPercent * index))) / price
-        // where index starts from 1: (amount + ((amount / 100) * (incSell * gridIndex)))
+        // For incrementalPercent: baseAmount is the USD amount for the FIRST grid
+        // Apply incremental: amount + ((amount / 100) * (incrementalPercent * gridIndex))
+        // GridBotLib formula line 336: (amount + ((amount / 100) * (incrementalPercent * index))) / price
         incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * gridIndex));
       }
+      // For other amountTypes (quantityPerGrid, totalAmount), amount stays constant
 
       const incrementalQty = incrementalAmount / price;
 
@@ -267,11 +271,15 @@ const deviationAnalysis = computed(() => {
       const baseAmount = parseFloat(order.total);
       const price = parseFloat(order.price);
 
+      // GridBotLib uses index starting from 1, not 0
+      const gridIndex = index + 1;
+
       // Calculate incremental amount (only for incrementalPercent amountType)
       let incrementalAmount = baseAmount;
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
+        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * gridIndex))
+        // where gridIndex starts from 1
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * gridIndex));
       }
 
       // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
@@ -298,11 +306,15 @@ const deviationAnalysis = computed(() => {
       const baseAmount = parseFloat(order.total);
       const price = parseFloat(order.price);
 
+      // GridBotLib uses index starting from 1, not 0
+      const gridIndex = index + 1;
+
       // Calculate incremental amount (only for incrementalPercent amountType)
       let incrementalAmount = baseAmount;
       if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * index))
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * index));
+        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * gridIndex))
+        // where gridIndex starts from 1
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * gridIndex));
       }
 
       // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
