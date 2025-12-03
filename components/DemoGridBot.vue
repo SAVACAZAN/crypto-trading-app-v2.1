@@ -338,90 +338,178 @@ function closeModal() {
           </div>
         </n-tab-pane>
 
-        <!-- TAB 2: ORDERS WITH INCREMENTAL -->
+        <!-- TAB 2: ORDERS -->
         <n-tab-pane name="orders" tab="📋 Orders">
           <div v-if="incrementalOrders" style="display: flex; flex-direction: column; gap: 16px;">
-            <!-- BUY INCREMENTAL ORDERS -->
-            <div v-if="incrementalOrders.buyOrders.length > 0">
-              <div style="background: rgba(16, 235, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3); margin-bottom: 12px;">
-                <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
-                  📈 BUY ORDERS (Incremental)
+            <!-- Show appropriate orders based on amountType -->
+            <template v-if="incrementalOrders.amountType === 'incrementalPercent'">
+              <!-- BUY INCREMENTAL ORDERS -->
+              <div v-if="incrementalOrders.buyOrders.length > 0">
+                <div style="background: rgba(16, 235, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3); margin-bottom: 12px;">
+                  <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                    📈 BUY ORDERS (Incremental)
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Orders:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.buyOrders.length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Investment:</span>
+                      <span style="color: #10eb04; font-weight: 700;">${{ incrementalOrders.totalBuyIncremental }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Qty:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.totalBuyQtyIncremental }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Avg Price:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalBuyIncremental) / parseFloat(incrementalOrders.totalBuyQtyIncremental)).toFixed(6) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Orders:</span>
-                    <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.buyOrders.length }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Investment:</span>
-                    <span style="color: #10eb04; font-weight: 700;">${{ incrementalOrders.totalBuyIncremental }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Qty:</span>
-                    <span style="color: #10eb04; font-weight: 700;">{{ incrementalOrders.totalBuyQtyIncremental }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Avg Price:</span>
-                    <span style="color: #10eb04; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalBuyIncremental) / parseFloat(incrementalOrders.totalBuyQtyIncremental)).toFixed(6) }}</span>
+                <div class="orders-scroll">
+                  <div
+                    v-for="(order, idx) in [...incrementalOrders.buyOrders].reverse()"
+                    :key="`inc-buy-${idx}`"
+                    :class="['order-row', 'buy', { 'is-initial': order.isInitial }]"
+                  >
+                    <span class="order-num">#{{ idx + 1 }}</span>
+                    <span class="order-side buy">BUY</span>
+                    <span class="order-price">{{ order.price }}</span>
+                    <span class="order-amount">{{ order.incrementalQty }}</span>
+                    <span class="order-total">${{ order.incrementalAmount }}</span>
+                    <span class="order-percentage">{{ order.percentage }}%</span>
                   </div>
                 </div>
               </div>
-              <div class="orders-scroll">
-                <div
-                  v-for="(order, idx) in [...incrementalOrders.buyOrders].reverse()"
-                  :key="`inc-buy-${idx}`"
-                  :class="['order-row', 'buy', { 'is-initial': order.isInitial }]"
-                >
-                  <span class="order-num">#{{ idx + 1 }}</span>
-                  <span class="order-side buy">BUY</span>
-                  <span class="order-price">{{ order.price }}</span>
-                  <span class="order-amount">{{ order.incrementalQty }}</span>
-                  <span class="order-total">${{ order.incrementalAmount }}</span>
-                  <span class="order-percentage">{{ order.percentage }}%</span>
-                </div>
-              </div>
-            </div>
 
-            <!-- SELL INCREMENTAL ORDERS -->
-            <div v-if="incrementalOrders.sellOrders.length > 0">
-              <div style="background: rgba(235, 4, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3); margin-bottom: 12px;">
-                <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
-                  📉 SELL ORDERS (Incremental)
+              <!-- SELL INCREMENTAL ORDERS -->
+              <div v-if="incrementalOrders.sellOrders.length > 0">
+                <div style="background: rgba(235, 4, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3); margin-bottom: 12px;">
+                  <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                    📉 SELL ORDERS (Incremental)
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Orders:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.sellOrders.length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Revenue:</span>
+                      <span style="color: #eb0404; font-weight: 700;">${{ incrementalOrders.totalSellIncremental }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Qty:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.totalSellQtyIncremental }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Avg Price:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalSellIncremental) / parseFloat(incrementalOrders.totalSellQtyIncremental)).toFixed(6) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Orders:</span>
-                    <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.sellOrders.length }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Revenue:</span>
-                    <span style="color: #eb0404; font-weight: 700;">${{ incrementalOrders.totalSellIncremental }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Qty:</span>
-                    <span style="color: #eb0404; font-weight: 700;">{{ incrementalOrders.totalSellQtyIncremental }}</span>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                    <span style="color: #888;">Avg Price:</span>
-                    <span style="color: #eb0404; font-weight: 700;">{{ (parseFloat(incrementalOrders.totalSellIncremental) / parseFloat(incrementalOrders.totalSellQtyIncremental)).toFixed(6) }}</span>
+                <div class="orders-scroll">
+                  <div
+                    v-for="(order, idx) in incrementalOrders.sellOrders"
+                    :key="`inc-sell-${idx}`"
+                    :class="['order-row', 'sell', { 'is-initial': order.isInitial }]"
+                  >
+                    <span class="order-num">#{{ idx + 1 }}</span>
+                    <span class="order-side sell">SELL</span>
+                    <span class="order-price">{{ order.price }}</span>
+                    <span class="order-amount">{{ order.incrementalQty }}</span>
+                    <span class="order-total">${{ order.incrementalAmount }}</span>
+                    <span class="order-percentage">{{ order.percentage }}%</span>
                   </div>
                 </div>
               </div>
-              <div class="orders-scroll">
-                <div
-                  v-for="(order, idx) in incrementalOrders.sellOrders"
-                  :key="`inc-sell-${idx}`"
-                  :class="['order-row', 'sell', { 'is-initial': order.isInitial }]"
-                >
-                  <span class="order-num">#{{ idx + 1 }}</span>
-                  <span class="order-side sell">SELL</span>
-                  <span class="order-price">{{ order.price }}</span>
-                  <span class="order-amount">{{ order.incrementalQty }}</span>
-                  <span class="order-total">${{ order.incrementalAmount }}</span>
-                  <span class="order-percentage">{{ order.percentage }}%</span>
+            </template>
+
+            <!-- For other amountTypes (quantityPerGrid, totalAmount), show gridOrders -->
+            <template v-else>
+              <!-- BUY ORDERS -->
+              <div v-if="gridOrders.filter(o => o.side === 'BUY').length > 0">
+                <div style="background: rgba(16, 235, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3); margin-bottom: 12px;">
+                  <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
+                    📈 BUY ORDERS
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Orders:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ gridOrders.filter(o => o.side === 'BUY').length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Investment:</span>
+                      <span style="color: #10eb04; font-weight: 700;">${{ (gridOrders.filter(o => o.side === 'BUY').reduce((sum, o) => sum + parseFloat(o.total), 0)).toFixed(2) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Qty:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ (gridOrders.filter(o => o.side === 'BUY').reduce((sum, o) => sum + parseFloat(o.amount), 0)).toFixed(4) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Avg Price:</span>
+                      <span style="color: #10eb04; font-weight: 700;">{{ summary?.avgBuyPrice }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="orders-scroll">
+                  <div
+                    v-for="(order, idx) in [...gridOrders.filter(o => o.side === 'BUY')].reverse()"
+                    :key="`grid-buy-${idx}`"
+                    :class="['order-row', 'buy', { 'is-initial': order.isInitial }]"
+                  >
+                    <span class="order-num">#{{ idx + 1 }}</span>
+                    <span class="order-side buy">BUY</span>
+                    <span class="order-price">{{ order.price }}</span>
+                    <span class="order-amount">{{ order.amount }}</span>
+                    <span class="order-total">${{ order.total }}</span>
+                    <span class="order-percentage">{{ order.percentage }}%</span>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <!-- SELL ORDERS -->
+              <div v-if="gridOrders.filter(o => o.side === 'SELL').length > 0">
+                <div style="background: rgba(235, 4, 4, 0.08); padding: 12px; border-radius: 6px; border: 1px solid rgba(235, 4, 4, 0.3); margin-bottom: 12px;">
+                  <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
+                    📉 SELL ORDERS
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Orders:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ gridOrders.filter(o => o.side === 'SELL').length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Revenue:</span>
+                      <span style="color: #eb0404; font-weight: 700;">${{ (gridOrders.filter(o => o.side === 'SELL').reduce((sum, o) => sum + parseFloat(o.total), 0)).toFixed(2) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Qty:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ (gridOrders.filter(o => o.side === 'SELL').reduce((sum, o) => sum + parseFloat(o.amount), 0)).toFixed(4) }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px;">
+                      <span style="color: #888;">Avg Price:</span>
+                      <span style="color: #eb0404; font-weight: 700;">{{ summary?.avgSellPrice }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="orders-scroll">
+                  <div
+                    v-for="(order, idx) in gridOrders.filter(o => o.side === 'SELL')"
+                    :key="`grid-sell-${idx}`"
+                    :class="['order-row', 'sell', { 'is-initial': order.isInitial }]"
+                  >
+                    <span class="order-num">#{{ idx + 1 }}</span>
+                    <span class="order-side sell">SELL</span>
+                    <span class="order-price">{{ order.price }}</span>
+                    <span class="order-amount">{{ order.amount }}</span>
+                    <span class="order-total">${{ order.total }}</span>
+                    <span class="order-percentage">{{ order.percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </n-tab-pane>
 
