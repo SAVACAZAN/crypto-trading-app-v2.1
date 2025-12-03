@@ -234,122 +234,6 @@ const incrementalOrders = computed(() => {
   };
 });
 
-// Deviation calculations - showing orders with deviations applied
-const deviationAnalysis = computed(() => {
-  const {
-    deviationPriceBuy,
-    deviationPriceSell,
-    deviationAmountBuy,
-    deviationAmountSell,
-    incrementalPercentAmountBuy,
-    incrementalPercentAmountSell,
-    amountType
-  } = props.config;
-
-  const devPriceBuy = parseFloat(deviationPriceBuy) || 0;
-  const devPriceSell = parseFloat(deviationPriceSell) || 0;
-  const devAmtBuy = parseFloat(deviationAmountBuy) || 1;
-  const devAmtSell = parseFloat(deviationAmountSell) || 1;
-  const incBuy = parseFloat(incrementalPercentAmountBuy) || 0;
-  const incSell = parseFloat(incrementalPercentAmountSell) || 0;
-  const amtType = amountType || 'incrementalPercent';
-
-  const orders = gridOrders.value;
-  if (orders.length === 0) return null;
-
-  const buyOrders = orders.filter(o => o.side === 'BUY');
-  const sellOrders = orders.filter(o => o.side === 'SELL');
-
-  // Calculate filled orders with deviations
-  let filledBuyOrders = [];
-  let filledSellOrders = [];
-  let totalBuyFilled = 0;
-  let totalSellFilled = 0;
-
-  if (buyOrders.length > 0) {
-    filledBuyOrders = buyOrders.map((order, index) => {
-      const baseAmount = parseFloat(order.total);
-      const price = parseFloat(order.price);
-
-      // GridBotLib uses index starting from 1, not 0
-      const gridIndex = index + 1;
-
-      // Calculate incremental amount (only for incrementalPercent amountType)
-      let incrementalAmount = baseAmount;
-      if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * gridIndex))
-        // where gridIndex starts from 1
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * gridIndex));
-      }
-
-      // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
-      const filledAmountValue = incrementalAmount + ((incrementalAmount / 100) * devAmtBuy);
-
-      // Apply deviation to price: newPrice = price + ((price / 100) * deviationPrice)
-      const filledPrice = price + ((price / 100) * devPriceBuy);
-
-      totalBuyFilled += filledAmountValue;
-
-      return {
-        ...order,
-        filledAmount: filledAmountValue.toFixed(2),
-        filledPrice: filledPrice.toFixed(6),
-        filledTotal: (filledAmountValue * filledPrice).toFixed(2),
-        incrementValue: incrementalAmount.toFixed(2),
-        deviated: true
-      };
-    });
-  }
-
-  if (sellOrders.length > 0) {
-    filledSellOrders = sellOrders.map((order, index) => {
-      const baseAmount = parseFloat(order.total);
-      const price = parseFloat(order.price);
-
-      // GridBotLib uses index starting from 1, not 0
-      const gridIndex = index + 1;
-
-      // Calculate incremental amount (only for incrementalPercent amountType)
-      let incrementalAmount = baseAmount;
-      if (amtType === 'incrementalPercent') {
-        // GridBotLib formula: amount + ((amount / 100) * (incrementalPercent * gridIndex))
-        // where gridIndex starts from 1
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * gridIndex));
-      }
-
-      // Apply deviation to amount: newAmount = amount + ((amount / 100) * deviationAmount)
-      const filledAmountValue = incrementalAmount + ((incrementalAmount / 100) * devAmtSell);
-
-      // Apply deviation to price: newPrice = price - ((price / 100) * deviationPrice)
-      const filledPrice = price - ((price / 100) * devPriceSell);
-
-      totalSellFilled += filledAmountValue;
-
-      return {
-        ...order,
-        filledAmount: filledAmountValue.toFixed(2),
-        filledPrice: filledPrice.toFixed(6),
-        filledTotal: (filledAmountValue * filledPrice).toFixed(2),
-        incrementValue: incrementalAmount.toFixed(2),
-        deviated: true
-      };
-    });
-  }
-
-  return {
-    devPriceBuy,
-    devPriceSell,
-    devAmtBuy,
-    devAmtSell,
-    incBuy,
-    incSell,
-    buyOrders: filledBuyOrders,
-    sellOrders: filledSellOrders,
-    totalBuyFilled: totalBuyFilled.toFixed(2),
-    totalSellFilled: totalSellFilled.toFixed(2)
-  };
-});
-
 function closeModal() {
   emit('close');
 }
@@ -400,8 +284,8 @@ function closeModal() {
             </div>
           </div>
 
-          <!-- BUY/SELL DETAILED STATS WITH DEVIATIONS -->
-          <div v-if="summary && deviationAnalysis && (config?.ordersSide === 'buyOrSell' || config?.ordersSide === 'buy' || config?.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <!-- BUY/SELL DETAILED STATS -->
+          <div v-if="summary && (config?.ordersSide === 'buyOrSell' || config?.ordersSide === 'buy' || config?.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <!-- BUY PANEL - ORIGINAL ORDERS -->
             <div v-if="summary.buyOrdersCount > 0" style="background: rgba(16, 235, 4, 0.08); padding: 14px; border-radius: 6px; border: 1px solid rgba(16, 235, 4, 0.3);">
               <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
@@ -448,59 +332,6 @@ function closeModal() {
                 <div style="display: flex; justify-content: space-between; font-size: 10px;">
                   <span style="color: #888;">Avg Price:</span>
                   <span style="color: #eb0404; font-weight: 700;">{{ summary.avgSellPrice }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BUY/SELL FILLED WITH DEVIATIONS -->
-          <div v-if="deviationAnalysis && (config.ordersSide === 'buyOrSell' || config.ordersSide === 'buy' || config.ordersSide === 'sell')" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
-            <!-- BUY FILLED PANEL -->
-            <div v-if="deviationAnalysis.buyOrders.length > 0" style="background: rgba(16, 235, 4, 0.15); padding: 14px; border-radius: 6px; border: 2px solid rgba(16, 235, 4, 0.5);">
-              <div style="font-size: 12px; color: #10eb04; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 6px;">
-                📈 BUY FILLED (With Deviations)
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Orders:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ deviationAnalysis.buyOrders.length }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Total Filled:</span>
-                  <span style="color: #10eb04; font-weight: 700;">${{ deviationAnalysis.totalBuyFilled }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Avg Filled Price:</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.buyOrders.length).toFixed(8) }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Total Value:</span>
-                  <span style="color: #10eb04; font-weight: 700;">${{ (deviationAnalysis.buyOrders.reduce((sum, o) => sum + parseFloat(o.filledTotal), 0)).toFixed(2) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- SELL FILLED PANEL -->
-            <div v-if="deviationAnalysis.sellOrders.length > 0" style="background: rgba(235, 4, 4, 0.15); padding: 14px; border-radius: 6px; border: 2px solid rgba(235, 4, 4, 0.5);">
-              <div style="font-size: 12px; color: #eb0404; margin-bottom: 8px; font-weight: 700; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 6px;">
-                📉 SELL FILLED (With Deviations)
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Orders:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ deviationAnalysis.sellOrders.length }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Total Filled:</span>
-                  <span style="color: #eb0404; font-weight: 700;">${{ deviationAnalysis.totalSellFilled }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Avg Filled Price:</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledPrice), 0) / deviationAnalysis.sellOrders.length).toFixed(8) }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px;">
-                  <span style="color: #888;">Total Value:</span>
-                  <span style="color: #eb0404; font-weight: 700;">${{ (deviationAnalysis.sellOrders.reduce((sum, o) => sum + parseFloat(o.filledTotal), 0)).toFixed(2) }}</span>
                 </div>
               </div>
             </div>
@@ -594,76 +425,6 @@ function closeModal() {
           </div>
         </n-tab-pane>
 
-        <!-- TAB 3: DEVIATIONS -->
-        <n-tab-pane name="deviations" tab="📊 Deviații">
-          <div v-if="deviationAnalysis" style="display: flex; flex-direction: column; gap: 16px;">
-            <!-- Deviation Parameters -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">DEV PRICE BUY</div>
-                <div style="font-size: 13px; font-weight: 700; color: #10eb04;">{{ deviationAnalysis.devPriceBuy }}%</div>
-              </div>
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">DEV PRICE SELL</div>
-                <div style="font-size: 13px; font-weight: 700; color: #eb0404;">{{ deviationAnalysis.devPriceSell }}%</div>
-              </div>
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">DEV AMOUNT BUY</div>
-                <div style="font-size: 13px; font-weight: 700; color: #10eb04;">{{ deviationAnalysis.devAmtBuy }}</div>
-              </div>
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">DEV AMOUNT SELL</div>
-                <div style="font-size: 13px; font-weight: 700; color: #eb0404;">{{ deviationAnalysis.devAmtSell }}</div>
-              </div>
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">INC BUY %</div>
-                <div style="font-size: 13px; font-weight: 700; color: #10eb04;">{{ deviationAnalysis.incBuy }}%</div>
-              </div>
-              <div style="background: #1a1f2e; padding: 10px; border-radius: 4px; border: 1px solid #2a3441;">
-                <div style="font-size: 10px; color: #888; margin-bottom: 4px;">INC SELL %</div>
-                <div style="font-size: 13px; font-weight: 700; color: #eb0404;">{{ deviationAnalysis.incSell }}%</div>
-              </div>
-            </div>
-
-            <!-- BUY FILLED ORDERS -->
-            <div v-if="deviationAnalysis.buyOrders.length > 0">
-              <div style="font-size: 12px; font-weight: 700; color: #10eb04; margin-bottom: 8px; border-bottom: 1px solid rgba(16, 235, 4, 0.2); padding-bottom: 8px;">
-                📈 BUY FILLED (Total: {{ deviationAnalysis.totalBuyFilled }})
-              </div>
-              <div class="dev-orders-scroll">
-                <div
-                  v-for="(order, idx) in deviationAnalysis.buyOrders"
-                  :key="`buy-${idx}`"
-                  style="display: grid; grid-template-columns: 35px 75px 85px 100px; gap: 6px; padding: 6px 8px; background: rgba(16, 235, 4, 0.08); border-left: 3px solid #10eb04; border-radius: 2px; font-size: 8px; margin-bottom: 4px;"
-                >
-                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
-                  <span style="color: #10eb04; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #06b6d4;">+{{ order.incrementValue }}</span>
-                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- SELL FILLED ORDERS -->
-            <div v-if="deviationAnalysis.sellOrders.length > 0">
-              <div style="font-size: 12px; font-weight: 700; color: #eb0404; margin-bottom: 8px; border-bottom: 1px solid rgba(235, 4, 4, 0.2); padding-bottom: 8px;">
-                📉 SELL FILLED (Total: {{ deviationAnalysis.totalSellFilled }})
-              </div>
-              <div class="dev-orders-scroll">
-                <div
-                  v-for="(order, idx) in deviationAnalysis.sellOrders"
-                  :key="`sell-${idx}`"
-                  style="display: grid; grid-template-columns: 35px 75px 85px 100px; gap: 6px; padding: 6px 8px; background: rgba(235, 4, 4, 0.08); border-left: 3px solid #eb0404; border-radius: 2px; font-size: 8px; margin-bottom: 4px;"
-                >
-                  <span style="color: #888; font-weight: 600;">#{{ idx + 1 }}</span>
-                  <span style="color: #eb0404; font-weight: 700;">{{ order.filledPrice }}</span>
-                  <span style="color: #fbbf24;">+{{ order.incrementValue }}</span>
-                  <span style="color: #e0e0e0; font-weight: 600;">{{ order.filledAmount }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </n-tab-pane>
       </n-tabs>
     </div>
 
@@ -888,33 +649,6 @@ function closeModal() {
 }
 
 .orders-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.5);
-}
-
-/* Deviation orders scroll styling */
-.dev-orders-scroll {
-  max-height: 300px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dev-orders-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.dev-orders-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.dev-orders-scroll::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.3);
-  border-radius: 3px;
-}
-
-.dev-orders-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(59, 130, 246, 0.5);
 }
 </style>
