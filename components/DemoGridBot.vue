@@ -82,7 +82,7 @@ const gridOrders = computed(() => {
       amount: orderQuantity.toFixed(4),
       total: orderTotal.toFixed(2),
       side: side,
-      percentage: (100 - ((price - lower) / (upper - lower) * 100)).toFixed(2),
+      percentage: ((price - lower) / (upper - lower) * 100).toFixed(2),
       isInitial: current > 0 && Math.abs(price - current) < priceStep / 2,
       amountType: amtType,
       gridIndex: i
