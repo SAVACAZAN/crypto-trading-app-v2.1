@@ -163,15 +163,15 @@ const incrementalOrders = computed(() => {
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
-      // GridBotLib uses index starting from 1, not 0
-      const gridIndex = index + 1;
-
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // For incrementalPercent: baseAmount is the USD amount for the FIRST grid
-        // Apply incremental: amount + ((amount / 100) * (incrementalPercent * gridIndex))
-        // GridBotLib formula line 336: (amount + ((amount / 100) * (incrementalPercent * index))) / price
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * gridIndex));
+        // For incrementalPercent: first order (index 0) stays at baseAmount
+        // Subsequent orders get incremental applied: amount + ((amount / 100) * (incrementalPercent * index))
+        // Order 1 (index 0): baseAmount (no increment)
+        // Order 2 (index 1): baseAmount + (baseAmount / 100) * incBuy * 1
+        // Order 3 (index 2): baseAmount + (baseAmount / 100) * incBuy * 2
+        // etc.
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incBuy * index));
       }
       // For other amountTypes (quantityPerGrid, totalAmount), amount stays constant
 
@@ -195,15 +195,15 @@ const incrementalOrders = computed(() => {
       const price = parseFloat(order.price);
       let incrementalAmount = baseAmount;
 
-      // GridBotLib uses index starting from 1, not 0
-      const gridIndex = index + 1;
-
       // Apply incremental calculation only for 'incrementalPercent' amountType
       if (amtType === 'incrementalPercent') {
-        // For incrementalPercent: baseAmount is the USD amount for the FIRST grid
-        // Apply incremental: amount + ((amount / 100) * (incrementalPercent * gridIndex))
-        // GridBotLib formula line 336: (amount + ((amount / 100) * (incrementalPercent * index))) / price
-        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * gridIndex));
+        // For incrementalPercent: first order (index 0) stays at baseAmount
+        // Subsequent orders get incremental applied: amount + ((amount / 100) * (incrementalPercent * index))
+        // Order 1 (index 0): baseAmount (no increment)
+        // Order 2 (index 1): baseAmount + (baseAmount / 100) * incSell * 1
+        // Order 3 (index 2): baseAmount + (baseAmount / 100) * incSell * 2
+        // etc.
+        incrementalAmount = baseAmount + ((baseAmount / 100) * (incSell * index));
       }
       // For other amountTypes (quantityPerGrid, totalAmount), amount stays constant
 
