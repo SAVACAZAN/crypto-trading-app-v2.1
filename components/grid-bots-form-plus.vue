@@ -5,6 +5,8 @@ import { useRSIValues } from '~/composables/useRSIValues';
 import StrategiesGridBot from '~/components/StrategiesGridBot.vue';
 import RSIDisplay from '~/components/RSIDisplay.vue';
 import DemoGridBot from '~/components/DemoGridBot.vue';
+import QuickActionsPanel from '~/components/QuickActionsPanel.vue';
+import IncrementalDevSettingsPanel from '~/components/IncrementalDevSettingsPanel.vue';
 import '~/components/styles/grid-bots-form-plus.css';
 import {ref, watch, computed, onMounted, onUnmounted} from "vue";
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
@@ -167,6 +169,31 @@ function applyInitialDeviation() {
     updateUpperPrice();
     initialDeviationApplied = true;
   }
+}
+
+// Handlers for Incremental & Deviation Settings Panel
+function handleUpdateIncrementalBuy(value) {
+  incrementalPercentAmountBuy.value = value;
+}
+
+function handleUpdateIncrementalSell(value) {
+  incrementalPercentAmountSell.value = value;
+}
+
+function handleUpdateDeviationPriceBuy(value) {
+  deviationPriceBuy.value = value;
+}
+
+function handleUpdateDeviationPriceSell(value) {
+  deviationPriceSell.value = value;
+}
+
+function handleUpdateDeviationAmountBuy(value) {
+  deviationAmountBuy.value = value;
+}
+
+function handleUpdateDeviationAmountSell(value) {
+  deviationAmountSell.value = value;
 }
 
 function showTooltip(text) {
@@ -690,124 +717,33 @@ onUnmounted(() => {
 
 
 
-    <!-- Quick Actions - Price Actions -->
-    <div class="config-section">
-      <div class="section-header" @click="showPriceActions = !showPriceActions">
-        <span>💰 Quick Actions</span>
-        <span class="collapse-icon">{{ showPriceActions ? '▼' : '▶' }}</span>
-      </div>
-      <div v-show="showPriceActions" class="section-content">
-        <!-- PRICE ACTIONS TABLE -->
-        <div class="price-actions-table">
-          <div class="price-row">
-            <span class="price-row-label">Lower</span>
-            <div class="price-row-buttons">
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.0001)">-</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.005)">0.5%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.01)">1%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.02)">2%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.03)">3%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.05)">5%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.07)">7%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.09)">9%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.10)">10%</n-button>
-                 <n-button size="tiny" type="success" @click="updateLowerPrice(0.15)">15%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.20)">20%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.30)">30%</n-button>
-                    <n-button size="tiny" type="success" @click="updateLowerPrice(0.40)">40%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.50)">50%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.60)">60%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.70)">70%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.80)">80%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.90)">90%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.91)">91%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.92)">92%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.93)">93%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.94)">94%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.95)">95%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.96)">96%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.97)">97%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.98)">98%</n-button>
-              <n-button size="tiny" type="success" @click="updateLowerPrice(0.99)">99%</n-button>
+    <!-- Quick Actions Panel - Separate Draggable Component -->
+    <QuickActionsPanel
+      :bestBid="bestBid?.value"
+      :bestAsk="bestAsk?.value"
+      @update-lower-price="updateLowerPrice"
+      @update-upper-price="updateUpperPrice"
+      @update-grids="(value) => { nrOfGrids = value; }"
+      @update-amount="(value) => { amount = value; }"
+    />
 
-
-
-            </div>
-          </div>
-          <div class="price-row">
-            <span class="price-row-label">Upper</span>
-            <div class="price-row-buttons">
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.001)">+</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.005)">0.5%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.01)">1%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.02)">2%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.03)">3%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.05)">5%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.07)">7%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.09)">9%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.10)">10%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.15)">15%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.20)">20%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.30)">30%</n-button>
-                  <n-button size="tiny" type="error" @click="updateUpperPrice(0.40)">40%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.50)">50%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.60)">60%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.70)">70%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.80)">80%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(0.90)">90%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(1.00)">100%</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(2.00)">x2</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(3.00)">x3</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(4.00)">x4</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(5.00)">x5</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(6.00)">x6</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(7.00)">x7</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(8.00)">x8</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(9.00)">x9</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(10.00)">x10</n-button>
-              <n-button size="tiny" type="error" @click="updateUpperPrice(20.00)">x20</n-button>
-        
-
-            </div>
-          </div>
-
-         
-        </div>
-
-
-
-
-
-
-
-        <!-- GRIDS AND AMOUNT QUICK ACTIONS -->
-        <div class="quick-actions-row">
-          <div class="quick-actions-group">
-            <span class="quick-actions-label">Grids</span>
-            <div class="quick-buttons-inline">
-              <n-button size="tiny" type="warning" @click="nrOfGrids = '10'">10</n-button>
-              <n-button size="tiny" type="warning" @click="nrOfGrids = '20'">20</n-button>
-              <n-button size="tiny" type="warning" @click="nrOfGrids = '30'">30</n-button>
-              <n-button size="tiny" type="warning" @click="nrOfGrids = '50'">50</n-button>
-              <n-button size="tiny" type="warning" @click="nrOfGrids = '100'">100</n-button>
-            </div>
-          </div>
-
-          <div class="quick-actions-group">
-            <span class="quick-actions-label">Amount</span>
-            <div class="quick-buttons-inline">
-              <n-button size="tiny" type="info" @click="amount = '1.1'">1.1</n-button>
-              <n-button size="tiny" type="info" @click="amount = '5'">5</n-button>
-              <n-button size="tiny" type="info" @click="amount = '10.1'">10.1</n-button>
-              <n-button size="tiny" type="info" @click="amount = '50'">50</n-button>
-              <n-button size="tiny" type="info" @click="amount = '100'">100</n-button>
-            </div>
-          </div>
-
-         
-        </div>
-      </div>
-    </div>
+    <!-- Incremental & Deviation Settings Panel - Separate Draggable Component -->
+    <IncrementalDevSettingsPanel
+      :exchange="currentExchange"
+      :symbol="currentSymbol"
+      :incrementalPercentAmountBuy="incrementalPercentAmountBuy?.value"
+      :incrementalPercentAmountSell="incrementalPercentAmountSell?.value"
+      :deviationPriceBuy="deviationPriceBuy?.value"
+      :deviationPriceSell="deviationPriceSell?.value"
+      :deviationAmountBuy="deviationAmountBuy?.value"
+      :deviationAmountSell="deviationAmountSell?.value"
+      @update-incremental-buy="handleUpdateIncrementalBuy"
+      @update-incremental-sell="handleUpdateIncrementalSell"
+      @update-deviation-price-buy="handleUpdateDeviationPriceBuy"
+      @update-deviation-price-sell="handleUpdateDeviationPriceSell"
+      @update-deviation-amount-buy="handleUpdateDeviationAmountBuy"
+      @update-deviation-amount-sell="handleUpdateDeviationAmountSell"
+    />
 
     <!-- Strategies Management Component -->
     <ClientOnly>

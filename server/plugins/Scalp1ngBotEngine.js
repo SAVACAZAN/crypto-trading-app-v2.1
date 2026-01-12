@@ -7,6 +7,11 @@ export default defineNitroPlugin((nitroApp) => {
 })
 
 async function startScheduler(nitroApp) {
+    // DISABLED - Scalp1ngBotLib.checkAndPlaceOrder is not implemented
+    // This was causing continuous fetchClosedOrders calls every 1 second
+    console.log('[Scalp1ng Bot Engine] ⚠️ Scheduler DISABLED - checkAndPlaceOrder not implemented');
+
+    /*
     setIntervalAsync(async () => {
 
         // Obțineți botii din baza de date
@@ -33,5 +38,6 @@ async function startScheduler(nitroApp) {
             }
         }
     }, 1000);
+    */
 }
 

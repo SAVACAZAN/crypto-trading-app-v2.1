@@ -112,6 +112,19 @@
               </div>
             </div>
 
+            <div class="stat-card toto-stat">
+              <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <text x="12" y="16" text-anchor="middle" font-size="12" fill="currentColor">T</text>
+                </svg>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Total TOTO</p>
+                <h2 class="stat-value">{{ formatNumber(GlobalBalanceTOTO) }}</h2>
+              </div>
+            </div>
+
             <div class="stat-card usdc-stat">
               <div class="stat-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,6 +266,10 @@
                     <span class="balance-label">USDT</span>
                     <span class="balance-value">${{ formatNumber(exchange.combinedBalance.find(a => a.coin === 'USDT').total) }}</span>
                   </div>
+                  <div v-if="exchange.combinedBalance.find(a => a.coin === 'EUR')" class="balance-item eur-balance">
+                    <span class="balance-label">EUR</span>
+                    <span class="balance-value">€{{ formatNumber(exchange.combinedBalance.find(a => a.coin === 'EUR').total) }}</span>
+                  </div>
                 </div>
               </div>
 
@@ -289,11 +306,6 @@
         <PortfolioDistribution />
       </n-tab-pane>
 
-      <!-- Crypto Wallet Tab -->
-      <n-tab-pane name="cryptowallet" tab="💰 Crypto Wallet">
-        <CryptoWallet />
-      </n-tab-pane>
-
       <!-- Fiat Wallet Tab -->
       <n-tab-pane name="fiatwallet" tab="💵 Fiat Wallet">
         <FiatWallet />
@@ -311,7 +323,6 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { useNotification } from 'naive-ui'
 import OpenOrdersDevComponent from '~/components/OpenOrdersDev.vue'
 import ClosedOrdersDevTabbed from '~/components/ClosedOrdersDevTabbed.vue'
-import CryptoWallet from '~/components/CryptoWallet.vue'
 import FiatWallet from '~/components/FiatWallet.vue'
 import AppTopButtonBar from '~/components/AppTopButtonBar.vue'
 
@@ -581,6 +592,16 @@ const GlobalBalanceJOB = computed(() => {
   return total;
 });
 
+const GlobalBalanceTOTO = computed(() => {
+  let total = 0;
+  exchanges.value.forEach(exchange => {
+    exchange.combinedBalance.forEach(asset => {
+      if (asset.coin.toUpperCase() === "TOTO") total += asset.total;
+    });
+  });
+  return total;
+});
+
 const GlobalBalanceUSD = computed(() => {
   let total = 0;
   exchanges.value.forEach(exchange => {
@@ -631,6 +652,7 @@ const globalTotalsData = computed(() => {
       exchangeTotals[exchange.name] = {
         LCX: 0,
         JOB: 0,
+        TOTO: 0,
         USD: 0,
         USDC: 0,
         USDT: 0,
@@ -654,6 +676,7 @@ const globalTotalsData = computed(() => {
       exchange: exchangeName.toUpperCase(),
       LCX: exchangeTotals[exchangeName].LCX,
       JOB: exchangeTotals[exchangeName].JOB,
+      TOTO: exchangeTotals[exchangeName].TOTO,
       USD: exchangeTotals[exchangeName].USD,
       USDC: exchangeTotals[exchangeName].USDC,
       USDT: exchangeTotals[exchangeName].USDT,
@@ -663,6 +686,7 @@ const globalTotalsData = computed(() => {
       exchange: 'GRAND TOTAL',
       LCX: GlobalBalanceLCX.value,
       JOB: GlobalBalanceJOB.value,
+      TOTO: GlobalBalanceTOTO.value,
       USD: GlobalBalanceUSD.value,
       USDC: GlobalBalanceUSDC.value,
       USDT: GlobalBalanceUSDT.value,
@@ -686,6 +710,11 @@ const globalTotalsColumns = [
     title: "JOB",
     key: "JOB",
     render: (row) => formatNumber(row.JOB)
+  },
+  {
+    title: "TOTO",
+    key: "TOTO",
+    render: (row) => formatNumber(row.TOTO)
   },
   {
     title: "USD",
@@ -869,6 +898,11 @@ function formatNumber(value) {
   background: linear-gradient(135deg, rgba(5, 245, 237, 0.05), rgba(5, 245, 237, 0.02));
 }
 
+.toto-stat {
+  border-color: rgba(147, 51, 234, 0.3);
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.05), rgba(147, 51, 234, 0.02));
+}
+
 .usdc-stat {
   border-color: rgba(96, 167, 218, 0.3);
   background: linear-gradient(135deg, rgba(96, 167, 218, 0.05), rgba(96, 167, 218, 0.02));
@@ -912,6 +946,11 @@ function formatNumber(value) {
 .job-stat .stat-icon {
   background: linear-gradient(135deg, rgba(5, 245, 237, 0.2), rgba(5, 245, 237, 0.1));
   color: rgb(5, 245, 237);
+}
+
+.toto-stat .stat-icon {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.1));
+  color: rgb(147, 51, 234);
 }
 
 .usdc-stat .stat-icon {
@@ -1102,6 +1141,16 @@ function formatNumber(value) {
   border-color: rgba(80, 220, 100, 0.3);
 }
 
+.eur-balance {
+  background: rgba(255, 165, 0, 0.08);
+  border-color: rgba(255, 165, 0, 0.3);
+}
+
+.toto-balance {
+  background: rgba(147, 51, 234, 0.08);
+  border-color: rgba(147, 51, 234, 0.3);
+}
+
 .balance-label {
   font-size: 9px;
   color: rgba(255, 255, 255, 0.9);
@@ -1123,6 +1172,14 @@ function formatNumber(value) {
 
 .usdt-balance .balance-value {
   color: rgb(80, 220, 100);
+}
+
+.eur-balance .balance-value {
+  color: rgb(255, 165, 0);
+}
+
+.toto-balance .balance-value {
+  color: rgb(147, 51, 234);
 }
 
 .exchange-card-footer {

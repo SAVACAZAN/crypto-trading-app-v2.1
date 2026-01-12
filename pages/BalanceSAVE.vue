@@ -154,6 +154,23 @@
                     <span class="value eur-value-total">€ {{ formatNumber(apiBalance.eurTotal || 0) }}</span>
                   </div>
                 </div>
+
+                <!-- TOTO Column -->
+                <div class="balance-column toto-column">
+                  <div class="column-header">TOTO</div>
+                  <div class="balance-row">
+                    <span class="label">Free:</span>
+                    <span class="value toto-value">{{ formatNumber(apiBalance.totoFree || 0) }}</span>
+                  </div>
+                  <div class="balance-row">
+                    <span class="label">Used:</span>
+                    <span class="value toto-value-used">{{ formatNumber(apiBalance.totoUsed || 0) }}</span>
+                  </div>
+                  <div class="balance-row total-row">
+                    <span class="label">Total:</span>
+                    <span class="value toto-value-total">{{ formatNumber(apiBalance.totoTotal || 0) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -216,6 +233,24 @@
                   <div class="total-item main-total">
                     <span class="label">Total:</span>
                     <span class="value">€ {{ formatNumber(totalApiEURTotal) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="total-card toto-total-card">
+                <div class="total-label">TOTO</div>
+                <div class="total-values">
+                  <div class="total-item">
+                    <span class="label">Free:</span>
+                    <span class="value">{{ formatNumber(totalApiTOTOFree) }}</span>
+                  </div>
+                  <div class="total-item">
+                    <span class="label">Used:</span>
+                    <span class="value">{{ formatNumber(totalApiTOTOUsed) }}</span>
+                  </div>
+                  <div class="total-item main-total">
+                    <span class="label">Total:</span>
+                    <span class="value">{{ formatNumber(totalApiTOTOTotal) }}</span>
                   </div>
                 </div>
               </div>
@@ -455,6 +490,13 @@
                       <span class="calc-value">{{ calculateLCXv2(savedBalances.length - 1 - displayIndex).toLocaleString('en-US') }}</span>
                     </div>
                   </div>
+
+                  <div class="calc-row">
+                    <div class="calc-item highlight-toto">
+                      <span class="calc-label">Total TOTO:</span>
+                      <span class="calc-value">{{ calculateTotalTOTO(balance).toLocaleString('en-US') }}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Differences (if not first item - cel mai vechi la index 0) -->
@@ -489,6 +531,12 @@
                       <span class="diff-label">Δ Posible LCX+USDC:</span>
                       <span class="diff-value" :class="calculateDifferencePosibleLCXUSDC(savedBalances.length - 1 - displayIndex) >= 0 ? 'positive' : 'negative'">
                         {{ calculateDifferencePosibleLCXUSDC(savedBalances.length - 1 - displayIndex) >= 0 ? '+' : '' }}{{ calculateDifferencePosibleLCXUSDC(savedBalances.length - 1 - displayIndex).toLocaleString('en-US') }}
+                      </span>
+                    </div>
+                    <div class="diff-item">
+                      <span class="diff-label">Δ TOTO:</span>
+                      <span class="diff-value" :class="calculateDifferenceTOTO(savedBalances.length - 1 - displayIndex) >= 0 ? 'positive' : 'negative'">
+                        {{ calculateDifferenceTOTO(savedBalances.length - 1 - displayIndex) >= 0 ? '+' : '' }}{{ calculateDifferenceTOTO(savedBalances.length - 1 - displayIndex).toLocaleString('en-US') }}
                       </span>
                     </div>
                   </div>
@@ -553,6 +601,10 @@
                             <span class="api-diff-breakdown-separator">|</span>
                             <span class="api-diff-breakdown-value" :class="calculateApiDifferenceUSDC(savedBalances.length - 1 - displayIndex, 'lcx', api) >= 0 ? 'positive' : 'negative'">
                               Δ {{ calculateApiDifferenceUSDC(savedBalances.length - 1 - displayIndex, 'lcx', api) >= 0 ? '+' : '' }}${{ calculateApiDifferenceUSDC(savedBalances.length - 1 - displayIndex, 'lcx', api).toFixed(2) }}
+                            </span>
+                            <span class="api-diff-breakdown-separator">|</span>
+                            <span class="api-diff-breakdown-value" :class="calculateApiDifferenceTOTO(savedBalances.length - 1 - displayIndex, 'lcx', api) >= 0 ? 'positive' : 'negative'">
+                              Δ {{ calculateApiDifferenceTOTO(savedBalances.length - 1 - displayIndex, 'lcx', api) >= 0 ? '+' : '' }}{{ calculateApiDifferenceTOTO(savedBalances.length - 1 - displayIndex, 'lcx', api).toFixed(2) }} TOTO
                             </span>
                           </div>
                         </div>
@@ -662,6 +714,18 @@ const totalApiEURUsed = computed(() => {
 
 const totalApiEURTotal = computed(() => {
   return apiBalances.value.reduce((sum, balance) => sum + Number(balance.eurTotal || 0), 0);
+});
+
+const totalApiTOTOFree = computed(() => {
+  return apiBalances.value.reduce((sum, balance) => sum + Number(balance.totoFree || 0), 0);
+});
+
+const totalApiTOTOUsed = computed(() => {
+  return apiBalances.value.reduce((sum, balance) => sum + Number(balance.totoUsed || 0), 0);
+});
+
+const totalApiTOTOTotal = computed(() => {
+  return apiBalances.value.reduce((sum, balance) => sum + Number(balance.totoTotal || 0), 0);
 });
 
 // Format number with 2 decimals and comma as decimal separator
@@ -795,6 +859,11 @@ async function loadAllApiBalances(exchange) {
             const eurTotal = Number(total.EUR || 0);
             const eurUsed = calculateUsed(eurFree, eurTotal, used.EUR);
 
+            // Calculate TOTO balances (LCX only)
+            const totoFree = Number(free.TOTO || 0);
+            const totoTotal = Number(total.TOTO || 0);
+            const totoUsed = calculateUsed(totoFree, totoTotal, used.TOTO);
+
             const newIndex = apiBalances.value.length;
             apiBalances.value.push({
               exchange: exchange,
@@ -810,7 +879,11 @@ async function loadAllApiBalances(exchange) {
               // EUR balances
               eurFree: eurFree,
               eurUsed: eurUsed,
-              eurTotal: eurTotal
+              eurTotal: eurTotal,
+              // TOTO balances (LCX only)
+              totoFree: totoFree,
+              totoUsed: totoUsed,
+              totoTotal: totoTotal
             });
 
             // Auto-expand newly added items
@@ -821,7 +894,8 @@ async function loadAllApiBalances(exchange) {
             console.log(`[${exchange.toUpperCase()}] Added balance for ${apiKey.name}:`, {
               LCX: { free: free.LCX, used: used.LCX, total: total.LCX },
               USDC: { free: usdcFree, used: usdcUsed, total: usdcTotal },
-              EUR: { free: free.EUR, used: used.EUR, total: total.EUR }
+              EUR: { free: free.EUR, used: used.EUR, total: total.EUR },
+              TOTO: { free: totoFree, used: totoUsed, total: totoTotal }
             });
           } else {
             console.warn(`[${exchange.toUpperCase()}] No balance data returned for ${apiKey.name}`);
@@ -863,10 +937,10 @@ async function loadAllExchangesApis() {
 function saveBalances() {
   // Calculate totals per exchange from API balances
   const exchangeTotals = {
-    coinbase: { lcx: 0, usdc: 0, apis: [] },
-    kraken: { lcx: 0, usdc: 0, apis: [] },
-    bitrue: { lcx: 0, usdc: 0, apis: [] },
-    lcx: { lcx: 0, usdc: 0, apis: [] }
+    coinbase: { lcx: 0, usdc: 0, eur: 0, toto: 0, apis: [] },
+    kraken: { lcx: 0, usdc: 0, eur: 0, toto: 0, apis: [] },
+    bitrue: { lcx: 0, usdc: 0, eur: 0, toto: 0, apis: [] },
+    lcx: { lcx: 0, usdc: 0, eur: 0, toto: 0, apis: [] }
   };
 
   // Sum up all API keys per exchange and collect API details
@@ -874,34 +948,50 @@ function saveBalances() {
     if (balance.exchange === 'coinbaseadvanced') {
       exchangeTotals.coinbase.lcx += Number(balance.lcxTotal || 0);
       exchangeTotals.coinbase.usdc += Number(balance.usdcTotal || 0);
+      exchangeTotals.coinbase.eur += Number(balance.eurTotal || 0);
+      exchangeTotals.coinbase.toto += Number(balance.totoTotal || 0);
       exchangeTotals.coinbase.apis.push({
         name: balance.apiKeyName,
         lcx: Number(balance.lcxTotal || 0),
-        usdc: Number(balance.usdcTotal || 0)
+        usdc: Number(balance.usdcTotal || 0),
+        eur: Number(balance.eurTotal || 0),
+        toto: Number(balance.totoTotal || 0)
       });
     } else if (balance.exchange === 'kraken') {
       exchangeTotals.kraken.lcx += Number(balance.lcxTotal || 0);
       exchangeTotals.kraken.usdc += Number(balance.usdcTotal || 0);
+      exchangeTotals.kraken.eur += Number(balance.eurTotal || 0);
+      exchangeTotals.kraken.toto += Number(balance.totoTotal || 0);
       exchangeTotals.kraken.apis.push({
         name: balance.apiKeyName,
         lcx: Number(balance.lcxTotal || 0),
-        usdc: Number(balance.usdcTotal || 0)
+        usdc: Number(balance.usdcTotal || 0),
+        eur: Number(balance.eurTotal || 0),
+        toto: Number(balance.totoTotal || 0)
       });
     } else if (balance.exchange === 'bitrue') {
       exchangeTotals.bitrue.lcx += Number(balance.lcxTotal || 0);
       exchangeTotals.bitrue.usdc += Number(balance.usdcTotal || 0);
+      exchangeTotals.bitrue.eur += Number(balance.eurTotal || 0);
+      exchangeTotals.bitrue.toto += Number(balance.totoTotal || 0);
       exchangeTotals.bitrue.apis.push({
         name: balance.apiKeyName,
         lcx: Number(balance.lcxTotal || 0),
-        usdc: Number(balance.usdcTotal || 0)
+        usdc: Number(balance.usdcTotal || 0),
+        eur: Number(balance.eurTotal || 0),
+        toto: Number(balance.totoTotal || 0)
       });
     } else if (balance.exchange === 'lcx') {
       exchangeTotals.lcx.lcx += Number(balance.lcxTotal || 0);
       exchangeTotals.lcx.usdc += Number(balance.usdcTotal || 0);
+      exchangeTotals.lcx.eur += Number(balance.eurTotal || 0);
+      exchangeTotals.lcx.toto += Number(balance.totoTotal || 0);
       exchangeTotals.lcx.apis.push({
         name: balance.apiKeyName,
         lcx: Number(balance.lcxTotal || 0),
-        usdc: Number(balance.usdcTotal || 0)
+        usdc: Number(balance.usdcTotal || 0),
+        eur: Number(balance.eurTotal || 0),
+        toto: Number(balance.totoTotal || 0)
       });
     }
   });
@@ -920,6 +1010,14 @@ function saveBalances() {
     krakenUSDC: exchangeTotals.kraken.usdc,
     bitrueUSDC: exchangeTotals.bitrue.usdc,
     lcxUSDC: exchangeTotals.lcx.usdc,
+    coinbaseEUR: exchangeTotals.coinbase.eur,
+    krakenEUR: exchangeTotals.kraken.eur,
+    bitrueEUR: exchangeTotals.bitrue.eur,
+    lcxEUR: exchangeTotals.lcx.eur,
+    coinbaseTOTO: exchangeTotals.coinbase.toto,
+    krakenTOTO: exchangeTotals.kraken.toto,
+    bitrueTOTO: exchangeTotals.bitrue.toto,
+    lcxTOTO: exchangeTotals.lcx.toto,
     // Store API details
     apiDetails: {
       coinbase: exchangeTotals.coinbase.apis,
@@ -1048,6 +1146,23 @@ function calculateDifferenceUSDC(index) {
   return currentTotal - previousTotal;
 }
 
+// Calculate total TOTO (from LCX APIs only)
+function calculateTotalTOTO(balance) {
+  if (!balance.apiDetails || !balance.apiDetails.lcx) return 0;
+  return balance.apiDetails.lcx.reduce((sum, api) => {
+    return sum + (api.toto || 0);
+  }, 0);
+}
+
+// Calculate the difference in TOTO
+function calculateDifferenceTOTO(index) {
+  // Primul element (cel mai vechi) nu are diferență
+  if (index === 0) return 0;
+  const currentTotal = calculateTotalTOTO(savedBalances.value[index]);
+  const previousTotal = calculateTotalTOTO(savedBalances.value[index - 1]);
+  return currentTotal - previousTotal;
+}
+
 // Calculate the difference for possible LCX and USDC based on priceLCX
 function calculateDifferencePosibleLCX(index) {
   if (index === 0 || !lcxPrice.value) return 0;
@@ -1132,6 +1247,13 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
   const previousApi = getPreviousApiBalance(index, exchange, currentApi.name);
   if (!previousApi) return 0;
   return currentApi.usdc - previousApi.usdc;
+}
+
+// Calculate difference for individual API TOTO (current - previous) - LCX only
+function calculateApiDifferenceTOTO(index, exchange, currentApi) {
+  const previousApi = getPreviousApiBalance(index, exchange, currentApi.name);
+  if (!previousApi) return 0;
+  return (currentApi.toto || 0) - (previousApi.toto || 0);
 }
 
 </script>
@@ -1463,6 +1585,23 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
   font-size: 12px;
 }
 
+.toto-column .column-header {
+  color: #9333ea;
+}
+
+.toto-value {
+  color: #9333ea;
+}
+
+.toto-value-used {
+  color: rgba(147, 51, 234, 0.6);
+}
+
+.toto-value-total {
+  color: #9333ea;
+  font-size: 12px;
+}
+
 .total-row {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 8px;
@@ -1512,6 +1651,10 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
   border-color: #50e3c2;
 }
 
+.toto-total-card {
+  border-color: #9333ea;
+}
+
 .total-label {
   font-size: 12px;
   font-weight: 700;
@@ -1530,6 +1673,10 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
 
 .eur-total-card .total-label {
   color: #50e3c2;
+}
+
+.toto-total-card .total-label {
+  color: #9333ea;
 }
 
 .total-values {
@@ -1957,6 +2104,11 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
   background: rgba(245, 166, 35, 0.05);
 }
 
+.highlight-toto {
+  border-color: rgba(147, 51, 234, 0.5);
+  background: rgba(147, 51, 234, 0.05);
+}
+
 .calc-label {
   font-size: 11px;
   font-weight: 600;
@@ -1992,6 +2144,10 @@ function calculateApiDifferenceUSDC(index, exchange, currentApi) {
 
 .highlight-orange .calc-value {
   color: #f5a623;
+}
+
+.highlight-toto .calc-value {
+  color: #9333ea;
 }
 
 /* ===== DIFFERENCES SECTION ===== */

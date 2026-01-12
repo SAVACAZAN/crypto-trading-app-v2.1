@@ -1,0 +1,93 @@
+/* Quick Actions Config Section - Draggable */
+.qa-config-section {
+  transition: all 0.1s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.qa-config-section.dragging {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Quick Actions Section Styles */
+.qa-section {
+  padding: 8px !important;
+}
+
+/* Price Actions Table */
+.price-actions-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.price-row-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #888;
+  padding-top: 4px;
+  min-width: 45px;
+  text-align: right;
+}
+
+.price-row-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+}
+
+.price-row-buttons :deep(.n-button) {
+  flex-grow: 0;
+}
+
+.price-row-buttons :deep(.n-button--tiny) {
+  padding: 2px 4px;
+  font-size: 8px;
+  height: 20px;
+  min-width: 28px;
+}
+
+/* Grids and Amount Quick Actions */
+.quick-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.quick-actions-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.quick-actions-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #888;
+  min-width: 45px;
+}
+
+.quick-buttons-inline {
+  display: flex;
+  gap: 4px;
+}
+
+.quick-buttons-inline :deep(.n-button) {
+  flex-grow: 0;
+}
+
+.quick-buttons-inline :deep(.n-button--tiny) {
+  padding: 2px 4px;
+  font-size: 8px;
+  height: 20px;
+  min-width: 32px;
+}

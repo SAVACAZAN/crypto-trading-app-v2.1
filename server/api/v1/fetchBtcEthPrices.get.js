@@ -48,10 +48,11 @@ export default defineEventHandler(async (event) => {
       }
     });
 
-    // Fetch BTC/USD and ETH/USD with retry logic
+    // Fetch BTC/USDC and ETH/USDC with retry logic
+    // Coinbase Advanced uses USDC pairs instead of USD
     const [btcPrice, ethPrice] = await Promise.all([
-      fetchWithRetry(coinbase, 'BTC/USD'),
-      fetchWithRetry(coinbase, 'ETH/USD')
+      fetchWithRetry(coinbase, 'BTC/USDC:USDC'),
+      fetchWithRetry(coinbase, 'ETH/USDC:USDC')
     ]);
 
     // Update cache
@@ -85,8 +86,8 @@ export default defineEventHandler(async (event) => {
       });
 
       const [btcPrice, ethPrice] = await Promise.all([
-        fetchWithRetry(kraken, 'BTC/USD', 2),
-        fetchWithRetry(kraken, 'ETH/USD', 2)
+        fetchWithRetry(kraken, 'BTC/USDT', 2),
+        fetchWithRetry(kraken, 'ETH/USDT', 2)
       ]);
 
       // Update cache

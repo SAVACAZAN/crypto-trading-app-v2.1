@@ -22,6 +22,28 @@ function intervalToMs(interval) {
     return value * (units[unit] || 60000);
 }
 
+// Helper function to convert symbol based on exchange
+function convertSymbolForExchange(symbol, exchange) {
+    // Extract base and quote from symbol (e.g., "BTC/USDC" -> "BTC", "USDC")
+    const parts = symbol.split('/');
+    if (parts.length !== 2) return symbol;
+
+    const base = parts[0];
+    const quote = parts[1];
+
+    // Coinbase Advanced uses USDC pairs with :USDC suffix
+    if (exchange === 'coinbaseadvanced') {
+        // If it's a stablecoin quote, use USDC:USDC format
+        if (['USDC', 'USD', 'USDT'].includes(quote)) {
+            return `${base}/USDC:USDC`;
+        }
+        return `${base}/${quote}`;
+    }
+
+    // For LCX or other exchanges, keep standard format
+    return symbol;
+}
+
 // Calculate RSI
 async function calculateRSI(exchange, symbol, timeframe, period) {
     try {
@@ -131,8 +153,12 @@ async function executeDCATrade(bot, userExchange) {
 
         console.log(`[SmartDCA] ✅ Exchange instance created for ${bot.exchange}`);
 
+        // Convert symbol format based on exchange
+        const convertedSymbol = convertSymbolForExchange(bot.symbol, bot.exchange);
+        console.log(`[SmartDCA] Original symbol: ${bot.symbol}, Converted for ${bot.exchange}: ${convertedSymbol}`);
+
         // Fetch current price
-        const ticker = await exchange.fetchTicker(bot.symbol);
+        const ticker = await exchange.fetchTicker(convertedSymbol);
         const currentPrice = ticker.last;
 
         // Calculate indicators for ALL timeframes
@@ -146,7 +172,7 @@ async function executeDCATrade(bot, userExchange) {
         // Fetch RSI for all timeframes (ALWAYS calculate, even if not enabled for conditions)
         for (const tf of timeframes) {
             try {
-                const rsiValue = await calculateRSI(exchange, bot.symbol, tf, bot.rsiPeriod || 14);
+                const rsiValue = await calculateRSI(exchange, convertedSymbol, tf, bot.rsiPeriod || 14);
                 if (rsiValue !== null) {
                     allRSI[tf] = rsiValue;
 
@@ -181,7 +207,7 @@ async function executeDCATrade(bot, userExchange) {
             try {
                 const macdValue = await calculateMACD(
                     exchange,
-                    bot.symbol,
+                    convertedSymbol,
                     tf,
                     bot.macdFast || 12,
                     bot.macdSlow || 26,
@@ -241,9 +267,9 @@ async function executeDCATrade(bot, userExchange) {
                 }
                 console.log(`========================================\n`);
 
-                // Create market order
+                // Create market order with converted symbol
                 order = await exchange.createMarketOrder(
-                    bot.symbol,
+                    convertedSymbol,
                     bot.side,
                     bot.amountPerInterval
                 );

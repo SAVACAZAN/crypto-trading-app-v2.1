@@ -7,6 +7,10 @@ export default defineNitroPlugin((nitroApp) => {
 })
 
 async function startScheduler(nitroApp) {
+    // DISABLED - Causes excessive fetchClosedOrders calls (every 1 second)
+    console.log('[Fib Bot Engine] ⚠️ Scheduler DISABLED to prevent API flooding');
+
+    /*
     setIntervalAsync(async () => {
 
         // Obțineți botii din baza de date
@@ -33,5 +37,6 @@ async function startScheduler(nitroApp) {
             }
         }
     }, 1000);
+    */
 }
 

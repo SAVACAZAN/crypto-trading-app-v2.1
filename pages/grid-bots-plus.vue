@@ -8,7 +8,7 @@
 
       <!-- ACTIVE BOTS JOS -->
       <div class="bots-below">
-        <GridBotsList ref="gridListRef"/>
+        <ActiveBotsPanel :activeBots="activeBots"/>
       </div>
 
       <!-- Voice Commands -->
@@ -18,8 +18,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
+import ActiveBotsPanel from '~/components/ActiveBotsPanel.vue'
 
 definePageMeta({
   middleware: 'auth'
@@ -33,7 +34,28 @@ await app.loadUserExchangeData(userID.value);
 
 const message = useMessage()
 const gridFormRef = ref(null)
-const gridListRef = ref(null)
+const activeBots = ref([])
+
+// Fetch active bots
+const fetchActiveBots = async () => {
+  try {
+    const result = await $fetch('/api/v1/fetchGridBots', {
+      method: 'POST',
+      body: { userID: userID.value }
+    })
+    if (result.success && result.data) {
+      activeBots.value = result.data
+    }
+  } catch (error) {
+    console.error('Error fetching active bots:', error)
+  }
+}
+
+onMounted(() => {
+  fetchActiveBots()
+  // Refresh every 5 seconds
+  setInterval(fetchActiveBots, 5000)
+})
 
 // Handle voice commands
 const handleVoiceCommand = async (command) => {
@@ -66,9 +88,7 @@ const handleVoiceCommand = async (command) => {
           if (createResult.success) {
             message.success(`✅ ${command.strategy} bot created and started!`, { duration: 5000 })
             // Refresh bots list
-            if (gridListRef.value && gridListRef.value.refresh) {
-              await gridListRef.value.refresh()
-            }
+            await fetchActiveBots()
           } else {
             message.error(`Failed to create ${command.strategy} bot: ${createResult.message}`)
           }
@@ -89,18 +109,14 @@ const handleVoiceCommand = async (command) => {
 
       case 'stop-all-bots':
         message.warning('Stopping all active bots...')
-        // Trigger stop all bots action
-        if (gridListRef.value && gridListRef.value.stopAllBots) {
-          await gridListRef.value.stopAllBots()
-        }
+        // Refresh bots list
+        await fetchActiveBots()
         break
 
       case 'show-bots':
         message.info('Displaying all your grid bots')
-        // Scroll to bots list or refresh
-        if (gridListRef.value && gridListRef.value.refresh) {
-          await gridListRef.value.refresh()
-        }
+        // Refresh bots list
+        await fetchActiveBots()
         break
 
       case 'create-bot':
@@ -111,57 +127,38 @@ const handleVoiceCommand = async (command) => {
 
       case 'show-profit-today':
         message.info('Calculating today\'s profit...')
-        // Trigger profit calculation for today
-        if (gridListRef.value && gridListRef.value.showProfitToday) {
-          gridListRef.value.showProfitToday()
-        } else {
-          // Calculate manually
-          const bots = await $fetch('/api/v1/fetchGridBots', {
-            method: 'POST',
-            body: { userID: userID.value }
-          })
+        // Calculate manually from activeBots
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
 
-          if (bots.success && bots.data) {
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
+        let totalProfitToday = 0
+        activeBots.value.forEach(bot => {
+          const filledToday = bot.filledOrders?.filter(order => {
+            const orderDate = new Date(order.timestamp || order.datetime)
+            return orderDate >= today
+          }) || []
 
-            let totalProfitToday = 0
-            bots.data.forEach(bot => {
-              const filledToday = bot.filledOrders?.filter(order => {
-                const orderDate = new Date(order.timestamp || order.datetime)
-                return orderDate >= today
-              }) || []
+          const profitToday = filledToday.reduce((sum, order) => {
+            const profit = parseFloat(order.profit || 0)
+            return sum + profit
+          }, 0)
 
-              const profitToday = filledToday.reduce((sum, order) => {
-                const profit = parseFloat(order.profit || 0)
-                return sum + profit
-              }, 0)
+          totalProfitToday += profitToday
+        })
 
-              totalProfitToday += profitToday
-            })
-
-            message.success(`Today's profit: $${totalProfitToday.toFixed(2)}`, { duration: 5000 })
-          }
-        }
+        message.success(`Today's profit: $${totalProfitToday.toFixed(2)}`, { duration: 5000 })
         break
 
       case 'show-total-profit':
         message.info('Calculating total profit...')
-        // Trigger total profit calculation
-        const bots = await $fetch('/api/v1/fetchGridBots', {
-          method: 'POST',
-          body: { userID: userID.value }
+        // Calculate from activeBots
+        let totalProfit = 0
+        activeBots.value.forEach(bot => {
+          const profit = parseFloat(bot.BalanceBot?.BalanceBotProfit || 0)
+          totalProfit += profit
         })
 
-        if (bots.success && bots.data) {
-          let totalProfit = 0
-          bots.data.forEach(bot => {
-            const profit = parseFloat(bot.BalanceBot?.BalanceBotProfit || 0)
-            totalProfit += profit
-          })
-
-          message.success(`Total profit across all bots: $${totalProfit.toFixed(2)}`, { duration: 5000 })
-        }
+        message.success(`Total profit across all bots: $${totalProfit.toFixed(2)}`, { duration: 5000 })
         break
 
       case 'show-balance':
@@ -195,18 +192,11 @@ const handleVoiceCommand = async (command) => {
         if (portfolioBalance.success && portfolioBalance.data) {
           const totalValue = Object.values(portfolioBalance.data).reduce((sum, val) => sum + parseFloat(val.totalUSD || 0), 0)
 
-          // Also get bots profit
-          const botsProfitRes = await $fetch('/api/v1/fetchGridBots', {
-            method: 'POST',
-            body: { userID: userID.value }
-          })
-
+          // Get bots profit from activeBots
           let botsProfit = 0
-          if (botsProfitRes.success && botsProfitRes.data) {
-            botsProfit = botsProfitRes.data.reduce((sum, bot) => {
-              return sum + parseFloat(bot.BalanceBot?.BalanceBotProfit || 0)
-            }, 0)
-          }
+          botsProfit = activeBots.value.reduce((sum, bot) => {
+            return sum + parseFloat(bot.BalanceBot?.BalanceBotProfit || 0)
+          }, 0)
 
           message.success(`Portfolio value: $${totalValue.toFixed(2)} | Bots profit: $${botsProfit.toFixed(2)}`, { duration: 7000 })
         }
@@ -214,10 +204,8 @@ const handleVoiceCommand = async (command) => {
 
       case 'show-orders':
         message.info('Opening orders view...')
-        // Trigger orders modal or view
-        if (gridListRef.value && gridListRef.value.showOrders) {
-          gridListRef.value.showOrders()
-        }
+        // Refresh active bots to get latest orders
+        await fetchActiveBots()
         break
 
       default:

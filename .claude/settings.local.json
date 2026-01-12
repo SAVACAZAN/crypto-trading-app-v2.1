@@ -12,7 +12,17 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(find:*)",
-      "Bash(timeout 10 npm run dev:*)"
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(timeout 10 bash:*)",
+      "Bash(timeout 10 grep:*)",
+      "Bash(node -e:*)",
+      "Bash(timeout 5 npm run dev:*)",
+      "Bash(nul)",
+      "Bash(timeout 15 npm run dev)",
+      "Bash(for file in \"DkdBotEngine.js\" \"FibBotEngine.js\" \"FronRunEngine.js\")",
+      "Bash(do:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []
